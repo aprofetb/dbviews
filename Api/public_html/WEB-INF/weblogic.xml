@@ -1,0 +1,20 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<weblogic-web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.1/weblogic-web-app.xsd"
+                  xmlns="http://xmlns.oracle.com/weblogic/weblogic-web-app">
+  <!--<security-role-assignment>
+    <role-name>valid-users</role-name>
+    <principal-name>users</principal-name>
+  </security-role-assignment>
+  <security-role-assignment>
+    <role-name>admins</role-name>
+    <principal-name>Administrators</principal-name>
+  </security-role-assignment>-->
+  <jsp-descriptor>
+    <keepgenerated>true</keepgenerated>
+    <encoding>UTF-8</encoding>
+  </jsp-descriptor>
+  <container-descriptor>
+    <show-archived-real-path-enabled>true</show-archived-real-path-enabled>
+  </container-descriptor>
+</weblogic-web-app>

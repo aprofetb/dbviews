@@ -1,0 +1,64 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5">
+  <servlet>
+    <servlet-name>jersey</servlet-name>
+    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+    <init-param>
+      <param-name>com.sun.jersey.config.property.packages</param-name>
+      <param-value>org.dbviews.api</param-value>
+    </init-param>
+    <init-param>
+      <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+      <param-value>true</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>jersey</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+  <!--<security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Admins resources</web-resource-name>
+      <url-pattern>/admin/*</url-pattern>
+      <http-method>GET</http-method>
+      <http-method>POST</http-method>
+      <http-method>PUT</http-method>
+      <http-method>DELETE</http-method>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>admins</role-name>
+    </auth-constraint>
+  </security-constraint>
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>User resources</web-resource-name>
+      <url-pattern>/user/*</url-pattern>
+      <http-method>GET</http-method>
+      <http-method>POST</http-method>
+      <http-method>PUT</http-method>
+      <http-method>DELETE</http-method>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>valid-users</role-name>
+    </auth-constraint>
+  </security-constraint>
+  <login-config>
+    <auth-method>BASIC</auth-method>
+  </login-config>
+  <security-role>
+    <role-name>valid-users</role-name>
+  </security-role>
+  <security-role>
+    <role-name>admins</role-name>
+  </security-role>-->
+  <ejb-local-ref>
+    <ejb-ref-name>ejb/DbViewsEJB</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local>org.dbviews.model.DbViewsEJB</local>
+    <ejb-link>DbViewsEJB</ejb-link>
+  </ejb-local-ref>
+</web-app>

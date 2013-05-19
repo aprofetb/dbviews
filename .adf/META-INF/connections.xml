@@ -1,0 +1,27 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<References xmlns="http://xmlns.oracle.com/adf/jndi">
+   <Reference name="dbviews" className="oracle.jdeveloper.db.adapter.DatabaseProvider" credentialStoreKey="dbviews" xmlns="">
+      <Factory className="oracle.jdeveloper.db.adapter.DatabaseProviderFactory"/>
+      <RefAddresses>
+         <StringRefAddr addrType="subtype">
+            <Contents>MYSQL</Contents>
+         </StringRefAddr>
+         <StringRefAddr addrType="user">
+            <Contents>dbviews</Contents>
+         </StringRefAddr>
+         <StringRefAddr addrType="hostname">
+            <Contents>localhost</Contents>
+         </StringRefAddr>
+         <SecureRefAddr addrType="password"/>
+         <StringRefAddr addrType="DeployPassword">
+            <Contents>true</Contents>
+         </StringRefAddr>
+         <StringRefAddr addrType="driver">
+            <Contents>com.mysql.jdbc.Driver</Contents>
+         </StringRefAddr>
+         <StringRefAddr addrType="dataSourceName">
+            <Contents>dbviews</Contents>
+         </StringRefAddr>
+      </RefAddresses>
+   </Reference>
+</References>

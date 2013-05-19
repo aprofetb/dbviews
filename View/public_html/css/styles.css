@@ -1,0 +1,166 @@
+body {
+  font-size: 62.5%;
+  font-family: Trebuchet MS, Arial, Helvetica, Verdana, sans-serif;
+}
+
+table {
+  font-size: 1em;
+}
+
+.ui-draggable, .ui-droppable {
+  background-position: top;
+}
+
+.toolbar {
+  padding: 4px;
+  display: inline-block;
+}
+
+/* support: IE7 */
+*+html .toolbar {
+  display: inline;
+}
+
+.fixed {
+  table-layout: fixed;
+}
+
+.fgred {
+  color: #8e000a !important;
+}
+
+.bgred {
+  background-color: #fedbd6 !important;
+}
+
+.bold {
+  font-weight: bold !important;
+}
+
+.underline {
+  text-decoration: underline !important;
+}
+
+.waitdlg .ui-dialog-titlebar-close {
+  display: none
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.sort-wrapper {
+  position: relative;
+  padding-right: 20px;
+}
+
+.sort-icon {
+  float: right;
+  position: absolute;
+  top: 50%;
+  margin-top: -8px;
+  right: 0;
+}
+
+table {
+  border: #C7D5E7 solid 1px;
+}
+
+table th.sortable {
+  cursor: pointer;
+  padding: 4px;
+}
+
+table td.hover {
+  background-color: #F1F7FF !important;
+}
+
+table tr.even {
+  background-color: #F9F9F9;
+}
+
+table tr.odd {
+  background-color: #FFFFFF;
+}
+
+table tr.even td.sorted {
+  background-color: #F8F7F0;
+}
+
+table tr.odd td.sorted {
+  background-color: #FFFEF7;
+}
+
+div.filter {
+  border: 1px solid #EEEEEE;
+  width: 100%;
+  height: 100%;
+}
+
+div.filter input {
+  border: none;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  font-size: 11px;
+  width: 100%;
+  padding: 3px;
+  margin: 0px;
+}
+
+.modal {
+  display: none;
+  position: absolute;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba( 255, 255, 255, .8 ) url(/dbviews/img/ajax-loader.gif) 50% 50% no-repeat;
+}
+
+.loading {
+  overflow: hidden;   
+}
+
+.loading .modal {
+  display: block;
+}
+
+.ui-button .ui-icon.excel {
+  background-image: url(/dbviews/img/excel.png);
+  width: 16px;
+  height: 16px;
+}
+
+.ui-button.ui-state-hover .ui-icon.excel {
+  background-image: url(/dbviews/img/excel.png);
+  width: 16px;
+  height: 16px;
+}
+
+.graph-container {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 20px 15px 15px 15px;
+  margin: 15px auto 30px auto;
+  border: 1px solid #ddd;
+  background: #fff;
+  background: linear-gradient(#f6f6f6 0, #fff 50px);
+  background: -o-linear-gradient(#f6f6f6 0, #fff 50px);
+  background: -ms-linear-gradient(#f6f6f6 0, #fff 50px);
+  background: -moz-linear-gradient(#f6f6f6 0, #fff 50px);
+  background: -webkit-linear-gradient(#f6f6f6 0, #fff 50px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  -o-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  -ms-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  -moz-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  -webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.graph-pie {
+  position: relative;
+  font-size: 14px;
+  line-height: 1.2em;
+}
