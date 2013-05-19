@@ -20,7 +20,7 @@
     <servlet-name>jersey</servlet-name>
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
-  <!--<security-constraint>
+  <security-constraint>
     <web-resource-collection>
       <web-resource-name>Admins resources</web-resource-name>
       <url-pattern>/admin/*</url-pattern>
@@ -33,7 +33,7 @@
       <role-name>admins</role-name>
     </auth-constraint>
   </security-constraint>
-  <security-constraint>
+  <!--<security-constraint>
     <web-resource-collection>
       <web-resource-name>User resources</web-resource-name>
       <url-pattern>/user/*</url-pattern>
@@ -45,7 +45,7 @@
     <auth-constraint>
       <role-name>valid-users</role-name>
     </auth-constraint>
-  </security-constraint>
+  </security-constraint>-->
   <login-config>
     <auth-method>BASIC</auth-method>
   </login-config>
@@ -54,7 +54,7 @@
   </security-role>
   <security-role>
     <role-name>admins</role-name>
-  </security-role>-->
+  </security-role>
   <ejb-local-ref>
     <ejb-ref-name>ejb/DbViewsEJB</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
