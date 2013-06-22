@@ -2,6 +2,8 @@ package org.dbviews.model;
 
 import java.io.Serializable;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -9,6 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -40,6 +43,8 @@ public class DbvGraph
   private String labelColumn;
   @Column(name = "data_column", nullable = false)
   private String dataColumn;
+  @OneToMany(mappedBy = "dbvGraph")
+  private List<DbvGraphSerie> dbvGraphSerieList;
 
   public DbvGraph()
   {
@@ -152,5 +157,29 @@ public class DbvGraph
   public String getGraphType()
   {
     return graphType;
+  }
+
+  public List<DbvGraphSerie> getDbvGraphSerieList()
+  {
+    return dbvGraphSerieList;
+  }
+
+  public void setDbvGraphSerieList(List<DbvGraphSerie> dbvGraphSerieList)
+  {
+    this.dbvGraphSerieList = dbvGraphSerieList;
+  }
+
+  public DbvGraphSerie addDbvGraphSerie(DbvGraphSerie dbvGraphSerie)
+  {
+    getDbvGraphSerieList().add(dbvGraphSerie);
+    dbvGraphSerie.setDbvGraph(this);
+    return dbvGraphSerie;
+  }
+
+  public DbvGraphSerie removeDbvGraphSerie(DbvGraphSerie dbvGraphSerie)
+  {
+    getDbvGraphSerieList().remove(dbvGraphSerie);
+    dbvGraphSerie.setDbvGraph(null);
+    return dbvGraphSerie;
   }
 }
