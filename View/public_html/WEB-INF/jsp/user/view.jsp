@@ -23,6 +23,7 @@
     <script type="text/javascript" src="/dbviews/js/jquery.flot.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/jquery.flot.pie.js"></script>
     <!--<script type="text/javascript" src="/dbviews/js/jquery.flot.pie.min.js"></script>-->
+    <script type="text/javascript" src="/dbviews/js/jquery.flot.categories.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/api/user/view/${it.viewId}', { "args": "${it.args}", "filter": "${it.filter}", "countRows": "${it.countRows}" }, function(view, textStatus) {
