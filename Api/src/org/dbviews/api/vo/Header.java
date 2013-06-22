@@ -12,10 +12,10 @@ import org.dbviews.model.DbvTableField;
 public class Header
   implements Comparable
 {
-  private String id;
+  private Integer id;
   private String columnName;
   private String dbColumnName;
-  private Type type;
+  private int type;
   private String width;
   private Align align;
   private VAlign vAlign;
@@ -26,10 +26,9 @@ public class Header
 
   public Header(DbvTableField f, Map<String, String> args)
   {
-    this.id = Integer.toString(f.getId());
+    this.id = f.getId();
     this.columnName = StrUtils.str4mat(f.getName(), args);
     this.dbColumnName = StrUtils.str4mat(f.getColumnName(), args);
-    this.type = StringUtils.isNotBlank(f.getType()) ? Type.valueOf(f.getType()) : Type.String;
     this.width = StrUtils.str4mat(f.getWidth(), args);
     this.align = StringUtils.isNotBlank(f.getAlign()) ? Align.valueOf(f.getAlign()) : Align.Left;
     this.vAlign = StringUtils.isNotBlank(f.getValign()) ? VAlign.valueOf(f.getValign()) : VAlign.Top;
@@ -40,19 +39,19 @@ public class Header
     this.exportable = "Y".equals(f.getExportable());
   }
 
-  public Header(String id, String columnName)
+  public Header(Integer id, String columnName, int type)
   {
     this.id = id;
     this.columnName = columnName;
     this.dbColumnName = columnName;
-    this.type = Type.String;
+    this.type = type;
     this.width = "";
     this.align = Align.Left;
     this.vAlign = VAlign.Top;
     this.order = Order.None;
   }
 
-  public Header(String id, String columnName, String dbColumnName, Type type, String width, Align align, VAlign vAlign)
+  public Header(Integer id, String columnName, String dbColumnName, int type, String width, Align align, VAlign vAlign)
   {
     this.id = id;
     this.columnName = columnName;
@@ -64,7 +63,7 @@ public class Header
     this.order = Order.None;
   }
 
-  public Header(String id, String columnName, String dbColumnName, Type type, String width, Align align, VAlign vAlign, Order order, boolean visible, boolean exportable)
+  public Header(Integer id, String columnName, String dbColumnName, int type, String width, Align align, VAlign vAlign, Order order, boolean visible, boolean exportable)
   {
     this.id = id;
     this.columnName = columnName;
@@ -140,12 +139,12 @@ public class Header
     return vAlign;
   }
 
-  public void setType(Type type)
+  public void setType(int type)
   {
     this.type = type;
   }
 
-  public Type getType()
+  public int getType()
   {
     return type;
   }
@@ -173,18 +172,6 @@ public class Header
   public boolean isOrdered()
   {
     return this.order != Order.Locked && this.order != Order.None;
-  }
-
-  @XmlTransient
-  public Header getRawDefinition()
-  {
-    return new Header(id, columnName, dbColumnName, type, width, align, vAlign, order, visible, exportable);
-  }
-
-  @XmlTransient
-  public Header getDefinition(Map<String, String> args)
-  {
-    return new Header(id, StrUtils.str4mat(columnName, args), StrUtils.str4mat(dbColumnName, args), type, StrUtils.str4mat(width, args), align, vAlign, order, visible, exportable);
   }
 
   public void setVisible(boolean visible)
@@ -219,12 +206,12 @@ public class Header
     return dbColumnName.hashCode();
   }
 
-  public void setId(String id)
+  public void setId(Integer id)
   {
     this.id = id;
   }
 
-  public String getId()
+  public Integer getId()
   {
     return id;
   }

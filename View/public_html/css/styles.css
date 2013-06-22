@@ -159,7 +159,7 @@ div.filter input {
   -webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
-.graph-pie {
+.graph {
   position: relative;
   font-size: 14px;
   line-height: 1.2em;

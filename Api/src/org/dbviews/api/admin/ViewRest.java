@@ -29,11 +29,11 @@ public class ViewRest
   }
 
   @GET
-  @Path("/{id}")
+  @Path("/{viewId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getById(@PathParam("id") Integer id)
+  public Response getById(@PathParam("viewId") Integer viewId)
   {
-    DbvView view = dbViewsEJB.getDbvViewFindById(id);
+    DbvView view = dbViewsEJB.getDbvViewFindById(viewId);
     BeanWrapper model = new BeanWrapper(view);
     return model == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(model).build();
   }

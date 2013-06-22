@@ -27,6 +27,8 @@ import org.apache.commons.lang.StringUtils;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
+import org.codehaus.jackson.map.type.TypeFactory;
+
 import org.dbviews.model.DbvConnection;
 import org.dbviews.model.DbvTable;
 import org.dbviews.model.DbvView;
@@ -37,7 +39,6 @@ import org.dbviews.api.database.ResultSetWrapper;
 import org.dbviews.api.vo.Graph;
 import org.dbviews.api.vo.Tab;
 import org.dbviews.api.vo.Table;
-import org.dbviews.commons.utils.ParamsMap;
 import org.dbviews.model.DbvGraph;
 
 @Path("user/view")
@@ -53,9 +54,9 @@ public class ViewRest
     super();
   }
 
-  @GET
+  /* @GET
   @Path("/old/{id}")
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON) */
   public Response getById(@PathParam("id") Integer id)
   {
     DbvView view = dbViewsEJB.getDbvViewFindById(id);
@@ -94,19 +95,19 @@ public class ViewRest
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
-    Map<String, String> filterMap = null;
-    Map<String, Map<String, String>> optionsMap = null;
-    Map<String, String> sortbyMap = null;
+    Map<Integer, String> filterMap = null;
+    Map<Integer, Map<String, String>> optionsMap = null;
+    Map<Integer, String> sortbyMap = null;
     try
     {
       if (StringUtils.isNotBlank(args))
-        argsMap = om.readValue(args, ParamsMap.class);
+        argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
       if (StringUtils.isNotBlank(filter))
-        filterMap = om.readValue(filter, ParamsMap.class);
+        filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
       if (StringUtils.isNotBlank(options))
-        optionsMap = om.readValue(options, Map.class);
+        optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
       if (StringUtils.isNotBlank(sortby))
-        sortbyMap = om.readValue(sortby, ParamsMap.class);
+        sortbyMap = (Map<Integer, String>)om.readValue(sortby, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
     }
     catch (Exception e)
     {
@@ -150,19 +151,19 @@ public class ViewRest
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
-    Map<String, String> filterMap = null;
-    Map<String, Map<String, String>> optionsMap = null;
-    Map<String, String> sortbyMap = null;
+    Map<Integer, String> filterMap = null;
+    Map<Integer, Map<String, String>> optionsMap = null;
+    Map<Integer, String> sortbyMap = null;
     try
     {
       if (StringUtils.isNotBlank(args))
-        argsMap = om.readValue(args, ParamsMap.class);
+        argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
       if (StringUtils.isNotBlank(filter))
-        filterMap = om.readValue(filter, ParamsMap.class);
+        filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
       if (StringUtils.isNotBlank(options))
-        optionsMap = om.readValue(options, Map.class);
+        optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
       if (StringUtils.isNotBlank(sortby))
-        sortbyMap = om.readValue(sortby, ParamsMap.class);
+        sortbyMap = (Map<Integer, String>)om.readValue(sortby, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
     }
     catch (Exception e)
     {

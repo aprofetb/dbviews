@@ -137,6 +137,31 @@ function buildTable(tab) {
       });
       return false;
     });
+    if (th.type == 93) {
+      $input.datepicker({ dateFormat: 'dd/mm/yy' }).change(function() {
+        $('#sect-' + tab.type + '-' + tab.id).addClass('loading');
+        tab = $(this).data('tab');
+        th = $(this).data('th');
+        $(this).data('$tr').find('input').each(function() {
+          tab.filter[$(this).attr('colId')] = $(this).val();
+        });
+        $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": tab.offsetRow, "sortby": JSON.stringify(tab.sortby), focuson: th.id }, function(newTab) {
+          $('#sect-' + tab.type + '-' + tab.id).empty()
+            .append(buildInfoTag(newTab))
+            .append(buildTable(newTab))
+            .append(buildInfoTag(newTab))
+            .append(buildToolbar(newTab))
+            .append(buildModal())
+            .removeClass('loading');
+          var sft = $('#filter-' + newTab.type + '-' + newTab.id + '-' + newTab.focuson).get(0);
+          sft.focus();
+          sft.select();
+        }).error(function() {
+          alert(msg['alert_error']);
+        });
+        return false;
+      });
+    }
     $filter.append($('<td/>').append($('<div/>').addClass('filter').append($input)));
   }
   $table.append($tr);
@@ -322,11 +347,12 @@ function buildModal() {
 }
 
 function buildGraph(tab) {
-  var $graph = $('<div/>').addClass('graph-pie').css({
-    width: 300,
-    height: 300
-  });
+  var $graph = $('<div/>').addClass('graph');
   if (tab.graphType == 'pie') {
+    $graph.css({
+      width: 400,
+      height: 400
+    });
     $.plot($graph, tab.data, {
       series: {
         pie: {
@@ -358,20 +384,88 @@ function buildGraph(tab) {
         clickable: true
       }
     });
-    $graph.unbind().bind('plothover', function(event, pos, obj) {
-      if (!obj)
+    $graph.unbind().bind('plothover', function(event, pos, item) {
+      if (!item)
         return;
-      var percent = parseFloat(obj.series.percent).toFixed(2);
-      $('#hover').html("<span style='font-weight:bold; color:" + obj.series.color + "'>" + obj.series.label + " (" + percent + "%)<\/span>");
-    }).bind('plotclick', function(event, pos, obj) {
-      if (!obj)
+      var percent = parseFloat(item.series.percent).toFixed(2);
+      $('#hover').html("<span style='font-weight:bold; color:" + item.series.color + "'>" + item.series.label + " (" + percent + "%)<\/span>");
+    }).bind('plotclick', function(event, pos, item) {
+      if (!item)
         return;
-      percent = parseFloat(obj.series.percent).toFixed(2);
-      info('' + obj.series.label + ': ' + percent + '%');
+      percent = parseFloat(item.series.percent).toFixed(2);
+      info(item.series.label + ': ' + percent + '%');
+    });
+  }
+  else if (tab.graphType == 'bars') {
+    $graph.css({
+      width: 400,
+      height: 400
+    });
+    $.plot($graph, [tab.data], {
+      series: {
+        bars: {
+          show: true,
+          barWidth: 0.6,
+          lineWidth: 1,
+          align: "center",
+          fillColor: { colors: [ { opacity: 0.8 }, { opacity: 0.1 } ] }
+        },
+        points: {
+          show: false
+        },
+        lines: {
+          show: false
+        }
+      },
+      grid: {
+        hoverable: true,
+        clickable: true
+      },
+      xaxis: {
+        tickLength: 0
+      },
+      yaxis: {
+        position: "left"
+      }
+    });
+    $graph.unbind().bind("plothover", function (event, pos, item) {
+      if (item) {
+        if (previousPoint != item.dataIndex) {
+          previousPoint = item.dataIndex;
+          $("#tooltip").remove();
+          var datapoints = '';
+          //var label = item.series.label;
+          var label = item.datapoint[0];
+          for (var i = 1; i < item.datapoint.length - 1; i++)
+            datapoints += (datapoints == '' ? '' : ', ') + item.datapoint[i];
+          $("<div id='tooltip'>" + label + ": " + datapoints + "<\/div>").css({
+            position: "absolute",
+            display: "none",
+            top: item.pageY + 5,
+            left: item.pageX + 5,
+            border: "1px solid #fdd",
+            padding: "2px",
+            "background-color": "#fee",
+            opacity: 0.80
+          }).appendTo("body").fadeIn(200);
+        }
+      } else {
+        $("#tooltip").remove();
+        previousPoint = null;            
+      }
+    }).bind('plotclick', function(event, pos, item) {
+      if (!item)
+        return;
+      var datapoints = '';
+      //var label = item.series.label;
+      var label = item.datapoint[0];
+      for (var i = 1; i < item.datapoint.length - 1; i++)
+        datapoints += (datapoints == '' ? '' : ', ') + item.datapoint[i];
+      info(label + ': ' + datapoints);
     });
   }
 
-  var $filterTab = $('<table/>').css('border', 'none'); //.append($('<caption/>').html(msg['filter']));
+  var $filterTab = $('<table/>').css('border', 'none');
   for (var v in tab.headers) {
     th = tab.headers[v];
     var $input = $('<input/>').val(tab.filter[th.id]).attr({

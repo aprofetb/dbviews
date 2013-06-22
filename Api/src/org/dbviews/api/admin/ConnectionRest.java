@@ -1,5 +1,7 @@
 package org.dbviews.api.admin;
 
+import javax.annotation.security.RolesAllowed;
+
 import javax.naming.NamingException;
 
 import javax.ws.rs.Consumes;
@@ -18,6 +20,7 @@ import org.dbviews.api.EJBClient;
 import org.dbviews.api.bean.BeanWrapper;
 
 @Path("admin/connection")
+@RolesAllowed("admins")
 public class ConnectionRest
   extends EJBClient
 {
@@ -30,13 +33,8 @@ public class ConnectionRest
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getById(@Context
-    SecurityContext sc, @PathParam("id")
-    Integer id)
+  public Response getById(@PathParam("id") Integer id)
   {
-    if (!sc.isUserInRole("admins"))
-      return Response.status(Response.Status.UNAUTHORIZED).build();
-
     DbvConnection con = dbViewsEJB.getDbvConnectionFindById(id);
     BeanWrapper model = new BeanWrapper(con);
     return model == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(model).build();
@@ -45,12 +43,8 @@ public class ConnectionRest
   @PUT
   @Path("/new")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response put(@Context
-    SecurityContext sc, DbvConnection conn)
+  public Response put(DbvConnection conn)
   {
-    if (!sc.isUserInRole("admins"))
-      return Response.status(Response.Status.UNAUTHORIZED).build();
-
     DbvConnection model = dbViewsEJB.persistDbvConnection(conn);
     return Response.status(Response.Status.CREATED).entity(model).build();
   }

@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+
+import java.sql.Timestamp;
+
+import java.sql.Types;
 
 import java.text.SimpleDateFormat;
 
@@ -27,6 +30,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import org.dbviews.api.database.Connector;
+import org.dbviews.api.database.Discoverer;
 import org.dbviews.model.DbvConnection;
 
 public abstract class Tab
@@ -34,6 +38,8 @@ public abstract class Tab
 {
   private final static Logger logger = Logger.getLogger(Tab.class.getName());
   private final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+  private final static String FUNC_TOCHAR_MYSQL = "date_format(%s, '%%d/%%m/%%Y')";
+  private final static String FUNC_TOCHAR_ORACLE = "to_char(%s, 'dd/mm/yyyy')";
 
   protected int id;
   protected String label;
@@ -41,10 +47,10 @@ public abstract class Tab
   protected String query;
   protected List<Header> headers;
   protected Map<String, String> args;
-  protected Map<String, String> filter;
-  protected Map<String, Map<String, String>> options;
-  protected Map<String, String> sortby;
-  protected List<Map<String, String>> rows;
+  protected Map<Integer, String> filter;
+  protected Map<Integer, Map<String, String>> options;
+  protected Map<Integer, String> sortby;
+  protected List<Map<Integer, Object>> rows;
   protected String focuson;
   protected int offsetRow;
   protected int countRows;
@@ -52,7 +58,7 @@ public abstract class Tab
   protected int index;
   protected long queryDelay;
   protected long initTime;
-  protected Map<String, String> columnMap;
+  protected Map<Integer, Map<String, Object>> columnMap;
 
   public void setHeaders(List<Header> headers)
   {
@@ -76,12 +82,12 @@ public abstract class Tab
     return vHeaders;
   }
 
-  public void setRows(List<Map<String, String>> rows)
+  public void setRows(List<Map<Integer, Object>> rows)
   {
     this.rows = rows;
   }
 
-  public List<Map<String, String>> getRows()
+  public List<Map<Integer, Object>> getRows()
   {
     return rows;
   }
@@ -157,22 +163,22 @@ public abstract class Tab
     return oHeaders;
   }
 
-  public void setFilter(Map<String, String> filter)
+  public void setFilter(Map<Integer, String> filter)
   {
     this.filter = filter;
   }
 
-  public Map<String, String> getFilter()
+  public Map<Integer, String> getFilter()
   {
     return filter;
   }
 
-  public void setSortby(Map<String, String> sortby)
+  public void setSortby(Map<Integer, String> sortby)
   {
     this.sortby = sortby;
   }
 
-  public Map<String, String> getSortby()
+  public Map<Integer, String> getSortby()
   {
     return sortby;
   }
@@ -270,12 +276,12 @@ public abstract class Tab
     return (int)Math.signum(index - table.index);
   }
 
-  public void setOptions(Map<String, Map<String, String>> options)
+  public void setOptions(Map<Integer, Map<String, String>> options)
   {
     this.options = options;
   }
 
-  public Map<String, Map<String, String>> getOptions()
+  public Map<Integer, Map<String, String>> getOptions()
   {
     return options;
   }
@@ -285,13 +291,13 @@ public abstract class Tab
     this.args = args;
   }
 
-  public void setColumnMap(Map<String, String> columnMap)
+  public void setColumnMap(Map<Integer, Map<String, Object>> columnMap)
   {
     this.columnMap = columnMap;
   }
 
   @XmlTransient
-  public Map<String, String> getColumnMap()
+  public Map<Integer, Map<String, Object>> getColumnMap()
   {
     return columnMap;
   }
@@ -323,13 +329,11 @@ public abstract class Tab
 
   public static Tab getInstance(Tab tab,
                                 DbvConnection dbvConn,
-                                Map<String, String> args,
-                                Map<String, String> filter,
-                                Map<String, Map<String, String>> options,
-                                Map<String, String> sortby,
+                                Map<Integer, String> filter,
+                                Map<Integer, Map<String, String>> options,
+                                Map<Integer, String> sortby,
                                 Integer offsetRow,
-                                Integer countRows,
-                                String focuson)
+                                Integer countRows)
   {
     tab.startTiming();
     boolean mysql = dbvConn.getUrl().startsWith("jdbc:mysql:");
@@ -342,21 +346,15 @@ public abstract class Tab
       con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
       if (tab.getHeaderCount() == 0)
       {
-        ps = con.prepareStatement(String.format("select * from (%s) sq1 where 1=2", tab.getQuery()));
-        rs = ps.executeQuery();
-        Map<String, String> columnMap = new HashMap<String, String>();
-        ResultSetMetaData rsMD = rs.getMetaData();
-        for (int i = 1; i <= rsMD.getColumnCount(); i++)
+        Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
+        Map<Integer, Map<String, Object>> columnMap = disco.getColumns(con, String.format("select * from (%s) sq1 where 1=2", tab.getQuery()), false);
+        for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet())
         {
-          String id = Integer.toString(i);
-          String columnName = rsMD.getColumnName(i);
-          if (columnName.startsWith("h_i_d_d_e_n__"))
-            continue;
-          columnMap.put(id, columnName);
-          tab.addHeader(new Header(id, columnName));
+          Integer id = e.getKey();
+          Map<String, Object> attrs = e.getValue();
+          tab.addHeader(new Header(id, (String)attrs.get("ColumnName"), (Integer)attrs.get("ColumnType")));
         }
         tab.setColumnMap(columnMap);
-        Connector.relres(rs, ps);
       }
 
       Pattern pattern = Pattern.compile("h_i_d_d_e_n__", Pattern.CASE_INSENSITIVE);
@@ -367,9 +365,9 @@ public abstract class Tab
       if (filter != null)
       {
         int i = 0;
-        for (Map.Entry<String, String> e : filter.entrySet())
+        for (Map.Entry<Integer, String> e : filter.entrySet())
         {
-          String id = e.getKey();
+          Integer id = e.getKey();
           String value = e.getValue();
           for (Header header : tab.getHeaders())
           {
@@ -389,10 +387,11 @@ public abstract class Tab
                   }
                 }
                 queryStr += i++ == 0 ? " where " : " and ";
-                String columnName = tab.getColumnMap().get(id);
+                Map<String, Object> attrs = tab.getColumnMap().get(id);
+                String columnName = (String)attrs.get("ColumnName");
                 if (columnName == null)
                   continue;
-                String colExp = header.getType() == Type.Date ? String.format("to_char(%s, 'yyyy/mm/dd')", columnName) : columnName;
+                String colExp = header.getType() == Types.DATE || header.getType() == Types.TIMESTAMP ? String.format(mysql ? FUNC_TOCHAR_MYSQL : FUNC_TOCHAR_ORACLE, columnName) : columnName;
                 if (regex)
                 {
                   if (mysql)
@@ -430,15 +429,15 @@ public abstract class Tab
       tab.setTotalRows(totalRows);
 
       // build order by clause
-      OrderByVO tOrderBy = tab.getOrderBy();
       StringBuilder sortbySb = new StringBuilder();
       if (sortby != null && sortby.size() > 0)
       {
         sortbySb.append("order by ");
-        for (Map.Entry<String, String> e : sortby.entrySet())
+        for (Map.Entry<Integer, String> e : sortby.entrySet())
         {
-          String id = e.getKey();
-          String columnName = tab.getColumnMap().get(id);
+          Integer id = e.getKey();
+          Map<String, Object> attrs = tab.getColumnMap().get(id);
+          String columnName = (String)attrs.get("ColumnName");
           Order dir = Order.valueOf(e.getValue());
           sortbySb.append(mysql ? String.format("%s %s", columnName, dir) : String.format("\"%s\" %s", columnName, dir));
         }
@@ -458,34 +457,26 @@ public abstract class Tab
         qParams.add(offsetRow + countRows);
       }
 
-      List<Map<String, String>> rows = new LinkedList<Map<String, String>>();
+      List<Map<Integer, Object>> rows = new LinkedList<Map<Integer, Object>>();
       ps = con.prepareStatement(queryStr);
       for (int i = 0; i < qParams.size(); i++)
         ps.setObject(i + 1, qParams.get(i));
       rs = ps.executeQuery();
       while (rs.next())
       {
-        Map<String, String> cells = new HashMap<String, String>();
+        Map<Integer, Object> cells = new HashMap<Integer, Object>();
         for (int h = 0; h < tab.getHeaderCount(); h++)
         {
           Header header = tab.getHeaders().get(h);
-          String value = "";
-          if (header.getType() == Type.Date)
-          {
-            Date date = rs.getDate(header.getDbColumnName());
-            if (date != null)
-              value = sdf.format(date);
-          }
-          else
-          {
-            value = StringUtils.defaultString(rs.getString(header.getDbColumnName()));
-          }
+          Object value = rs.getObject(header.getDbColumnName());
+          if (value instanceof Date || value instanceof Timestamp)
+            value = sdf.format(value);
           cells.put(header.getId(), value);
         }
         rows.add(cells);
       }
-      tab.setFilter(filter != null ? filter : new HashMap<String, String>());
-      tab.setOptions(options != null ? options : new HashMap<String, Map<String, String>>());
+      tab.setFilter(filter != null ? filter : new HashMap<Integer, String>());
+      tab.setOptions(options != null ? options : new HashMap<Integer, Map<String, String>>());
       tab.setRows(rows);
     }
     catch (Exception e)
@@ -542,16 +533,17 @@ public abstract class Tab
       }
       html.append("</tr>");
   
-      for (Map<String, String> r : table.getRows())
+      for (Map<Integer, Object> r : table.getRows())
       {
         html.append("<tr>");
         for (Header header : table.getHeaders())
         {
           if (!header.isExportable())
             continue;
-          String value = r.get(header.getId());
+          Object value = r.get(header.getId());
           html.append(String.format("<td align='%s' valign='%s' style='color:black;background-color:#FFFFCC'>", header.getAlign(), header.getVAlign()));
-          html.append(header.getType() == Type.Html ? value : StringEscapeUtils.escapeHtml(value));
+          //html.append(header.getType() == Type.Html ? value : StringEscapeUtils.escapeHtml(value.toString()));
+          html.append(StringEscapeUtils.escapeHtml(value.toString()));
           html.append("</td>");
         }
         html.append("</tr>");

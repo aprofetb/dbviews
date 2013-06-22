@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -139,20 +140,35 @@ public class Discoverer
     return rsw;
   }
 
-  public Map<String, String> getColumns(String sqlQuery)
+  public Map<Integer, Map<String, Object>> getColumns(Connection con, String sqlQuery, boolean showHidden)
   {
-    Map<String, String> columnMap = new TreeMap<String, String>();
-    Connection con = null;
+    Map<Integer, Map<String, Object>> columnMap = new TreeMap<Integer, Map<String, Object>>();
     PreparedStatement ps = null;
     ResultSet rs = null;
     try
     {
-      con = Connector.getConnection(url, username, password);
       ps = con.prepareStatement(String.format("select * from (%s) sq1", sqlQuery));
       rs = ps.executeQuery();
       ResultSetMetaData rsMD = rs.getMetaData();
       for (int i = 1; i <= rsMD.getColumnCount(); i++)
-        columnMap.put(Integer.toString(i), rsMD.getColumnName(i));
+      {
+        String columnName = rsMD.getColumnName(i);
+        if (!showHidden && columnName.startsWith("h_i_d_d_e_n__"))
+          continue;
+        Map<String, Object> attrs = new HashMap<String, Object>();
+        attrs.put("CatalogName", rsMD.getCatalogName(i));
+        attrs.put("ColumnClassName", rsMD.getColumnClassName(i));
+        attrs.put("ColumnDisplaySize", rsMD.getColumnDisplaySize(i));
+        attrs.put("ColumnLabel", rsMD.getColumnLabel(i));
+        attrs.put("ColumnName", columnName);
+        attrs.put("ColumnType", rsMD.getColumnType(i));
+        attrs.put("ColumnTypeName", rsMD.getColumnTypeName(i));
+        attrs.put("Precision", rsMD.getPrecision(i));
+        attrs.put("Scale", rsMD.getScale(i));
+        attrs.put("SchemaName", rsMD.getSchemaName(i));
+        attrs.put("TableName", rsMD.getTableName(i));
+        columnMap.put(i, attrs);
+      }
     }
     catch (SQLException e)
     {
@@ -160,8 +176,27 @@ public class Discoverer
     }
     finally
     {
-      Connector.relres(rs, ps, con);
+      Connector.relres(rs, ps);
     }
     return columnMap;
+  }
+
+  public Map<Integer, Map<String, Object>> getColumns(String sqlQuery, boolean showHidden)
+  {
+    Connection con = null;
+    try
+    {
+      con = Connector.getConnection(url, username, password);
+      return getColumns(con, sqlQuery, showHidden);
+    }
+    catch (SQLException e)
+    {
+      logger.severe(e.getMessage());
+    }
+    finally
+    {
+      Connector.relres(con);
+    }
+    return new HashMap<Integer, Map<String, Object>>();
   }
 }

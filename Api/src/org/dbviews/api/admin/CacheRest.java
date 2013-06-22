@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 import org.dbviews.api.EJBClient;
 
 @Path("admin/cache")
-@RolesAllowed("valid-users")
+@RolesAllowed("admins")
 public class CacheRest
   extends EJBClient
 {
