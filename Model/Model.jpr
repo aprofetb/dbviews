@@ -65,6 +65,19 @@
    <hash n="ejbModuleContainer">
       <value n="cmpProvider" v="EJB 3.0"/>
       <value n="dbConnection" v="dbviews"/>
+      <hash n="ejbDiagramToPuMap">
+         <hash n="model">
+            <hash n="org">
+               <hash n="dbviews">
+                  <hash n="model">
+                     <value n="DB Diagram.ejb_diagram" v="Model"/>
+                     <value n="DBViews Diagram.ejb_diagram" v="Model"/>
+                     <value n="EJB Diagram.ejb_diagram" v="Model"/>
+                  </hash>
+               </hash>
+            </hash>
+         </hash>
+      </hash>
       <value n="ejbMetaDataPrefs" v="PREFASANNON"/>
       <value n="ejbVersion" v="3.0"/>
       <url n="weblogicEjbJarNodeURL" path="src/META-INF/weblogic-ejb-jar.xml"/>
