@@ -19,13 +19,15 @@ import javax.persistence.Table;
 public class DbvGraphSerie
   implements Serializable
 {
-  @Column(name="data", nullable = false)
-  private String data;
   @Id
   @Column(name="id", nullable = false)
   private Integer id;
   @Column(name="label")
   private String label;
+  @Column(name="xaxis", nullable = false)
+  private String xaxis;
+  @Column(name="yaxis", nullable = false)
+  private String yaxis;
   @ManyToOne
   @JoinColumn(name = "graph_id")
   private DbvGraph dbvGraph;
@@ -34,22 +36,23 @@ public class DbvGraphSerie
   {
   }
 
-  public DbvGraphSerie(String data, Integer id, String label, DbvGraph dbvGraph)
+  public DbvGraphSerie(Integer id, String label, String xaxis, String yaxis, DbvGraph dbvGraph)
   {
-    this.data = data;
     this.id = id;
     this.label = label;
+    this.xaxis = xaxis;
+    this.yaxis = yaxis;
     this.dbvGraph = dbvGraph;
   }
 
-  public String getData()
+  public String getXaxis()
   {
-    return data;
+    return xaxis;
   }
 
-  public void setData(String data)
+  public void setXaxis(String data)
   {
-    this.data = data;
+    this.xaxis = data;
   }
 
   public Integer getId()
@@ -80,5 +83,15 @@ public class DbvGraphSerie
   public DbvGraph getDbvGraph()
   {
     return dbvGraph;
+  }
+
+  public void setYaxis(String yaxis)
+  {
+    this.yaxis = yaxis;
+  }
+
+  public String getYaxis()
+  {
+    return yaxis;
   }
 }

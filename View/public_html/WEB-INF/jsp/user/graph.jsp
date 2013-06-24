@@ -28,8 +28,8 @@
     <script type="text/javascript" src="/dbviews/js/jquery.flot.time.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
-        $.get('/api/user/view/${it.viewId}', { "args": "${it.args}", "filter": "${it.filter}", "countRows": "${it.countRows}" }, function(view, textStatus) {
-          $('#content').html(buildTabs(view));
+        $.get('/api/user/graph/${it.graphId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(graph, textStatus) {
+          $('#content').html(buildSection(graph));
         }).error(function() {
           alert(msg['alert_error']);
         });

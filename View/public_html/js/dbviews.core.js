@@ -347,13 +347,46 @@ function buildModal() {
 }
 
 function buildGraph(tab) {
+  var data = [];
+  var dataMap = {};
+  for (var r in tab.rows) {
+    var row = tab.rows[r];
+    var point = tab.yaxisColumn == null ? row[tab.xaxisColumn] : [row[tab.xaxisColumn], row[tab.yaxisColumn]];
+    if (tab.serieColumn == null) {
+      data.push(point);
+    }
+    else {
+      var k = row[tab.serieColumn];
+      if (!(k in dataMap))
+        dataMap[k] = [];
+      dataMap[k].push(point);
+    }
+  }
+  if (tab.serieColumn != null) {
+    for (var k in dataMap) {
+      var points = dataMap[k];
+      if (tab.graphType == 'pie') {
+        var total = 0;
+        $.each(points, function() {
+          total += this;
+        });
+        points = total;
+      }
+      var serie = {
+        "label": k,
+        "data": points
+      };
+      data.push(serie);
+    }
+  }
+  alert(tab.label + ': ' + JSON.stringify([data]));
   var $graph = $('<div/>').addClass('graph');
   if (tab.graphType == 'pie') {
     $graph.css({
       width: 400,
       height: 400
     });
-    $.plot($graph, tab.data, {
+    $.plot($graph, data, {
       series: {
         pie: {
           show: true,
@@ -396,25 +429,40 @@ function buildGraph(tab) {
       info(item.series.label + ': ' + percent + '%');
     });
   }
-  else if (tab.graphType == 'bars') {
+  else if ($.inArray(tab.graphType, ['bars', 'points', 'lines']) != -1) {
     $graph.css({
-      width: 400,
+      width: 500,
       height: 400
     });
-    $.plot($graph, [tab.data], {
+    var xmode = null, ymode = null;
+    for (var r in tab.rows) {
+      row = tab.rows[r];
+      var xval = row[tab.xaxisColumn];
+      var yval = row[tab.yaxisColumn];
+      var xtype = $.type(xval);
+      var ytype = $.type(yval);
+      if (xval !== null)
+        xmode = xtype === 'string' ? 'categories' : xtype === 'date' ? 'time' : null;
+      if (yval !== null)
+        ymode = ytype === 'string' ? 'categories' : ytype === 'date' ? 'time' : null;
+      if (xmode !== null && ymode !== null)
+        break;
+    }
+    $.plot($graph, [data], {
       series: {
         bars: {
-          show: true,
+          show: tab.graphType == 'bars',
           barWidth: 0.6,
           lineWidth: 1,
           align: "center",
           fillColor: { colors: [ { opacity: 0.8 }, { opacity: 0.1 } ] }
         },
+        canvas: true,
         points: {
-          show: false
+          show: tab.graphType == 'points'
         },
         lines: {
-          show: false
+          show: tab.graphType == 'lines'
         }
       },
       grid: {
@@ -422,10 +470,12 @@ function buildGraph(tab) {
         clickable: true
       },
       xaxis: {
-        tickLength: 0
+        tickLength: 0,
+        mode: xmode
       },
       yaxis: {
-        position: "left"
+        position: "left",
+        mode: ymode
       }
     });
     $graph.unbind().bind("plothover", function (event, pos, item) {

@@ -1,7 +1,5 @@
 package org.dbviews.api.vo;
 
-import java.sql.Types;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +30,7 @@ public class Table
         attrs.put("ColumnDisplaySize", 0);
         attrs.put("ColumnLabel", "");
         attrs.put("ColumnName", field.getColumnName());
-        attrs.put("ColumnType", Types.VARCHAR);
+        attrs.put("ColumnType", field.getType());
         attrs.put("ColumnTypeName", "");
         attrs.put("Precision", 0);
         attrs.put("Scale", 0);

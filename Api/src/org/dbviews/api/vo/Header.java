@@ -29,6 +29,7 @@ public class Header
     this.id = f.getId();
     this.columnName = StrUtils.str4mat(f.getName(), args);
     this.dbColumnName = StrUtils.str4mat(f.getColumnName(), args);
+    this.type = f.getType();
     this.width = StrUtils.str4mat(f.getWidth(), args);
     this.align = StringUtils.isNotBlank(f.getAlign()) ? Align.valueOf(f.getAlign()) : Align.Left;
     this.vAlign = StringUtils.isNotBlank(f.getValign()) ? VAlign.valueOf(f.getValign()) : VAlign.Top;

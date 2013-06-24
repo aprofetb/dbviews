@@ -39,10 +39,12 @@ public class DbvGraph
   private DbvView dbvView;
   @Column(name = "graph_type", nullable = false)
   private String graphType;
-  @Column(name = "label_column", nullable = false)
-  private String labelColumn;
-  @Column(name = "data_column", nullable = false)
-  private String dataColumn;
+  @Column(name = "serie_column", nullable = false)
+  private String serieColumn;
+  @Column(name = "xaxis_column", nullable = false)
+  private String xaxisColumn;
+  @Column(name = "yaxis_column", nullable = false)
+  private String yaxisColumn;
   @OneToMany(mappedBy = "dbvGraph")
   private List<DbvGraphSerie> dbvGraphSerieList;
 
@@ -129,24 +131,24 @@ public class DbvGraph
     return tabIndex > t.tabIndex ? 1 : tabIndex < t.tabIndex ? -1 : 0;
   }
 
-  public void setLabelColumn(String labelColumn)
+  public void setSerieColumn(String labelColumn)
   {
-    this.labelColumn = labelColumn;
+    this.serieColumn = labelColumn;
   }
 
-  public String getLabelColumn()
+  public String getSerieColumn()
   {
-    return labelColumn;
+    return serieColumn;
   }
 
-  public void setDataColumn(String dataColumn)
+  public void setXaxisColumn(String dataColumn)
   {
-    this.dataColumn = dataColumn;
+    this.xaxisColumn = dataColumn;
   }
 
-  public String getDataColumn()
+  public String getXaxisColumn()
   {
-    return dataColumn;
+    return xaxisColumn;
   }
 
   public void setGraphType(String type)
@@ -181,5 +183,15 @@ public class DbvGraph
     getDbvGraphSerieList().remove(dbvGraphSerie);
     dbvGraphSerie.setDbvGraph(null);
     return dbvGraphSerie;
+  }
+
+  public void setYaxisColumn(String yaxisColumn)
+  {
+    this.yaxisColumn = yaxisColumn;
+  }
+
+  public String getYaxisColumn()
+  {
+    return yaxisColumn;
   }
 }

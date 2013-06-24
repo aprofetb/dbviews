@@ -28,7 +28,7 @@ public class DbvTableField
   @Column(name = "field_order")
   private String fieldOrder;
   @Column(name = "type", nullable = false)
-  private String type;
+  private int type;
   @Id
   @Column(name = "id", nullable = false)
   private int id;
@@ -50,13 +50,13 @@ public class DbvTableField
   {
   }
 
-  public DbvTableField(String align, String dbField, String exportable, String fieldOrder, String fieldType, String name, DbvTable dbvTable, String valign, String visible, String width)
+  public DbvTableField(String align, String dbField, String exportable, String fieldOrder, int type, String name, DbvTable dbvTable, String valign, String visible, String width)
   {
     this.align = align;
     this.columnName = dbField;
     this.exportable = exportable;
     this.fieldOrder = fieldOrder;
-    this.type = fieldType;
+    this.type = type;
     this.name = name;
     this.dbvTable = dbvTable;
     this.valign = valign;
@@ -107,14 +107,14 @@ public class DbvTableField
   }
 
   @XmlElement
-  public String getType()
+  public int getType()
   {
     return type;
   }
 
-  public void setType(String field_type)
+  public void setType(int type)
   {
-    this.type = field_type;
+    this.type = type;
   }
 
   public int getId()
