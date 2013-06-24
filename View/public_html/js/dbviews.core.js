@@ -347,6 +347,10 @@ function buildModal() {
 }
 
 function buildGraph(tab) {
+  var tPie = tab.graphType.indexOf('pie') != -1;
+  var tBars = tab.graphType.indexOf('bars') != -1;
+  var tLines = tab.graphType.indexOf('lines') != -1;
+  var tPoints = tab.graphType.indexOf('points') != -1;
   var data = [];
   var dataMap = {};
   for (var r in tab.rows) {
@@ -365,7 +369,7 @@ function buildGraph(tab) {
   if (tab.serieColumn != null) {
     for (var k in dataMap) {
       var points = dataMap[k];
-      if (tab.graphType == 'pie') {
+      if (tPie) {
         var total = 0;
         $.each(points, function() {
           total += this;
@@ -379,14 +383,15 @@ function buildGraph(tab) {
       data.push(serie);
     }
   }
-  alert(tab.label + ': ' + JSON.stringify([data]));
+  //alert(tab.label + ': ' + JSON.stringify([data]));
   var $graph = $('<div/>').addClass('graph');
-  if (tab.graphType == 'pie') {
+  if (tPie) {
     $graph.css({
       width: 400,
       height: 400
     });
     $.plot($graph, data, {
+      canvas: false,
       series: {
         pie: {
           show: true,
@@ -404,7 +409,7 @@ function buildGraph(tab) {
             width: 1
           },
           highlight: {
-            //color: "#fff",		// will add this functionality once parseColor is available
+            //color: "#fff",
             opacity: 0.2
           }
         }
@@ -429,7 +434,7 @@ function buildGraph(tab) {
       info(item.series.label + ': ' + percent + '%');
     });
   }
-  else if ($.inArray(tab.graphType, ['bars', 'points', 'lines']) != -1) {
+  else if (tBars || tPoints || tLines) {
     $graph.css({
       width: 500,
       height: 400
@@ -449,20 +454,20 @@ function buildGraph(tab) {
         break;
     }
     $.plot($graph, [data], {
+      canvas: false,
       series: {
         bars: {
-          show: tab.graphType == 'bars',
+          show: tBars,
           barWidth: 0.6,
           lineWidth: 1,
           align: "center",
           fillColor: { colors: [ { opacity: 0.8 }, { opacity: 0.1 } ] }
         },
-        canvas: true,
         points: {
-          show: tab.graphType == 'points'
+          show: tPoints
         },
         lines: {
-          show: tab.graphType == 'lines'
+          show: tLines
         }
       },
       grid: {
@@ -470,11 +475,11 @@ function buildGraph(tab) {
         clickable: true
       },
       xaxis: {
-        tickLength: 0,
+        tickLength: 10,
         mode: xmode
       },
       yaxis: {
-        position: "left",
+        tickLength: 20,
         mode: ymode
       }
     });
@@ -483,12 +488,8 @@ function buildGraph(tab) {
         if (previousPoint != item.dataIndex) {
           previousPoint = item.dataIndex;
           $("#tooltip").remove();
-          var datapoints = '';
-          //var label = item.series.label;
-          var label = item.datapoint[0];
-          for (var i = 1; i < item.datapoint.length - 1; i++)
-            datapoints += (datapoints == '' ? '' : ', ') + item.datapoint[i];
-          $("<div id='tooltip'>" + label + ": " + datapoints + "<\/div>").css({
+          var label = item.series.label;
+          $("<div id='tooltip'>" + (label ? label + ":<br>" : "") + "x: " + item.datapoint[0] + "<br>y: " + item.datapoint[1] + "<\/div>").css({
             position: "absolute",
             display: "none",
             top: item.pageY + 5,
@@ -506,12 +507,8 @@ function buildGraph(tab) {
     }).bind('plotclick', function(event, pos, item) {
       if (!item)
         return;
-      var datapoints = '';
-      //var label = item.series.label;
-      var label = item.datapoint[0];
-      for (var i = 1; i < item.datapoint.length - 1; i++)
-        datapoints += (datapoints == '' ? '' : ', ') + item.datapoint[i];
-      info(label + ': ' + datapoints);
+      var label = item.series.label;
+      info((label ? label + ":<br>" : "") + "x: " + item.datapoint[0] + "<br>y: " + item.datapoint[1]);
     });
   }
 
