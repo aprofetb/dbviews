@@ -13,6 +13,8 @@ public class Graph
   extends Tab
 {
   private String[] graphType;
+  private int width;
+  private int height;
   private Integer serieColumn;
   private Integer xaxisColumn;
   private Integer yaxisColumn;
@@ -43,6 +45,8 @@ public class Graph
     index = g.getTabIndex();
     query = StrUtils.str4mat(g.getSqlQuery(), args);
     graphType = g.getGraphType().split(",");
+    width = g.getWidth();
+    height = g.getHeight();
     this.args = args != null ? args : new HashMap<String, String>();
     this.filter = filter != null ? filter : new HashMap<Integer, String>();
     this.options = options != null ? options : new HashMap<Integer, Map<String, String>>();
@@ -65,6 +69,26 @@ public class Graph
   public String[] getGraphType()
   {
     return graphType;
+  }
+
+  public void setWidth(int width)
+  {
+    this.width = width;
+  }
+
+  public int getWidth()
+  {
+    return width;
+  }
+
+  public void setHeight(int height)
+  {
+    this.height = height;
+  }
+
+  public int getHeight()
+  {
+    return height;
   }
 
   public void setSerieColumn(Integer serieColumn)

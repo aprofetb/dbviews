@@ -21,15 +21,14 @@
     <script type="text/javascript" src="/dbviews/js/dbviews.util.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.dialogs.js"></script>
     <script type="text/javascript" src="/dbviews/js/jquery.flot.min.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.pie.js"></script>
-    <!--<script type="text/javascript" src="/dbviews/js/jquery.flot.pie.min.js"></script>-->
+    <script type="text/javascript" src="/dbviews/js/jquery.flot.pie.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/jquery.flot.categories.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/jquery.flot.canvas.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/jquery.flot.time.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/api/user/view/${it.viewId}', { "args": "${it.args}", "filter": "${it.filter}", "countRows": "${it.countRows}" }, function(view, textStatus) {
-          $('#content').html(buildTabs(view));
+          buildTabs(view, '#content');
         }).error(function() {
           alert(msg['alert_error']);
         });
@@ -37,6 +36,6 @@
     </script>
   </head>
   <body>
-    <div id="content"><dbv:i18n key="loading_please_wait"/></div>
+    <div id="content"></div>
   </body>
 </html>

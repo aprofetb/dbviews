@@ -2,8 +2,6 @@ package org.dbviews.model;
 
 import java.io.Serializable;
 
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -11,7 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -45,8 +42,10 @@ public class DbvGraph
   private String xaxisColumn;
   @Column(name = "yaxis_column", nullable = false)
   private String yaxisColumn;
-  @OneToMany(mappedBy = "dbvGraph")
-  private List<DbvGraphSerie> dbvGraphSerieList;
+  @Column(name = "width", nullable = false)
+  private int width;
+  @Column(name = "height", nullable = false)
+  private int height;
 
   public DbvGraph()
   {
@@ -161,30 +160,6 @@ public class DbvGraph
     return graphType;
   }
 
-  public List<DbvGraphSerie> getDbvGraphSerieList()
-  {
-    return dbvGraphSerieList;
-  }
-
-  public void setDbvGraphSerieList(List<DbvGraphSerie> dbvGraphSerieList)
-  {
-    this.dbvGraphSerieList = dbvGraphSerieList;
-  }
-
-  public DbvGraphSerie addDbvGraphSerie(DbvGraphSerie dbvGraphSerie)
-  {
-    getDbvGraphSerieList().add(dbvGraphSerie);
-    dbvGraphSerie.setDbvGraph(this);
-    return dbvGraphSerie;
-  }
-
-  public DbvGraphSerie removeDbvGraphSerie(DbvGraphSerie dbvGraphSerie)
-  {
-    getDbvGraphSerieList().remove(dbvGraphSerie);
-    dbvGraphSerie.setDbvGraph(null);
-    return dbvGraphSerie;
-  }
-
   public void setYaxisColumn(String yaxisColumn)
   {
     this.yaxisColumn = yaxisColumn;
@@ -193,5 +168,25 @@ public class DbvGraph
   public String getYaxisColumn()
   {
     return yaxisColumn;
+  }
+
+  public void setWidth(int width)
+  {
+    this.width = width;
+  }
+
+  public int getWidth()
+  {
+    return width;
+  }
+
+  public void setHeight(int height)
+  {
+    this.height = height;
+  }
+
+  public int getHeight()
+  {
+    return height;
   }
 }

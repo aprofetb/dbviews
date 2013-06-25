@@ -10,15 +10,16 @@ $.ajaxSetup({
   cache: false
 });
 
-function buildTabs(view) {
+function buildTabs(view, container) {
   document.title = 'Database Views - ' + view.description;
   var $tabs = $('<div/>').attr('id', 'tabs');
+  $(container).append($tabs);
   var $ul = $('<ul/>');
   $tabs.append($ul);
   for (var i in view.tabs) {
     var tab = view.tabs[i];
     $ul.append($('<li/>').append($('<a/>').attr('href', '#sect-' + tab.type + '-' + tab.id).attr('title', tab.description).css('padding', '.3em 1em').append($('<span/>').addClass(tab.type == 'table' ? 'ui-icon ui-icon-calculator' : 'ui-icon ui-icon-image').css('display', 'inline-block')).append(tab.label)));
-    $tabs.append(buildSection(tab));
+    buildSection(tab, $tabs, true);
   }
   $tabs.tabs({
     collapsible: true
@@ -32,34 +33,39 @@ function buildTabs(view) {
   return $tabs;
 }
 
-function buildSection(tab) {
+function buildSection(tab, container, isTab) {
   var $sect = $('<div/>').attr('id', 'sect-' + tab.type + '-' + tab.id).css('text-align', 'center');
+  $(container).append($sect);
   if (tab.type == 'table') {
-    $sect.append(buildInfoTag(tab));
-    $sect.append(buildTable(tab));
-    $sect.append(buildInfoTag(tab));
-    $sect.append(buildToolbar(tab));
+    buildInfoTag(tab, $sect);
+    buildTable(tab, $sect);
+    buildInfoTag(tab, $sect);
+    buildToolbar(tab, $sect);
   }
   else if (tab.type == 'graph') {
-    $sect.append(buildGraph(tab));
+    buildGraph(tab, $sect, isTab);
   }
   $sect.append(buildModal());
   return $sect;
 }
 
-function buildInfoTag(tab) {
+function buildInfoTag(tab, container) {
   var offsetRow = tab.offsetRow;
   var countRows = tab.countRows;
   var totalRows = tab.totalRows;
   var totalPag = Math.floor(totalRows / countRows) + (totalRows % countRows == 0 ? 0 : 1);
   var currentPag = Math.floor((offsetRow - 1) / countRows) + 1;
-  return $('<div/>').css('margin', '10px').addClass('bold').attr('title', str4mat(msg['query_delay'], { query_delay: tab.queryDelay })).html(str4mat(msg['page_info'], { current_pag: currentPag, total_pag: totalPag, total_rows: totalRows, s: totalRows > 1 ? 's' : '' }));
+  var $infoTag = $('<div/>').css('margin', '10px').addClass('bold').attr('title', str4mat(msg['query_delay'], { query_delay: tab.queryDelay })).html(str4mat(msg['page_info'], { current_pag: currentPag, total_pag: totalPag, total_rows: totalRows, s: totalRows > 1 ? 's' : '' }))
+  $(container).append($infoTag);
+  return $infoTag;
 }
 
-function buildTable(tab) {
+function buildTable(tab, container) {
   var $table = $('<table/>').attr( {
     width: '100%'
   }); //.addClass('fixed');
+  var $tableContainer = $('<div/>').css('overflow', 'auto').append($table);
+  $(container).append($tableContainer);
   var $tr = $('<tr/>');
   $tr.append($('<th/>').addClass('ui-state-default').css('padding', '4px').html('#').attr({
     width: '5%', //(tab.totalRows.toString().length * 7) + 'px',
@@ -90,14 +96,13 @@ function buildTable(tab) {
         $('#sect-' + tab.type + '-' + tab.id).addClass('loading');
         tab = $(this).data('tab');
         sortby = $(this).data('sortby');
-        $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": tab.offsetRow, "sortby": JSON.stringify(sortby) }, function(newTab) {
-          $('#sect-' + tab.type + '-' + tab.id).empty()
-            .append(buildInfoTag(newTab))
-            .append(buildTable(newTab))
-            .append(buildInfoTag(newTab))
-            .append(buildToolbar(newTab))
-            .append(buildModal())
-            .removeClass('loading');
+        $.get('/api/user/table/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), countRows: tab.countRows, offsetRow: tab.offsetRow, sortby: JSON.stringify(sortby) }, function(newTab) {
+          var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+          buildInfoTag(newTab, $sect);
+          buildTable(newTab, $sect);
+          buildInfoTag(newTab, $sect);
+          buildToolbar(newTab, $sect);
+          $sect.append(buildModal()).removeClass('loading');
         }).error(function() {
           alert(msg['alert_error']);
         });
@@ -121,14 +126,13 @@ function buildTable(tab) {
       $(this).data('$tr').find('input').each(function() {
         tab.filter[$(this).attr('colId')] = $(this).val();
       });
-      $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": tab.offsetRow, "sortby": JSON.stringify(tab.sortby), focuson: th.id }, function(newTab) {
-        $('#sect-' + tab.type + '-' + tab.id).empty()
-          .append(buildInfoTag(newTab))
-          .append(buildTable(newTab))
-          .append(buildInfoTag(newTab))
-          .append(buildToolbar(newTab))
-          .append(buildModal())
-          .removeClass('loading');
+      $.get('/api/user/table/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), countRows: tab.countRows, offsetRow: tab.offsetRow, sortby: JSON.stringify(tab.sortby), focuson: th.id }, function(newTab) {
+        var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+        buildInfoTag(newTab, $sect);
+        buildTable(newTab, $sect);
+        buildInfoTag(newTab, $sect);
+        buildToolbar(newTab, $sect);
+        $sect.append(buildModal()).removeClass('loading');
         var sft = $('#filter-' + newTab.type + '-' + newTab.id + '-' + newTab.focuson).get(0);
         sft.focus();
         sft.select();
@@ -145,14 +149,13 @@ function buildTable(tab) {
         $(this).data('$tr').find('input').each(function() {
           tab.filter[$(this).attr('colId')] = $(this).val();
         });
-        $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": tab.offsetRow, "sortby": JSON.stringify(tab.sortby), focuson: th.id }, function(newTab) {
-          $('#sect-' + tab.type + '-' + tab.id).empty()
-            .append(buildInfoTag(newTab))
-            .append(buildTable(newTab))
-            .append(buildInfoTag(newTab))
-            .append(buildToolbar(newTab))
-            .append(buildModal())
-            .removeClass('loading');
+        $.get('/api/user/table/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), countRows: tab.countRows, offsetRow: tab.offsetRow, sortby: JSON.stringify(tab.sortby), focuson: th.id }, function(newTab) {
+          var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+          buildInfoTag(newTab, $sect);
+          buildTable(newTab, $sect);
+          buildInfoTag(newTab, $sect);
+          buildToolbar(newTab, $sect);
+          $sect.append(buildModal()).removeClass('loading');
           var sft = $('#filter-' + newTab.type + '-' + newTab.id + '-' + newTab.focuson).get(0);
           sft.focus();
           sft.select();
@@ -187,54 +190,53 @@ function buildTable(tab) {
     }
     $table.append($tr);
   }
-  return $('<div/>').css('overflow', 'auto').append($table);
+  return $tableContainer;
 }
 
-function buildToolbar(tab) {
+function buildToolbar(tab, container) {
   var offsetRow = tab.offsetRow;
   var countRows = tab.countRows;
   var totalRows = tab.totalRows;
   var totalPag = Math.floor(totalRows / countRows) + (totalRows % countRows == 0 ? 0 : 1);
   var currentPag = Math.floor((offsetRow - 1) / countRows) + 1;
   var $toolbar = $('<div/>').addClass('toolbar ui-widget-header ui-corner-all');
+  $(container).append($toolbar);
   $toolbar.append($('<button/>').html(msg['first_page']).button( {
     text : false, icons :  {
-      primary : "ui-icon-seek-start"
+      primary : 'ui-icon-seek-start'
     }, disabled: offsetRow == 1
   }).data({
     'tab': tab
   }).click(function() {
     $('#sect-' + tab.type + '-' + tab.id).addClass('loading');
     tab = $(this).data('tab');
-    $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": 1, "sortby": JSON.stringify(tab.sortby) }, function(newTab) {
-      $('#sect-' + tab.type + '-' + tab.id).empty()
-        .append(buildInfoTag(newTab))
-        .append(buildTable(newTab))
-        .append(buildInfoTag(newTab))
-        .append(buildToolbar(newTab))
-        .append(buildModal())
-        .removeClass('loading');
+    $.get('/api/user/table/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), countRows: tab.countRows, offsetRow: 1, sortby: JSON.stringify(tab.sortby) }, function(newTab) {
+      var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+      buildInfoTag(newTab, $sect);
+      buildTable(newTab, $sect);
+      buildInfoTag(newTab, $sect);
+      buildToolbar(newTab, $sect);
+      $sect.append(buildModal()).removeClass('loading');
     }).error(function() {
       alert(msg['alert_error']);
       $('#sect-' + tab.type + '-' + tab.id).removeClass('loading');
     });
   })).append($('<button/>').html(msg['previous_page']).css('margin-right', '20px').button( {
     text : false, icons :  {
-      primary : "ui-icon-seek-prev"
+      primary : 'ui-icon-seek-prev'
     }, disabled: offsetRow == 1
   }).data({
     'tab': tab
   }).click(function() {
     $('#sect-' + tab.type + '-' + tab.id).addClass('loading');
     tab = $(this).data('tab');
-    $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": tab.offsetRow - tab.countRows, "sortby": JSON.stringify(tab.sortby) }, function(newTab) {
-      $('#sect-' + tab.type + '-' + tab.id).empty()
-        .append(buildInfoTag(newTab))
-        .append(buildTable(newTab))
-        .append(buildInfoTag(newTab))
-        .append(buildToolbar(newTab))
-        .append(buildModal())
-        .removeClass('loading');
+    $.get('/api/user/table/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), countRows: tab.countRows, offsetRow: tab.offsetRow - tab.countRows, sortby: JSON.stringify(tab.sortby) }, function(newTab) {
+      var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+      buildInfoTag(newTab, $sect);
+      buildTable(newTab, $sect);
+      buildInfoTag(newTab, $sect);
+      buildToolbar(newTab, $sect);
+      $sect.append(buildModal()).removeClass('loading');
     }).error(function() {
       alert(msg['alert_error']);
       $('#sect-' + tab.type + '-' + tab.id).removeClass('loading');
@@ -253,14 +255,13 @@ function buildToolbar(tab) {
         tab = $(this).data('tab');
         sortby = $(this).data('sortby');
         pagToShow = $(this).data('pagToShow');
-        $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": (pagToShow - 1) * tab.countRows + 1, "sortby": JSON.stringify(tab.sortby) }, function(newTab) {
-          $('#sect-' + tab.type + '-' + tab.id).empty()
-            .append(buildInfoTag(newTab))
-            .append(buildTable(newTab))
-            .append(buildInfoTag(newTab))
-            .append(buildToolbar(newTab))
-            .append(buildModal())
-            .removeClass('loading');
+        $.get('/api/user/table/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), countRows: tab.countRows, offsetRow: (pagToShow - 1) * tab.countRows + 1, sortby: JSON.stringify(tab.sortby) }, function(newTab) {
+        var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+        buildInfoTag(newTab, $sect);
+        buildTable(newTab, $sect);
+        buildInfoTag(newTab, $sect);
+        buildToolbar(newTab, $sect);
+        $sect.append(buildModal()).removeClass('loading');
         }).error(function() {
           alert(msg['alert_error']);
           $('#sect-' + tab.type + '-' + tab.id).removeClass('loading');
@@ -269,7 +270,7 @@ function buildToolbar(tab) {
   }
   $toolbar.append($('<button/>').html(msg['next_page']).css('margin-left', '20px').button( {
     text : false, icons :  {
-      primary : "ui-icon-seek-next"
+      primary : 'ui-icon-seek-next'
     }, disabled: offsetRow + countRows > totalRows
   }).data({
     'tab': tab
@@ -277,80 +278,75 @@ function buildToolbar(tab) {
     $('#sect-' + tab.type + '-' + tab.id).addClass('loading');
     tab = $(this).data('tab');
     sortby = $(this).data('sortby');
-    $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": tab.offsetRow + tab.countRows, "sortby": JSON.stringify(tab.sortby) }, function(newTab) {
-      $('#sect-' + tab.type + '-' + tab.id).empty()
-        .append(buildInfoTag(newTab))
-        .append(buildTable(newTab))
-        .append(buildInfoTag(newTab))
-        .append(buildToolbar(newTab))
-        .append(buildModal())
-        .removeClass('loading');
+    $.get('/api/user/table/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), countRows: tab.countRows, offsetRow: tab.offsetRow + tab.countRows, sortby: JSON.stringify(tab.sortby) }, function(newTab) {
+      var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+      buildInfoTag(newTab, $sect);
+      buildTable(newTab, $sect);
+      buildInfoTag(newTab, $sect);
+      buildToolbar(newTab, $sect);
+      $sect.append(buildModal()).removeClass('loading');
     }).error(function() {
       alert(msg['alert_error']);
       $('#sect-' + tab.type + '-' + tab.id).removeClass('loading');
     });
   })).append($('<button/>').html(msg['last_page']).button( {
     text : false, icons :  {
-      primary : "ui-icon-seek-end"
+      primary : 'ui-icon-seek-end'
     }, disabled: offsetRow + countRows > totalRows
   }).data({
     'tab': tab
   }).click(function() {
     $('#sect-' + tab.type + '-' + tab.id).addClass('loading');
     tab = $(this).data('tab');
-    $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": Math.floor((tab.totalRows - 1) / tab.countRows) * tab.countRows + 1, "sortby": JSON.stringify(tab.sortby) }, function(newTab) {
-      $('#sect-' + tab.type + '-' + tab.id).empty()
-        .append(buildInfoTag(newTab))
-        .append(buildTable(newTab))
-        .append(buildInfoTag(newTab))
-        .append(buildToolbar(newTab))
-        .append(buildModal())
-        .removeClass('loading');
+    $.get('/api/user/table/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), countRows: tab.countRows, offsetRow: Math.floor((tab.totalRows - 1) / tab.countRows) * tab.countRows + 1, sortby: JSON.stringify(tab.sortby) }, function(newTab) {
+      var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+      buildInfoTag(newTab, $sect);
+      buildTable(newTab, $sect);
+      buildInfoTag(newTab, $sect);
+      buildToolbar(newTab, $sect);
+      $sect.append(buildModal()).removeClass('loading');
     }).error(function() {
       alert(msg['alert_error']);
       $('#sect-' + tab.type + '-' + tab.id).removeClass('loading');
     });
   })).append($('<button/>').css('margin-left', '20px').html(msg['refresh']).button( {
     text : false, icons :  {
-      primary : "ui-icon-refresh"
+      primary : 'ui-icon-refresh'
     }
   }).data({
     'tab': tab
   }).click(function() {
     $('#sect-' + tab.type + '-' + tab.id).addClass('loading');
     tab = $(this).data('tab');
-    $.get('/api/user/table/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": tab.offsetRow, "sortby": JSON.stringify(tab.sortby) }, function(newTab) {
-      $('#sect-' + tab.type + '-' + tab.id).empty()
-        .append(buildInfoTag(newTab))
-        .append(buildTable(newTab))
-        .append(buildInfoTag(newTab))
-        .append(buildToolbar(newTab))
-        .append(buildModal())
-        .removeClass('loading');
+    $.get('/api/user/table/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), countRows: tab.countRows, offsetRow: tab.offsetRow, sortby: JSON.stringify(tab.sortby) }, function(newTab) {
+      var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+      buildInfoTag(newTab, $sect);
+      buildTable(newTab, $sect);
+      buildInfoTag(newTab, $sect);
+      buildToolbar(newTab, $sect);
+      $sect.append(buildModal()).removeClass('loading');
     }).error(function() {
       alert(msg['alert_error']);
       $('#sect-' + tab.type + '-' + tab.id).removeClass('loading');
     });
   })).append($('<a/>').attr({
-    'href': '/api/user/table/' + tab.id + '/excel?' + JSON.stringify({ "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "sortby": JSON.stringify(tab.sortby) }),
+    'href': '/api/user/table/' + tab.id + '/excel?' + JSON.stringify({ args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), sortby: JSON.stringify(tab.sortby) }),
     'target': '_blank'
   }).html(msg['export_this_table_to_excel']).button( {
     text : false, icons :  {
-      primary : "excel"
+      primary : 'excel'
     }
   }));
   return $toolbar;
 }
 
-function buildModal() {
-  return $('<div/>').addClass('modal');
+function buildModal(container) {
+  var $modal = $('<div/>').addClass('modal');
+  $(container).append($modal);
+  return $modal;
 }
 
-function buildGraph(tab) {
-  var tPie = tab.graphType.indexOf('pie') != -1;
-  var tBars = tab.graphType.indexOf('bars') != -1;
-  var tLines = tab.graphType.indexOf('lines') != -1;
-  var tPoints = tab.graphType.indexOf('points') != -1;
+function getGraphData(tab) {
   var data = [];
   var dataMap = {};
   for (var r in tab.rows) {
@@ -366,30 +362,59 @@ function buildGraph(tab) {
       dataMap[k].push(point);
     }
   }
-  if (tab.serieColumn != null) {
-    for (var k in dataMap) {
-      var points = dataMap[k];
-      if (tPie) {
-        var total = 0;
-        $.each(points, function() {
-          total += this;
-        });
-        points = total;
-      }
-      var serie = {
-        "label": k,
-        "data": points
-      };
-      data.push(serie);
+  if (tab.serieColumn == null)
+    return [data];
+  for (var k in dataMap) {
+    var points = dataMap[k];
+    if (tab.graphType.indexOf('pie') != -1) {
+      var total = 0;
+      $.each(points, function() {
+        total += this;
+      });
+      points = total;
     }
+    var serie = {
+      label: k,
+      data: points
+    };
+    data.push(serie);
   }
-  //alert(tab.label + ': ' + JSON.stringify([data]));
-  var $graph = $('<div/>').addClass('graph');
+  return data;
+}
+
+function buildGraph(tab, container, showExtLink) {
+  var $graphContainer = $('<div/>').addClass('graph-container');
+  $(container).append($graphContainer);
+  var tPie = tab.graphType.indexOf('pie') != -1;
+  var tBars = tab.graphType.indexOf('bars') != -1;
+  var tLines = tab.graphType.indexOf('lines') != -1;
+  var tPoints = tab.graphType.indexOf('points') != -1;
+  var data = getGraphData(tab);
+  //alert(tab.label + ': ' + JSON.stringify(data));
+  var $graph = $('<div/>').addClass('graph').css({
+    width: tab.width,
+    height: tab.height
+  });
+  var $filterTab = $('<table/>').css('border', 'none');
+  $graphContainer
+    .append($('<table/>')
+      .css('border', 'none')
+      .append($('<tr/>')
+        .append($('<td/>').attr('valign', 'top').append($graph))
+        .append($('<td/>').attr('width', '100px'))
+        .append($('<td/>').attr('valign', 'top').append($filterTab))
+      )
+      .append($('<tr/>')
+        .css('display', showExtLink ? '' : 'none')
+        .append($('<td/>')
+          .attr('align', 'right')
+          .append($('<a/>')
+          .attr('href', '/dbviews/rest/user/graph/' + tab.id + '?' + $.param({ args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), sortby: JSON.stringify(tab.sortby) }))
+          .attr('target', '_blank')
+          .html(msg['open_new_in_window'])))
+      )
+    );
   if (tPie) {
-    $graph.css({
-      width: 400,
-      height: 400
-    });
     $.plot($graph, data, {
       canvas: false,
       series: {
@@ -400,22 +425,18 @@ function buildGraph(tab) {
             show: true,
             radius: 2/3,
             formatter: function (label, series) {
-              return "<div style='font-size:8pt; text-align:center; padding:2px; color:white; width:50px; height:50px;'>" + label + ": " + series.data[0][1] + " (" + series.percent.toFixed(1) + "%)<\/div>";
+              return '<div style="font-size:8pt; text-align:center; padding:2px; color:white; width:50px; height:50px;">' + label + ': ' + series.data[0][1] + ' (' + series.percent.toFixed(1) + '%)<\/div>';
             },
             threshold: 0.05
           },
           stroke: {
-            color: "#fff",
+            color: '#fff',
             width: 1
           },
           highlight: {
-            //color: "#fff",
             opacity: 0.2
           }
         }
-      },
-      legend: {
-        show: false
       },
       grid: {
         hoverable: true,
@@ -426,7 +447,7 @@ function buildGraph(tab) {
       if (!item)
         return;
       var percent = parseFloat(item.series.percent).toFixed(2);
-      $('#hover').html("<span style='font-weight:bold; color:" + item.series.color + "'>" + item.series.label + " (" + percent + "%)<\/span>");
+      $('#hover').html('<span style="font-weight:bold; color:' + item.series.color + '">' + item.series.label + ' (' + percent + '%)<\/span>');
     }).bind('plotclick', function(event, pos, item) {
       if (!item)
         return;
@@ -435,11 +456,7 @@ function buildGraph(tab) {
     });
   }
   else if (tBars || tPoints || tLines) {
-    $graph.css({
-      width: 500,
-      height: 400
-    });
-    var xmode = null, ymode = null;
+    /*var xmode = null, ymode = null;
     for (var r in tab.rows) {
       row = tab.rows[r];
       var xval = row[tab.xaxisColumn];
@@ -452,15 +469,15 @@ function buildGraph(tab) {
         ymode = ytype === 'string' ? 'categories' : ytype === 'date' ? 'time' : null;
       if (xmode !== null && ymode !== null)
         break;
-    }
-    $.plot($graph, [data], {
+    }*/
+    $.plot($graph, data, {
       canvas: false,
       series: {
         bars: {
           show: tBars,
           barWidth: 0.6,
           lineWidth: 1,
-          align: "center",
+          align: 'center',
           fillColor: { colors: [ { opacity: 0.8 }, { opacity: 0.1 } ] }
         },
         points: {
@@ -475,44 +492,41 @@ function buildGraph(tab) {
         clickable: true
       },
       xaxis: {
-        tickLength: 10,
-        mode: xmode
+        tickLength: 5
       },
       yaxis: {
-        tickLength: 20,
-        mode: ymode
+        tickLength: 5
       }
     });
-    $graph.unbind().bind("plothover", function (event, pos, item) {
+    $graph.unbind().bind('plothover', function (event, pos, item) {
       if (item) {
         if (previousPoint != item.dataIndex) {
           previousPoint = item.dataIndex;
-          $("#tooltip").remove();
+          $('#tooltip').remove();
           var label = item.series.label;
-          $("<div id='tooltip'>" + (label ? label + ":<br>" : "") + "x: " + item.datapoint[0] + "<br>y: " + item.datapoint[1] + "<\/div>").css({
-            position: "absolute",
-            display: "none",
+          $('<div id="tooltip">' + (label ? label + ': ' : '') + '[x=' + item.datapoint[0] + ', y=' + item.datapoint[1] + ']<\/div>').css({
+            position: 'absolute',
+            display: 'none',
             top: item.pageY + 5,
             left: item.pageX + 5,
-            border: "1px solid #fdd",
-            padding: "2px",
-            "background-color": "#fee",
+            border: '1px solid #fdd',
+            padding: '2px',
+            'background-color': '#fee',
             opacity: 0.80
-          }).appendTo("body").fadeIn(200);
+          }).appendTo('body').fadeIn(200);
         }
       } else {
-        $("#tooltip").remove();
+        $('#tooltip').remove();
         previousPoint = null;            
       }
     }).bind('plotclick', function(event, pos, item) {
       if (!item)
         return;
       var label = item.series.label;
-      info((label ? label + ":<br>" : "") + "x: " + item.datapoint[0] + "<br>y: " + item.datapoint[1]);
+      info((label ? label + ': ' : '') + '[x=' + item.datapoint[0] + ', y=' + item.datapoint[1] + ']');
     });
   }
 
-  var $filterTab = $('<table/>').css('border', 'none');
   for (var v in tab.headers) {
     th = tab.headers[v];
     var $input = $('<input/>').val(tab.filter[th.id]).attr({
@@ -533,11 +547,10 @@ function buildGraph(tab) {
       $(this).data('filterTable').find('input').each(function() {
         tab.filter[$(this).attr('colId')] = $(this).val();
       });
-      $.get('/api/user/graph/' + tab.id, { "args": JSON.stringify(tab.args), "filter": JSON.stringify(tab.filter), "options": JSON.stringify(tab.options), "countRows": tab.countRows, "offsetRow": tab.offsetRow, "sortby": JSON.stringify(tab.sortby), focuson: th.id }, function(newTab) {
-        $('#sect-' + tab.type + '-' + tab.id).empty()
-          .append(buildGraph(newTab))
-          .append(buildModal())
-          .removeClass('loading');
+      $.get('/api/user/graph/' + tab.id, { args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), sortby: JSON.stringify(tab.sortby) }, function(newTab) {
+        var $sect = $('#sect-' + tab.type + '-' + tab.id).empty();
+        buildGraph(newTab, $sect, showExtLink);
+        $sect.append(buildModal()).removeClass('loading');
         var sft = $('#filter-' + newTab.type + '-' + newTab.id + '-' + newTab.focuson).get(0);
         sft.focus();
         sft.select();
@@ -549,13 +562,5 @@ function buildGraph(tab) {
     $filterTab.append($('<tr/>').append($('<th/>').attr('align', 'right').html(th.columnName)).append($('<td/>').append($('<div/>').addClass('filter').append($input))));
   }
 
-  return $('<div/>')
-    .addClass('graph-container')
-    .append($('<table/>')
-      .css('border', 'none')
-      .append($('<tr/>')
-        .append($('<td/>').attr('valign', 'top').append($graph))
-        .append($('<td/>').attr('width', '100px'))
-        .append($('<td/>').attr('valign', 'top').append($filterTab)))
-    );
+  return $graphContainer;
 }
