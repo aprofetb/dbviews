@@ -409,9 +409,12 @@ function buildGraph(tab, container, showExtLink) {
         .append($('<td/>')
           .attr('align', 'right')
           .append($('<a/>')
-          .attr('href', '/dbviews/rest/user/graph/' + tab.id + '?' + $.param({ args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), sortby: JSON.stringify(tab.sortby) }))
-          .attr('target', '_blank')
-          .html(msg['open_new_in_window'])))
+            .attr('href', '/dbviews/rest/user/graph/' + tab.id + '?' + $.param({ args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), sortby: JSON.stringify(tab.sortby) }))
+            .attr('target', '_blank')
+            .addClass('ui-icon ui-icon-newwin')
+            .attr('title', msg['new_window'])
+          )
+        )
       )
     );
   if (tPie) {
