@@ -1,4 +1,4 @@
-package org.dbviews.api.database;
+package org.dbviews.api.wrappers;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

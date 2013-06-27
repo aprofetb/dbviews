@@ -1,4 +1,4 @@
-package org.dbviews.api.bean;
+package org.dbviews.api.wrappers;
 
 import java.beans.BeanInfo;
 
