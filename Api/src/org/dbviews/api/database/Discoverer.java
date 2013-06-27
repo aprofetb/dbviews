@@ -10,11 +10,18 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang.StringUtils;
+
+import org.dbviews.api.wrappers.ResultSetWrapper;
 
 public class Discoverer
 {
@@ -140,14 +147,37 @@ public class Discoverer
     return rsw;
   }
 
-  public Map<Integer, Map<String, Object>> getColumns(Connection con, String sqlQuery, boolean showHidden)
+  public static Map.Entry<String, List> processArgs(String queryStr, Map<String, String> args)
+  {
+    List qParams = new LinkedList();
+    if (args != null && args.size() > 0)
+    {
+      Pattern p = Pattern.compile(".*(?:[^\\\\]?(?:\\\\{2})*)\\{(\\w+)\\}.*");
+      Matcher m = p.matcher(queryStr);
+      if (m.matches())
+      {
+        String k = m.group(1);
+        String v = args.get(k);
+        queryStr = queryStr.replaceFirst(String.format("([^\\\\]?(\\\\{2})*)\\{%s\\}", k), "$1?");
+        qParams.add(v);
+      }
+    }
+    return new HashMap.SimpleEntry<String, List>(queryStr, qParams);
+  }
+
+  public Map<Integer, Map<String, Object>> getColumns(Connection con, String sqlQuery, Map<String, String> args, boolean showHidden)
   {
     Map<Integer, Map<String, Object>> columnMap = new TreeMap<Integer, Map<String, Object>>();
     PreparedStatement ps = null;
     ResultSet rs = null;
     try
     {
+      Map.Entry<String, List> queryArgs = Discoverer.processArgs(sqlQuery, args);
+      sqlQuery = queryArgs.getKey();
+      List qParams = queryArgs.getValue();
       ps = con.prepareStatement(String.format("select * from (%s) sq1", sqlQuery));
+      for (int i = 0; i < qParams.size(); i++)
+        ps.setObject(i + 1, qParams.get(i));
       rs = ps.executeQuery();
       ResultSetMetaData rsMD = rs.getMetaData();
       for (int i = 1; i <= rsMD.getColumnCount(); i++)
@@ -181,13 +211,13 @@ public class Discoverer
     return columnMap;
   }
 
-  public Map<Integer, Map<String, Object>> getColumns(String sqlQuery, boolean showHidden)
+  public Map<Integer, Map<String, Object>> getColumns(String sqlQuery, Map<String, String> args, boolean showHidden)
   {
     Connection con = null;
     try
     {
       con = Connector.getConnection(url, username, password);
-      return getColumns(con, sqlQuery, showHidden);
+      return getColumns(con, sqlQuery, args, showHidden);
     }
     catch (SQLException e)
     {

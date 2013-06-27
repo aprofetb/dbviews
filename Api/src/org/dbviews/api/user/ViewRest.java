@@ -1,7 +1,5 @@
 package org.dbviews.api.user;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,16 +27,13 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import org.codehaus.jackson.map.type.TypeFactory;
 
-import org.dbviews.model.DbvConnection;
 import org.dbviews.model.DbvTable;
 import org.dbviews.model.DbvView;
 import org.dbviews.api.EJBClient;
-import org.dbviews.api.bean.BeanWrapper;
-import org.dbviews.api.database.Discoverer;
-import org.dbviews.api.database.ResultSetWrapper;
 import org.dbviews.api.vo.Graph;
 import org.dbviews.api.vo.Tab;
 import org.dbviews.api.vo.Table;
+import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvGraph;
 
 @Path("user/view")
@@ -52,30 +47,6 @@ public class ViewRest
     throws NamingException
   {
     super();
-  }
-
-  /* @GET
-  @Path("/old/{id}")
-  @Produces(MediaType.APPLICATION_JSON) */
-  public Response getById(@PathParam("id") Integer id)
-  {
-    DbvView view = dbViewsEJB.getDbvViewFindById(id);
-    DbvConnection con = view.getDbvConnection();
-    Discoverer disco = new Discoverer(con.getUrl(), con.getUsername(), con.getPassword());
-    Map<String, Object> model = new HashMap<String, Object>();
-    List<Map<String, Object>> tabs = new ArrayList<Map<String, Object>>();
-    model.put("view", BeanWrapper.getInstance(view));
-    model.put("tabs", tabs);
-    Collections.sort(view.getDbvTableList());
-    for (DbvTable t : view.getDbvTableList())
-    {
-      ResultSetWrapper rows = disco.getRows(t.getSqlQuery());
-      Map<String, Object> table = new HashMap<String, Object>();
-      table.put("structure", BeanWrapper.getInstance(t));
-      table.put("rows", rows);
-      tabs.add(table);
-    }
-    return model == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(model).build();
   }
 
   @GET
@@ -92,6 +63,8 @@ public class ViewRest
     DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
     if (dbvView == null)
       return Response.status(Response.Status.NOT_FOUND).build();
+    if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
+      return Response.status(Response.Status.UNAUTHORIZED).build();
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
@@ -145,9 +118,11 @@ public class ViewRest
                         @QueryParam("options") String options,
                         @QueryParam("sortby") String sortby)
   {
-    DbvView view = dbViewsEJB.getDbvViewFindById(viewId);
-    if (view == null)
+    DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
+    if (dbvView == null)
       return Response.status(Response.Status.NOT_FOUND).build();
+    if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
+      return Response.status(Response.Status.UNAUTHORIZED).build();
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
@@ -170,8 +145,8 @@ public class ViewRest
       logger.warning(e.getMessage());
     }
 
-    List tabsList = view.getDbvTableList();
-    tabsList.addAll(view.getDbvGraphList());
+    List tabsList = dbvView.getDbvTableList();
+    tabsList.addAll(dbvView.getDbvGraphList());
     Set<Tab> tabs = new TreeSet<Tab>();
     for (Object o : tabsList)
     {
@@ -185,6 +160,6 @@ public class ViewRest
       tabs.add(tab);
     }
 
-    return Response.ok(Tab.getHtml(tabs)).header("Content-Disposition", String.format("attachment;filename=%s.xls", view.getDescription())).build();
+    return Response.ok(Tab.getHtml(tabs)).header("Content-Disposition", String.format("attachment;filename=%s.xls", dbvView.getDescription())).build();
   }
 }

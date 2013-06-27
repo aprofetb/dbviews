@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.dbviews.api.database.Discoverer;
-import org.dbviews.commons.utils.StrUtils;
 import org.dbviews.model.DbvConnection;
 import org.dbviews.model.DbvGraph;
 
@@ -13,18 +12,20 @@ public class Graph
   extends Tab
 {
   private String[] graphType;
-  private int width;
-  private int height;
   private Integer serieColumn;
   private Integer xaxisColumn;
   private Integer yaxisColumn;
+  private String xmode;
+  private String ymode;
+  private int width;
+  private int height;
 
   public Graph(DbvGraph g, Map<String, String> args, Map<Integer, String> filter, Map<Integer, Map<String, String>> options, String focuson)
   {
     headers = new ArrayList<Header>();
     DbvConnection dbvConn = g.getDbvView().getDbvConnection();
     Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
-    columnMap = disco.getColumns(g.getSqlQuery(), true);
+    columnMap = disco.getColumns(g.getSqlQuery(), args, true);
     for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet())
     {
       Integer id = e.getKey();
@@ -40,10 +41,10 @@ public class Graph
         yaxisColumn = id;
     }
     id = g.getId();
-    label = StrUtils.str4mat(g.getLabel(), args);
-    description = StrUtils.str4mat(g.getDescription(), args);
+    label = g.getLabel();
+    description = g.getDescription();
     index = g.getTabIndex();
-    query = StrUtils.str4mat(g.getSqlQuery(), args);
+    query = g.getSqlQuery();
     graphType = g.getGraphType().split(",");
     width = g.getWidth();
     height = g.getHeight();
@@ -58,7 +59,12 @@ public class Graph
   {
     DbvConnection dbvConn = g.getDbvView().getDbvConnection();
     Tab graph = new Graph(g, args, filter, options, focuson);
-    return getInstance(graph, dbvConn, filter, options, null, 1, Integer.MAX_VALUE - 1);
+    return getInstance(graph, dbvConn, args, filter, options, null, 1, Integer.MAX_VALUE - 1);
+  }
+
+  public String getType()
+  {
+    return "graph";
   }
 
   public void setGraphType(String[] type)
@@ -121,8 +127,23 @@ public class Graph
     return yaxisColumn;
   }
 
-  public String getType()
+  public void setXmode(String xmode)
   {
-    return "graph";
+    this.xmode = xmode;
+  }
+
+  public String getXmode()
+  {
+    return xmode;
+  }
+
+  public void setYmode(String ymode)
+  {
+    this.ymode = ymode;
+  }
+
+  public String getYmode()
+  {
+    return ymode;
   }
 }

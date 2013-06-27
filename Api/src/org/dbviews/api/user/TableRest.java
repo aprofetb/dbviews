@@ -31,8 +31,11 @@ import org.dbviews.api.EJBClient;
 import org.dbviews.api.vo.Tab;
 
 import org.dbviews.api.vo.Table;
+import org.dbviews.commons.utils.SecUtils;
+import org.dbviews.model.DbvView;
 
 @Path("user/table")
+@RolesAllowed("valid-users")
 public class TableRest
   extends EJBClient
 {
@@ -47,7 +50,6 @@ public class TableRest
   @GET
   @Path("/{tableId}")
   @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed("valid-users")
   public Response getTable(@PathParam("tableId") Integer tableId, 
                            @QueryParam("args") String args, 
                            @QueryParam("filter") String filter, 
@@ -60,6 +62,9 @@ public class TableRest
     DbvTable t = dbViewsEJB.getDbvTableFindById(tableId);
     if (t == null)
       return Response.status(Response.Status.NOT_FOUND).build();
+    DbvView dbvView = t.getDbvView();
+    if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
+      return Response.status(Response.Status.UNAUTHORIZED).build();
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
@@ -88,7 +93,6 @@ public class TableRest
   @GET
   @Path("/{tableId}/excel")
   @Produces(MediaType.TEXT_HTML)
-  @RolesAllowed("valid-users")
   public Response excel(@PathParam("tableId") Integer tableId,
                         @QueryParam("args") String args,
                         @QueryParam("filter") String filter,
@@ -99,6 +103,9 @@ public class TableRest
     DbvTable t = dbViewsEJB.getDbvTableFindById(tableId);
     if (t == null)
       return Response.status(Response.Status.NOT_FOUND).build();
+    DbvView dbvView = t.getDbvView();
+    if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
+      return Response.status(Response.Status.UNAUTHORIZED).build();
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;

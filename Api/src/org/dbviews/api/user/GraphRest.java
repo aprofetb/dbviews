@@ -24,9 +24,12 @@ import org.codehaus.jackson.map.type.TypeFactory;
 import org.dbviews.api.EJBClient;
 import org.dbviews.api.vo.Graph;
 import org.dbviews.api.vo.Tab;
+import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvGraph;
+import org.dbviews.model.DbvView;
 
 @Path("user/graph")
+@RolesAllowed("valid-users")
 public class GraphRest
   extends EJBClient
 {
@@ -41,8 +44,7 @@ public class GraphRest
   @GET
   @Path("/{graphId}")
   @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed("valid-users")
-  public Response getTable(@PathParam("graphId") Integer graphId, 
+  public Response getGraph(@PathParam("graphId") Integer graphId, 
                            @QueryParam("args") String args, 
                            @QueryParam("filter") String filter, 
                            @QueryParam("options") String options, 
@@ -51,6 +53,9 @@ public class GraphRest
     DbvGraph g = dbViewsEJB.getDbvGraphFindById(graphId);
     if (g == null)
       return Response.status(Response.Status.NOT_FOUND).build();
+    DbvView dbvView = g.getDbvView();
+    if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
+      return Response.status(Response.Status.UNAUTHORIZED).build();
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;

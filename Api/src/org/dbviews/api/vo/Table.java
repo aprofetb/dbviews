@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.dbviews.api.database.Discoverer;
-import org.dbviews.commons.utils.StrUtils;
 import org.dbviews.model.DbvConnection;
 import org.dbviews.model.DbvTable;
 import org.dbviews.model.DbvTableField;
@@ -23,7 +22,7 @@ public class Table
       columnMap = new TreeMap<Integer, Map<String, Object>>();
       for (DbvTableField field : t.getDbvTableFieldList())
       {
-        headers.add(new Header(field, args));
+        headers.add(new Header(field));
         Map<String, Object> attrs = new HashMap<String, Object>();
         attrs.put("CatalogName", "");
         attrs.put("ColumnClassName", "");
@@ -43,7 +42,7 @@ public class Table
     {
       DbvConnection dbvConn = t.getDbvView().getDbvConnection();
       Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
-      columnMap = disco.getColumns(t.getSqlQuery(), true);
+      columnMap = disco.getColumns(t.getSqlQuery(), args, true);
       for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet())
       {
         Integer id = e.getKey();
@@ -52,10 +51,10 @@ public class Table
       }
     }
     id = t.getId();
-    label = StrUtils.str4mat(t.getLabel(), args);
-    description = StrUtils.str4mat(t.getDescription(), args);
+    label = t.getLabel();
+    description = t.getDescription();
     index = t.getTabIndex();
-    query = StrUtils.str4mat(t.getSqlQuery(), args);
+    query = t.getSqlQuery();
     this.args = args != null ? args : new HashMap<String, String>();
     this.filter = filter != null ? filter : new HashMap<Integer, String>();
     this.options = options != null ? options : new HashMap<Integer, Map<String, String>>();
@@ -74,7 +73,7 @@ public class Table
   {
     DbvConnection dbvConn = t.getDbvView().getDbvConnection();
     Tab table = new Table(t, args, filter, options, sortby, focuson);
-    return getInstance(table, dbvConn, filter, options, sortby, offsetRow, countRows);
+    return getInstance(table, dbvConn, args, filter, options, sortby, offsetRow, countRows);
   }
 
   public String getType()

@@ -329,6 +329,7 @@ public abstract class Tab
 
   public static Tab getInstance(Tab tab,
                                 DbvConnection dbvConn,
+                                Map<String, String> args,
                                 Map<Integer, String> filter,
                                 Map<Integer, Map<String, String>> options,
                                 Map<Integer, String> sortby,
@@ -343,11 +344,12 @@ public abstract class Tab
     String queryStr = null;
     try
     {
+      queryStr = tab.getQuery();
       con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
       if (tab.getHeaderCount() == 0)
       {
         Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
-        Map<Integer, Map<String, Object>> columnMap = disco.getColumns(con, String.format("select * from (%s) sq1 where 1=2", tab.getQuery()), false);
+        Map<Integer, Map<String, Object>> columnMap = disco.getColumns(con, String.format("select * from (%s) sq1 where 1=2", queryStr), args, false);
         for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet())
         {
           Integer id = e.getKey();
@@ -357,12 +359,15 @@ public abstract class Tab
         tab.setColumnMap(columnMap);
       }
 
+      Map.Entry<String, List> queryArgs = Discoverer.processArgs(queryStr, args);
+      queryStr = queryArgs.getKey();
+      List qParams = queryArgs.getValue();
+
       Pattern pattern = Pattern.compile("h_i_d_d_e_n__", Pattern.CASE_INSENSITIVE);
-      Matcher matcher = pattern.matcher(tab.getQuery());
+      Matcher matcher = pattern.matcher(queryStr);
       tab.setQuery(matcher.replaceAll(""));
-      queryStr = String.format("select * from (%s) sq1", tab.getQuery());
-      List qParams = new LinkedList();
-      if (filter != null)
+      queryStr = String.format("select * from (%s) sq1", queryStr);
+      if (filter != null && filter.size() > 0)
       {
         int i = 0;
         for (Map.Entry<Integer, String> e : filter.entrySet())
@@ -481,6 +486,7 @@ public abstract class Tab
     }
     catch (Exception e)
     {
+      e.printStackTrace();
       logger.severe(e.getMessage());
       logger.severe(queryStr);
       return null;
@@ -543,7 +549,8 @@ public abstract class Tab
           Object value = r.get(header.getId());
           html.append(String.format("<td align='%s' valign='%s' style='color:black;background-color:#FFFFCC'>", header.getAlign(), header.getVAlign()));
           //html.append(header.getType() == Type.Html ? value : StringEscapeUtils.escapeHtml(value.toString()));
-          html.append(StringEscapeUtils.escapeHtml(value.toString()));
+          if (value != null)
+            html.append(StringEscapeUtils.escapeHtml(value.toString()));
           html.append("</td>");
         }
         html.append("</tr>");

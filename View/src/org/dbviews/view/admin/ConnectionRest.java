@@ -7,8 +7,6 @@ import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
 
-import javax.naming.NamingException;
-
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -24,12 +22,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 @RolesAllowed("admins")
 public class ConnectionRest
 {
-  public ConnectionRest()
-    throws NamingException
-  {
-    super();
-  }
-
   @GET
   @Path("/{connectionId}")
   @Produces(MediaType.TEXT_HTML)

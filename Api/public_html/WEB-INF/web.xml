@@ -33,7 +33,7 @@
       <role-name>admins</role-name>
     </auth-constraint>
   </security-constraint>
-  <!--<security-constraint>
+  <security-constraint>
     <web-resource-collection>
       <web-resource-name>User resources</web-resource-name>
       <url-pattern>/user/*</url-pattern>
@@ -45,7 +45,7 @@
     <auth-constraint>
       <role-name>valid-users</role-name>
     </auth-constraint>
-  </security-constraint>-->
+  </security-constraint>
   <login-config>
     <auth-method>BASIC</auth-method>
   </login-config>

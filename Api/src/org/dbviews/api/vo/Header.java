@@ -24,13 +24,13 @@ public class Header
   private boolean visible = true;
   private boolean exportable = true;
 
-  public Header(DbvTableField f, Map<String, String> args)
+  public Header(DbvTableField f)
   {
     this.id = f.getId();
-    this.columnName = StrUtils.str4mat(f.getName(), args);
-    this.dbColumnName = StrUtils.str4mat(f.getColumnName(), args);
+    this.columnName = f.getName();
+    this.dbColumnName = f.getColumnName();
     this.type = f.getType();
-    this.width = StrUtils.str4mat(f.getWidth(), args);
+    this.width = f.getWidth();
     this.align = StringUtils.isNotBlank(f.getAlign()) ? Align.valueOf(f.getAlign()) : Align.Left;
     this.vAlign = StringUtils.isNotBlank(f.getValign()) ? VAlign.valueOf(f.getValign()) : VAlign.Top;
     String[] os = StringUtils.isNotBlank(f.getFieldOrder()) ? f.getFieldOrder().split("::") : null;

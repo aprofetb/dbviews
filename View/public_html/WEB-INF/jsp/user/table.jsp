@@ -24,13 +24,13 @@
       $(document).ready(function() {
         $.get('/api/user/table/${it.tableId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(table, textStatus) {
           buildSection(table, '#content');
-        }).error(function() {
-          alert(msg['alert_error']);
+        }).error(function(jqXHR) {
+          alert(jqXHR.statusText);
         });
       });
     </script>
   </head>
   <body>
-    <div id="content"><dbv:i18n key="loading_please_wait"/></div>
+    <div id="content"></div>
   </body>
 </html>

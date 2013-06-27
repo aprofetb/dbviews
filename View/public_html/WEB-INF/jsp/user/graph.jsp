@@ -29,8 +29,8 @@
       $(document).ready(function() {
         $.get('/api/user/graph/${it.graphId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(graph, textStatus) {
           buildSection(graph, '#content');
-        }).error(function() {
-          alert(msg['alert_error']);
+        }).error(function(jqXHR) {
+          alert(jqXHR.statusText);
         });
       });
     </script>

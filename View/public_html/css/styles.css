@@ -164,3 +164,12 @@ div.filter input {
   font-size: 14px;
   line-height: 1.2em;
 }
+
+#tooltip {
+  position: absolute;
+  display: none;
+  border: 1px solid #fdd;
+  padding: 2px;
+  background-color: #fee;
+  opacity: 0.80;
+}

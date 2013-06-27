@@ -29,7 +29,7 @@ public class StrUtils
       String key = e.getKey();
       String value = e.getValue();
 
-      // this avoid SQL injection specifying a correct validator
+      // avoid SQL injection specifying a correct validator
       if (StringUtils.isNotBlank(validator) && !value.matches(validator))
       {
         logger.warning(String.format("Invalid argument value! [key: '%s', value: '%s'] ", key, value));

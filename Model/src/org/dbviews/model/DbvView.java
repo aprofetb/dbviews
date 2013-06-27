@@ -28,6 +28,8 @@ public class DbvView
   @Id
   @Column(name = "id", nullable = false)
   private int id;
+  @Column(name = "auth_principals", nullable = false)
+  private String authPrincipals;
   @OneToMany(mappedBy = "dbvView")
   private List<DbvGraph> dbvGraphList;
   @OneToMany(mappedBy = "dbvView")
@@ -124,5 +126,15 @@ public class DbvView
   public void setDbvConnection(DbvConnection dbvConnection)
   {
     this.dbvConnection = dbvConnection;
+  }
+
+  public void setAuthPrincipals(String authPrincipals)
+  {
+    this.authPrincipals = authPrincipals;
+  }
+
+  public String getAuthPrincipals()
+  {
+    return authPrincipals;
   }
 }

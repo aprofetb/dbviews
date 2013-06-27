@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 
 import org.dbviews.model.DbvView;
 import org.dbviews.api.EJBClient;
-import org.dbviews.api.bean.BeanWrapper;
+import org.dbviews.api.wrappers.BeanWrapper;
 
 @Path("admin/view")
 @RolesAllowed("admins")

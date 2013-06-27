@@ -330,7 +330,7 @@ function buildToolbar(tab, container) {
       $('#sect-' + tab.type + '-' + tab.id).removeClass('loading');
     });
   })).append($('<a/>').attr({
-    'href': '/api/user/table/' + tab.id + '/excel?' + JSON.stringify({ args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), sortby: JSON.stringify(tab.sortby) }),
+    'href': '/api/user/table/' + tab.id + '/excel?' + $.param({ args: JSON.stringify(tab.args), filter: JSON.stringify(tab.filter), options: JSON.stringify(tab.options), sortby: JSON.stringify(tab.sortby) }),
     'target': '_blank'
   }).html(msg['export_this_table_to_excel']).button( {
     text : false, icons :  {
@@ -417,118 +417,88 @@ function buildGraph(tab, container, showExtLink) {
         )
       )
     );
-  if (tPie) {
-    $.plot($graph, data, {
-      canvas: false,
-      series: {
-        pie: {
+  $.plot($graph, data, {
+    canvas: false,
+    series: {
+      pie: {
+        show: tPie,
+        radius: 1,
+        label: {
           show: true,
-          radius: 1,
-          label: {
-            show: true,
-            radius: 2/3,
-            formatter: function (label, series) {
-              return '<div style="font-size:8pt; text-align:center; padding:2px; color:white; width:50px; height:50px;">' + label + ': ' + series.data[0][1] + ' (' + series.percent.toFixed(1) + '%)<\/div>';
-            },
-            threshold: 0.05
+          radius: 2/3,
+          formatter: function (label, series) {
+            return '<div style="font-size:8pt; text-align:center; padding:2px; color:white; width:50px; height:50px;">' + label + ': ' + series.data[0][1] + ' (' + series.percent.toFixed(1) + '%)<\/div>';
           },
-          stroke: {
-            color: '#fff',
-            width: 1
-          },
-          highlight: {
-            opacity: 0.2
-          }
-        }
-      },
-      grid: {
-        hoverable: true,
-        clickable: true
-      }
-    });
-    $graph.unbind().bind('plothover', function(event, pos, item) {
-      if (!item)
-        return;
-      var percent = parseFloat(item.series.percent).toFixed(2);
-      $('#hover').html('<span style="font-weight:bold; color:' + item.series.color + '">' + item.series.label + ' (' + percent + '%)<\/span>');
-    }).bind('plotclick', function(event, pos, item) {
-      if (!item)
-        return;
-      percent = parseFloat(item.series.percent).toFixed(2);
-      info(item.series.label + ': ' + percent + '%');
-    });
-  }
-  else if (tBars || tPoints || tLines) {
-    /*var xmode = null, ymode = null;
-    for (var r in tab.rows) {
-      row = tab.rows[r];
-      var xval = row[tab.xaxisColumn];
-      var yval = row[tab.yaxisColumn];
-      var xtype = $.type(xval);
-      var ytype = $.type(yval);
-      if (xval !== null)
-        xmode = xtype === 'string' ? 'categories' : xtype === 'date' ? 'time' : null;
-      if (yval !== null)
-        ymode = ytype === 'string' ? 'categories' : ytype === 'date' ? 'time' : null;
-      if (xmode !== null && ymode !== null)
-        break;
-    }*/
-    $.plot($graph, data, {
-      canvas: false,
-      series: {
-        bars: {
-          show: tBars,
-          barWidth: 0.6,
-          lineWidth: 1,
-          align: 'center',
-          fillColor: { colors: [ { opacity: 0.8 }, { opacity: 0.1 } ] }
+          threshold: 0.05
         },
-        points: {
-          show: tPoints
+        stroke: {
+          color: '#fff',
+          width: 1
         },
-        lines: {
-          show: tLines
+        highlight: {
+          opacity: 0.2
         }
       },
-      grid: {
-        hoverable: true,
-        clickable: true
+      bars: {
+        show: tBars,
+        barWidth: 0.6,
+        lineWidth: 1,
+        align: 'center',
+        fillColor: { colors: [ { opacity: 0.8 }, { opacity: 0.1 } ] }
       },
-      xaxis: {
-        tickLength: 5
+      points: {
+        show: tPoints
       },
-      yaxis: {
-        tickLength: 5
+      lines: {
+        show: tLines
       }
-    });
-    $graph.unbind().bind('plothover', function (event, pos, item) {
-      if (item) {
-        if (previousPoint != item.dataIndex) {
-          previousPoint = item.dataIndex;
-          $('#tooltip').remove();
-          var label = item.series.label;
-          $('<div id="tooltip">' + (label ? label + ': ' : '') + '[x=' + item.datapoint[0] + ', y=' + item.datapoint[1] + ']<\/div>').css({
-            position: 'absolute',
-            display: 'none',
-            top: item.pageY + 5,
-            left: item.pageX + 5,
-            border: '1px solid #fdd',
-            padding: '2px',
-            'background-color': '#fee',
-            opacity: 0.80
-          }).appendTo('body').fadeIn(200);
-        }
-      } else {
+    },
+    grid: {
+      hoverable: true,
+      clickable: true
+    },
+    xaxis: {
+      tickLength: 5,
+      mode: tab.xmode
+    },
+    yaxis: {
+      tickLength: 5,
+      mode: tab.ymode
+    }
+  });
+  $graph.unbind()
+    .bind('plothover', function (event, pos, item) {
+      if (!item) {
         $('#tooltip').remove();
-        previousPoint = null;            
+        previousPoint = null;
+        return;
       }
-    }).bind('plotclick', function(event, pos, item) {
+      var currentPoint = tPie ? item.series.label : item.dataIndex;
+      if (previousPoint != currentPoint) {
+        previousPoint = currentPoint;
+        $('#tooltip').remove();
+        var label = item.series.label;
+        $('<div/>')
+          .attr('id', 'tooltip')
+          .css({
+            top: pos.pageY + 5,
+            left: pos.pageX + 5
+          })
+          .html((label ? label + ': ' : '') + '[x=' + item.datapoint[0] + ', y=' + item.datapoint[1] + ']')
+          .appendTo('body')
+          .fadeIn(200);
+      }
+    })
+    .bind('plotclick', function(event, pos, item) {
       if (!item)
         return;
       var label = item.series.label;
-      info((label ? label + ': ' : '') + '[x=' + item.datapoint[0] + ', y=' + item.datapoint[1] + ']');
-    });
-  }
+      if (tPie)
+        info(item.series.label + ': ' + parseFloat(item.series.percent).toFixed(2) + '%');
+      else
+        info((label ? label + ': ' : '') + '[x=' + item.datapoint[0] + ', y=' + item.datapoint[1] + ']');
+    }
+  );
 
   for (var v in tab.headers) {
     th = tab.headers[v];

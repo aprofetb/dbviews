@@ -42,6 +42,10 @@ public class DbvGraph
   private String xaxisColumn;
   @Column(name = "yaxis_column", nullable = false)
   private String yaxisColumn;
+  @Column(name = "xmode", nullable = false)
+  private String xmode;
+  @Column(name = "ymode", nullable = false)
+  private String ymode;
   @Column(name = "width", nullable = false)
   private int width;
   @Column(name = "height", nullable = false)
@@ -188,5 +192,25 @@ public class DbvGraph
   public int getHeight()
   {
     return height;
+  }
+
+  public void setXmode(String xmode)
+  {
+    this.xmode = xmode;
+  }
+
+  public String getXmode()
+  {
+    return xmode;
+  }
+
+  public void setYmode(String ymode)
+  {
+    this.ymode = ymode;
+  }
+
+  public String getYmode()
+  {
+    return ymode;
   }
 }
