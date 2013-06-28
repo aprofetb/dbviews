@@ -12,7 +12,7 @@ import org.dbviews.model.DbvTable;
 import org.dbviews.model.DbvTableField;
 
 public class Table
-  extends Tab
+  extends Item
 {
   public Table(DbvTable t, Map<String, String> args, Map<Integer, String> filter, Map<Integer, Map<String, String>> options, Map<Integer, String> sortby, String focuson)
   {
@@ -62,7 +62,7 @@ public class Table
     this.focuson = focuson;
   }
 
-  public static Tab getInstance(DbvTable t,
+  public static Item getInstance(DbvTable t,
                                 Map<String, String> args,
                                 Map<Integer, String> filter,
                                 Map<Integer, Map<String, String>> options,
@@ -72,7 +72,7 @@ public class Table
                                 String focuson)
   {
     DbvConnection dbvConn = t.getDbvView().getDbvConnection();
-    Tab table = new Table(t, args, filter, options, sortby, focuson);
+    Item table = new Table(t, args, filter, options, sortby, focuson);
     return getInstance(table, dbvConn, args, filter, options, sortby, offsetRow, countRows);
   }
 

@@ -28,8 +28,12 @@ public class DbvView
   @Id
   @Column(name = "id", nullable = false)
   private int id;
-  @Column(name = "auth_principals", nullable = false)
+  @Column(name = "auth_principals")
   private String authPrincipals;
+  @Column(name = "jqui_plugin", nullable = false)
+  private String jquiPlugin;
+  @Column(name = "jqui_plugin_options")
+  private String jquiPluginOptions;
   @OneToMany(mappedBy = "dbvView")
   private List<DbvGraph> dbvGraphList;
   @OneToMany(mappedBy = "dbvView")
@@ -42,10 +46,13 @@ public class DbvView
   {
   }
 
-  public DbvView(DbvConnection dbvConnection, String description)
+  public DbvView(DbvConnection dbvConnection, String description, String authPrincipals, String jquiPlugin, String jquiPluginOptions)
   {
     this.dbvConnection = dbvConnection;
     this.description = description;
+    this.authPrincipals = authPrincipals;
+    this.jquiPlugin = jquiPlugin;
+    this.jquiPluginOptions = jquiPluginOptions;
   }
 
   @XmlElement
@@ -136,5 +143,25 @@ public class DbvView
   public String getAuthPrincipals()
   {
     return authPrincipals;
+  }
+
+  public void setJquiPlugin(String jquiPlugin)
+  {
+    this.jquiPlugin = jquiPlugin;
+  }
+
+  public String getJquiPlugin()
+  {
+    return jquiPlugin;
+  }
+
+  public void setJquiPluginOptions(String jquiPluginOptions)
+  {
+    this.jquiPluginOptions = jquiPluginOptions;
+  }
+
+  public String getJquiPluginOptions()
+  {
+    return jquiPluginOptions;
   }
 }

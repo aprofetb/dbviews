@@ -23,7 +23,7 @@
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/api/user/table/${it.tableId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(table, textStatus) {
-          buildSection(table, '#content');
+          buildItem(table, '#content');
         }).error(function(jqXHR) {
           alert(jqXHR.statusText);
         });

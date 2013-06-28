@@ -31,7 +31,7 @@ import org.dbviews.model.DbvTable;
 import org.dbviews.model.DbvView;
 import org.dbviews.api.EJBClient;
 import org.dbviews.api.vo.Graph;
-import org.dbviews.api.vo.Tab;
+import org.dbviews.api.vo.Item;
 import org.dbviews.api.vo.Table;
 import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvGraph;
@@ -87,24 +87,26 @@ public class ViewRest
       logger.warning(e.getMessage());
     }
 
-    List tabsList = dbvView.getDbvTableList();
-    tabsList.addAll(dbvView.getDbvGraphList());
-    Set<Tab> tabs = new TreeSet<Tab>();
-    for (Object o : tabsList)
+    List itemsList = dbvView.getDbvTableList();
+    itemsList.addAll(dbvView.getDbvGraphList());
+    Set<Item> items = new TreeSet<Item>();
+    for (Object o : itemsList)
     {
-      Tab tab = null;
+      Item item = null;
       if (o instanceof DbvTable)
-        tab = Table.getInstance((DbvTable)o, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, null);
+        item = Table.getInstance((DbvTable)o, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, null);
       else if (o instanceof DbvGraph)
-        tab = Graph.getInstance((DbvGraph)o, argsMap, filterMap, optionsMap, null);
-      if (tab == null)
+        item = Graph.getInstance((DbvGraph)o, argsMap, filterMap, optionsMap, null);
+      if (item == null)
         return Response.status(Response.Status.BAD_REQUEST).build();
-      tabs.add(tab);
+      items.add(item);
     }
 
     Map<String, Object> view = new HashMap<String, Object>();
     view.put("description", dbvView.getDescription());
-    view.put("tabs", tabs);
+    view.put("jquiPlugin", dbvView.getJquiPlugin());
+    view.put("jquiPluginOptions", dbvView.getJquiPluginOptions());
+    view.put("items", items);
 
     return Response.ok(view).build();
   }
@@ -145,21 +147,21 @@ public class ViewRest
       logger.warning(e.getMessage());
     }
 
-    List tabsList = dbvView.getDbvTableList();
-    tabsList.addAll(dbvView.getDbvGraphList());
-    Set<Tab> tabs = new TreeSet<Tab>();
-    for (Object o : tabsList)
+    List itemsList = dbvView.getDbvTableList();
+    itemsList.addAll(dbvView.getDbvGraphList());
+    Set<Item> items = new TreeSet<Item>();
+    for (Object o : itemsList)
     {
-      Tab tab = null;
+      Item item = null;
       if (o instanceof DbvTable)
-        tab = Table.getInstance((DbvTable)o, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, null);
+        item = Table.getInstance((DbvTable)o, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, null);
       else if (o instanceof DbvGraph)
-        tab = Graph.getInstance((DbvGraph)o, argsMap, filterMap, optionsMap, null);
-      if (tab == null)
+        item = Graph.getInstance((DbvGraph)o, argsMap, filterMap, optionsMap, null);
+      if (item == null)
         return Response.status(Response.Status.BAD_REQUEST).build();
-      tabs.add(tab);
+      items.add(item);
     }
 
-    return Response.ok(Tab.getHtml(tabs)).header("Content-Disposition", String.format("attachment;filename=%s.xls", dbvView.getDescription())).build();
+    return Response.ok(Item.getHtml(items)).header("Content-Disposition", String.format("attachment;filename=%s.xls", dbvView.getDescription())).build();
   }
 }

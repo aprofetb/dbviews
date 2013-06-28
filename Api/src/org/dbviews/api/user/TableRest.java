@@ -28,7 +28,7 @@ import org.dbviews.model.DbvTable;
 
 import org.dbviews.api.EJBClient;
 
-import org.dbviews.api.vo.Tab;
+import org.dbviews.api.vo.Item;
 
 import org.dbviews.api.vo.Table;
 import org.dbviews.commons.utils.SecUtils;
@@ -86,8 +86,12 @@ public class TableRest
     {
       logger.warning(e.getMessage());
     }
-    Tab tab = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson);
-    return tab == null ? Response.status(Response.Status.BAD_REQUEST).build() : Response.ok(tab).build();
+
+    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson);
+    if (item == null)
+      return Response.status(Response.Status.BAD_REQUEST).build();
+
+    return Response.ok(item).build();
   }
 
   @GET
@@ -127,10 +131,11 @@ public class TableRest
     {
       logger.warning(e.getMessage());
     }
-    Tab tab = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, focuson);
-    if (tab == null)
+
+    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, focuson);
+    if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 
-    return Response.ok(tab.getHtml()).header("Content-Disposition", String.format("attachment;filename=%s.xls", tab.getLabel())).build();
+    return Response.ok(item.getHtml()).header("Content-Disposition", String.format("attachment;filename=\"%s.xls\"", item.getLabel())).build();
   }
 }

@@ -28,7 +28,7 @@
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/api/user/view/${it.viewId}', { "args": "${it.args}", "filter": "${it.filter}", "countRows": "${it.countRows}" }, function(view, textStatus) {
-          buildTabs(view, '#content');
+          buildView(view, '#content');
         }).error(function(jqXHR) {
           alert(jqXHR.statusText);
         });

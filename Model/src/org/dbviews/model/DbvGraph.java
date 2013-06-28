@@ -36,20 +36,22 @@ public class DbvGraph
   private DbvView dbvView;
   @Column(name = "graph_type", nullable = false)
   private String graphType;
-  @Column(name = "serie_column", nullable = false)
+  @Column(name = "serie_column")
   private String serieColumn;
   @Column(name = "xaxis_column", nullable = false)
   private String xaxisColumn;
   @Column(name = "yaxis_column", nullable = false)
   private String yaxisColumn;
-  @Column(name = "xmode", nullable = false)
+  @Column(name = "xmode")
   private String xmode;
-  @Column(name = "ymode", nullable = false)
+  @Column(name = "ymode")
   private String ymode;
   @Column(name = "width", nullable = false)
   private int width;
   @Column(name = "height", nullable = false)
   private int height;
+  @Column(name = "legend_position")
+  private String legendPosition;
 
   public DbvGraph()
   {
@@ -212,5 +214,15 @@ public class DbvGraph
   public String getYmode()
   {
     return ymode;
+  }
+
+  public void setLegendPosition(String legendPosition)
+  {
+    this.legendPosition = legendPosition;
+  }
+
+  public String getLegendPosition()
+  {
+    return legendPosition;
   }
 }

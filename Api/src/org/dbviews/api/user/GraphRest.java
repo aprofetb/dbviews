@@ -23,7 +23,7 @@ import org.codehaus.jackson.map.type.TypeFactory;
 
 import org.dbviews.api.EJBClient;
 import org.dbviews.api.vo.Graph;
-import org.dbviews.api.vo.Tab;
+import org.dbviews.api.vo.Item;
 import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvGraph;
 import org.dbviews.model.DbvView;
@@ -74,7 +74,52 @@ public class GraphRest
     {
       logger.warning(e.getMessage());
     }
-    Tab tab = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson);
-    return tab == null ? Response.status(Response.Status.BAD_REQUEST).build() : Response.ok(tab).build();
+
+    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson);
+    if (item == null)
+      return Response.status(Response.Status.BAD_REQUEST).build();
+
+    return Response.ok(item).build();
+  }
+
+  @GET
+  @Path("/{graphId}/excel")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response excel(@PathParam("graphId") Integer graphId,
+                        @QueryParam("args") String args,
+                        @QueryParam("filter") String filter,
+                        @QueryParam("options") String options,
+                        @QueryParam("focuson") String focuson)
+  {
+    DbvGraph g = dbViewsEJB.getDbvGraphFindById(graphId);
+    if (g == null)
+      return Response.status(Response.Status.NOT_FOUND).build();
+    DbvView dbvView = g.getDbvView();
+    if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
+      return Response.status(Response.Status.UNAUTHORIZED).build();
+
+    ObjectMapper om = new ObjectMapper();
+    Map<String, String> argsMap = null;
+    Map<Integer, String> filterMap = null;
+    Map<Integer, Map<String, String>> optionsMap = null;
+    try
+    {
+      if (StringUtils.isNotBlank(args))
+        argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
+      if (StringUtils.isNotBlank(filter))
+        filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
+      if (StringUtils.isNotBlank(options))
+        optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
+    }
+    catch (Exception e)
+    {
+      logger.warning(e.getMessage());
+    }
+
+    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson);
+    if (item == null)
+      return Response.status(Response.Status.BAD_REQUEST).build();
+
+    return Response.ok(item.getHtml()).header("Content-Disposition", String.format("attachment;filename=\"%s.xls\"", item.getLabel())).build();
   }
 }

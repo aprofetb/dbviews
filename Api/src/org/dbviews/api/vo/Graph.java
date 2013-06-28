@@ -9,7 +9,7 @@ import org.dbviews.model.DbvConnection;
 import org.dbviews.model.DbvGraph;
 
 public class Graph
-  extends Tab
+  extends Item
 {
   private String[] graphType;
   private Integer serieColumn;
@@ -19,6 +19,7 @@ public class Graph
   private String ymode;
   private int width;
   private int height;
+  private String legendPosition;
 
   public Graph(DbvGraph g, Map<String, String> args, Map<Integer, String> filter, Map<Integer, Map<String, String>> options, String focuson)
   {
@@ -48,6 +49,7 @@ public class Graph
     graphType = g.getGraphType().split(",");
     width = g.getWidth();
     height = g.getHeight();
+    legendPosition = g.getLegendPosition();
     this.args = args != null ? args : new HashMap<String, String>();
     this.filter = filter != null ? filter : new HashMap<Integer, String>();
     this.options = options != null ? options : new HashMap<Integer, Map<String, String>>();
@@ -55,10 +57,10 @@ public class Graph
     this.focuson = focuson;
   }
 
-  public static Tab getInstance(DbvGraph g, Map<String, String> args, Map<Integer, String> filter, Map<Integer, Map<String, String>> options, String focuson)
+  public static Item getInstance(DbvGraph g, Map<String, String> args, Map<Integer, String> filter, Map<Integer, Map<String, String>> options, String focuson)
   {
     DbvConnection dbvConn = g.getDbvView().getDbvConnection();
-    Tab graph = new Graph(g, args, filter, options, focuson);
+    Item graph = new Graph(g, args, filter, options, focuson);
     return getInstance(graph, dbvConn, args, filter, options, null, 1, Integer.MAX_VALUE - 1);
   }
 
@@ -145,5 +147,15 @@ public class Graph
   public String getYmode()
   {
     return ymode;
+  }
+
+  public void setLegendPosition(String legendPosition)
+  {
+    this.legendPosition = legendPosition;
+  }
+
+  public String getLegendPosition()
+  {
+    return legendPosition;
   }
 }
