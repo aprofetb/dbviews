@@ -33,10 +33,10 @@ import org.dbviews.api.database.Connector;
 import org.dbviews.api.database.Discoverer;
 import org.dbviews.model.DbvConnection;
 
-public abstract class Tab
+public abstract class Item
   implements Comparable
 {
-  private final static Logger logger = Logger.getLogger(Tab.class.getName());
+  private final static Logger logger = Logger.getLogger(Item.class.getName());
   private final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
   private final static String FUNC_TOCHAR_MYSQL = "date_format(%s, '%%d/%%m/%%Y')";
   private final static String FUNC_TOCHAR_ORACLE = "to_char(%s, 'dd/mm/yyyy')";
@@ -272,8 +272,8 @@ public abstract class Tab
 
   public int compareTo(Object o)
   {
-    Tab table = (Tab)o;
-    return (int)Math.signum(index - table.index);
+    Item item = (Item)o;
+    return (int)Math.signum(index - item.index);
   }
 
   public void setOptions(Map<Integer, Map<String, String>> options)
@@ -327,16 +327,16 @@ public abstract class Tab
     queryDelay = Calendar.getInstance().getTimeInMillis() - initTime;
   }
 
-  public static Tab getInstance(Tab tab,
-                                DbvConnection dbvConn,
-                                Map<String, String> args,
-                                Map<Integer, String> filter,
-                                Map<Integer, Map<String, String>> options,
-                                Map<Integer, String> sortby,
-                                Integer offsetRow,
-                                Integer countRows)
+  public static Item getInstance(Item item,
+                                 DbvConnection dbvConn,
+                                 Map<String, String> args,
+                                 Map<Integer, String> filter,
+                                 Map<Integer, Map<String, String>> options,
+                                 Map<Integer, String> sortby,
+                                 Integer offsetRow,
+                                 Integer countRows)
   {
-    tab.startTiming();
+    item.startTiming();
     boolean mysql = dbvConn.getUrl().startsWith("jdbc:mysql:");
     Connection con = null;
     PreparedStatement ps = null;
@@ -344,9 +344,9 @@ public abstract class Tab
     String queryStr = null;
     try
     {
-      queryStr = tab.getQuery();
+      queryStr = item.getQuery();
       con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
-      if (tab.getHeaderCount() == 0)
+      if (item.getHeaderCount() == 0)
       {
         Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
         Map<Integer, Map<String, Object>> columnMap = disco.getColumns(con, String.format("select * from (%s) sq1 where 1=2", queryStr), args, false);
@@ -354,9 +354,9 @@ public abstract class Tab
         {
           Integer id = e.getKey();
           Map<String, Object> attrs = e.getValue();
-          tab.addHeader(new Header(id, (String)attrs.get("ColumnName"), (Integer)attrs.get("ColumnType")));
+          item.addHeader(new Header(id, (String)attrs.get("ColumnName"), (Integer)attrs.get("ColumnType")));
         }
-        tab.setColumnMap(columnMap);
+        item.setColumnMap(columnMap);
       }
 
       Map.Entry<String, List> queryArgs = Discoverer.processArgs(queryStr, args);
@@ -365,7 +365,7 @@ public abstract class Tab
 
       Pattern pattern = Pattern.compile("h_i_d_d_e_n__", Pattern.CASE_INSENSITIVE);
       Matcher matcher = pattern.matcher(queryStr);
-      tab.setQuery(matcher.replaceAll(""));
+      item.setQuery(matcher.replaceAll(""));
       queryStr = String.format("select * from (%s) sq1", queryStr);
       if (filter != null && filter.size() > 0)
       {
@@ -374,7 +374,7 @@ public abstract class Tab
         {
           Integer id = e.getKey();
           String value = e.getValue();
-          for (Header header : tab.getHeaders())
+          for (Header header : item.getHeaders())
           {
             if (id.equals(header.getId()))
             {
@@ -392,7 +392,7 @@ public abstract class Tab
                   }
                 }
                 queryStr += i++ == 0 ? " where " : " and ";
-                Map<String, Object> attrs = tab.getColumnMap().get(id);
+                Map<String, Object> attrs = item.getColumnMap().get(id);
                 String columnName = (String)attrs.get("ColumnName");
                 if (columnName == null)
                   continue;
@@ -429,9 +429,9 @@ public abstract class Tab
       Connector.relres(rs, ps);
       if (totalRows < offsetRow)
         offsetRow = 1;
-      tab.setOffsetRow(offsetRow);
-      tab.setCountRows(countRows);
-      tab.setTotalRows(totalRows);
+      item.setOffsetRow(offsetRow);
+      item.setCountRows(countRows);
+      item.setTotalRows(totalRows);
 
       // build order by clause
       StringBuilder sortbySb = new StringBuilder();
@@ -441,7 +441,7 @@ public abstract class Tab
         for (Map.Entry<Integer, String> e : sortby.entrySet())
         {
           Integer id = e.getKey();
-          Map<String, Object> attrs = tab.getColumnMap().get(id);
+          Map<String, Object> attrs = item.getColumnMap().get(id);
           String columnName = (String)attrs.get("ColumnName");
           Order dir = Order.valueOf(e.getValue());
           sortbySb.append(mysql ? String.format("%s %s", columnName, dir) : String.format("\"%s\" %s", columnName, dir));
@@ -470,9 +470,9 @@ public abstract class Tab
       while (rs.next())
       {
         Map<Integer, Object> cells = new HashMap<Integer, Object>();
-        for (int h = 0; h < tab.getHeaderCount(); h++)
+        for (int h = 0; h < item.getHeaderCount(); h++)
         {
-          Header header = tab.getHeaders().get(h);
+          Header header = item.getHeaders().get(h);
           Object value = rs.getObject(header.getDbColumnName());
           if (value instanceof Date || value instanceof Timestamp)
             value = sdf.format(value);
@@ -480,9 +480,9 @@ public abstract class Tab
         }
         rows.add(cells);
       }
-      tab.setFilter(filter != null ? filter : new HashMap<Integer, String>());
-      tab.setOptions(options != null ? options : new HashMap<Integer, Map<String, String>>());
-      tab.setRows(rows);
+      item.setFilter(filter != null ? filter : new HashMap<Integer, String>());
+      item.setOptions(options != null ? options : new HashMap<Integer, Map<String, String>>());
+      item.setRows(rows);
     }
     catch (Exception e)
     {
@@ -495,8 +495,8 @@ public abstract class Tab
     {
       Connector.relres(rs, ps, con);
     }
-    tab.stopTiming();
-    return tab;
+    item.stopTiming();
+    return item;
   }
 
   @XmlTransient
@@ -505,31 +505,31 @@ public abstract class Tab
     return getHtml(this);
   }
 
-  public static String getHtml(Tab table)
+  public static String getHtml(Item item)
   {
-    List<Tab> tables = new LinkedList<Tab>();
-    tables.add(table);
-    return getHtml(tables);
+    List<Item> items = new LinkedList<Item>();
+    items.add(item);
+    return getHtml(items);
   }
 
-  public static String getHtml(Collection<Tab> tables)
+  public static String getHtml(Collection<Item> items)
   {
     StringBuilder html = new StringBuilder();
     html.append("<table border='1' style='border:none'>");
-    for (Tab table : tables)
+    for (Item item : items)
     {
       html.append("<tr>");
       int exp = 0;
-      for (Header header : table.getHeaders())
+      for (Header header : item.getHeaders())
         if (header.isExportable())
           exp++;
       html.append(String.format("<th align='left' colspan='%s' style='border:none;font-size:18pt'>", exp));
-      html.append(StringEscapeUtils.escapeHtml(table.getLabel()));
+      html.append(StringEscapeUtils.escapeHtml(item.getLabel()));
       html.append("</th>");
       html.append("</tr>");
   
       html.append("<tr>");
-      for (Header header : table.getHeaders())
+      for (Header header : item.getHeaders())
       {
         if (!header.isExportable())
           continue;
@@ -539,10 +539,10 @@ public abstract class Tab
       }
       html.append("</tr>");
   
-      for (Map<Integer, Object> r : table.getRows())
+      for (Map<Integer, Object> r : item.getRows())
       {
         html.append("<tr>");
-        for (Header header : table.getHeaders())
+        for (Header header : item.getHeaders())
         {
           if (!header.isExportable())
             continue;
