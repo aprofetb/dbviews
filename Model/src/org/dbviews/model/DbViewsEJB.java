@@ -50,4 +50,6 @@ public interface DbViewsEJB
   void clearCache(Class... classes);
 
   DbvGraph getDbvGraphFindById(int id);
+
+  DbvHtmlBlock getDbvHtmlBlockFindById(int id);
 }

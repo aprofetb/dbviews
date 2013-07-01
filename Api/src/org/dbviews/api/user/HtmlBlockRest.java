@@ -1,11 +1,7 @@
 package org.dbviews.api.user;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import javax.annotation.security.RolesAllowed;
@@ -19,6 +15,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
@@ -27,44 +24,44 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import org.codehaus.jackson.map.type.TypeFactory;
 
-import org.dbviews.model.DbvTable;
-import org.dbviews.model.DbvView;
 import org.dbviews.api.EJBClient;
-import org.dbviews.api.vo.Graph;
+
 import org.dbviews.api.vo.HtmlBlock;
 import org.dbviews.api.vo.Item;
-import org.dbviews.api.vo.Table;
-import org.dbviews.commons.utils.SecUtils;
-import org.dbviews.model.DbvGraph;
-import org.dbviews.model.DbvHtmlBlock;
 
-@Path("user/view")
+import org.dbviews.commons.utils.SecUtils;
+import org.dbviews.model.DbvHtmlBlock;
+import org.dbviews.model.DbvView;
+
+@Path("user/block")
 @RolesAllowed("valid-users")
-public class ViewRest
+public class HtmlBlockRest
   extends EJBClient
 {
-  private final static Logger logger = Logger.getLogger(ViewRest.class.getName());
+  private final static Logger logger = Logger.getLogger(HtmlBlockRest.class.getName());
 
-  public ViewRest()
+  public HtmlBlockRest()
     throws NamingException
   {
     super();
   }
 
   @GET
-  @Path("/{viewId}")
+  @Path("/{blockId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getView(@PathParam("viewId") Integer viewId,
-                          @QueryParam("args") String args,
-                          @QueryParam("filter") String filter,
-                          @QueryParam("options") String options,
-                          @QueryParam("offsetRow") @DefaultValue("1") Integer offsetRow,
-                          @QueryParam("countRows") @DefaultValue("20") Integer countRows,
-                          @QueryParam("sortby") String sortby)
+  public Response getBlock(@PathParam("blockId") Integer blockId, 
+                           @QueryParam("args") String args, 
+                           @QueryParam("filter") String filter, 
+                           @QueryParam("options") String options, 
+                           @QueryParam("offsetRow") @DefaultValue("1") Integer offsetRow, 
+                           @QueryParam("countRows") @DefaultValue("20") Integer countRows, 
+                           @QueryParam("sortby") String sortby, 
+                           @QueryParam("focuson") String focuson)
   {
-    DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
-    if (dbvView == null)
+    DbvHtmlBlock b = dbViewsEJB.getDbvHtmlBlockFindById(blockId);
+    if (b == null)
       return Response.status(Response.Status.NOT_FOUND).build();
+    DbvView dbvView = b.getDbvView();
     if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
       return Response.status(Response.Status.UNAUTHORIZED).build();
 
@@ -89,45 +86,27 @@ public class ViewRest
       logger.warning(e.getMessage());
     }
 
-    List itemsList = dbvView.getDbvTableList();
-    itemsList.addAll(dbvView.getDbvGraphList());
-    itemsList.addAll(dbvView.getDbvHtmlBlockList());
-    Set<Item> items = new TreeSet<Item>();
-    for (Object o : itemsList)
-    {
-      Item item = null;
-      if (o instanceof DbvTable)
-        item = Table.getInstance((DbvTable)o, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, null);
-      else if (o instanceof DbvGraph)
-        item = Graph.getInstance((DbvGraph)o, argsMap, filterMap, optionsMap, null);
-      else if (o instanceof DbvHtmlBlock)
-        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, null);
-      if (item == null)
-        return Response.status(Response.Status.BAD_REQUEST).build();
-      items.add(item);
-    }
+    Item item = HtmlBlock.getInstance(b, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson);
+    if (item == null)
+      return Response.status(Response.Status.BAD_REQUEST).build();
 
-    Map<String, Object> view = new HashMap<String, Object>();
-    view.put("description", dbvView.getDescription());
-    view.put("jquiPlugin", dbvView.getJquiPlugin());
-    view.put("jquiPluginOptions", dbvView.getJquiPluginOptions());
-    view.put("items", items);
-
-    return Response.ok(view).build();
+    return Response.ok(item).build();
   }
 
   @GET
-  @Path("/{viewId}/excel")
+  @Path("/{blockId}/excel")
   @Produces(MediaType.TEXT_HTML)
-  public Response excel(@PathParam("viewId") Integer viewId,
+  public Response excel(@PathParam("blockId") Integer blockId,
                         @QueryParam("args") String args,
                         @QueryParam("filter") String filter,
                         @QueryParam("options") String options,
-                        @QueryParam("sortby") String sortby)
+                        @QueryParam("sortby") String sortby,
+                        @QueryParam("focuson") String focuson)
   {
-    DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
-    if (dbvView == null)
+    DbvHtmlBlock b = dbViewsEJB.getDbvHtmlBlockFindById(blockId);
+    if (b == null)
       return Response.status(Response.Status.NOT_FOUND).build();
+    DbvView dbvView = b.getDbvView();
     if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
       return Response.status(Response.Status.UNAUTHORIZED).build();
 
@@ -152,24 +131,10 @@ public class ViewRest
       logger.warning(e.getMessage());
     }
 
-    List itemsList = dbvView.getDbvTableList();
-    itemsList.addAll(dbvView.getDbvGraphList());
-    itemsList.addAll(dbvView.getDbvHtmlBlockList());
-    Set<Item> items = new TreeSet<Item>();
-    for (Object o : itemsList)
-    {
-      Item item = null;
-      if (o instanceof DbvTable)
-        item = Table.getInstance((DbvTable)o, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, null);
-      else if (o instanceof DbvGraph)
-        item = Graph.getInstance((DbvGraph)o, argsMap, filterMap, optionsMap, null);
-      else if (o instanceof DbvHtmlBlock)
-        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, null);
-      if (item == null)
-        return Response.status(Response.Status.BAD_REQUEST).build();
-      items.add(item);
-    }
+    Item item = HtmlBlock.getInstance(b, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, focuson);
+    if (item == null)
+      return Response.status(Response.Status.BAD_REQUEST).build();
 
-    return Response.ok(Item.getHtml(items)).header("Content-Disposition", String.format("attachment;filename=%s.xls", dbvView.getDescription())).build();
+    return Response.ok(item.getHtml()).header("Content-Disposition", String.format("attachment;filename=\"%s.xls\"", item.getLabel())).build();
   }
 }

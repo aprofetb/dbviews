@@ -37,6 +37,8 @@ public class DbvView
   @OneToMany(mappedBy = "dbvView")
   private List<DbvGraph> dbvGraphList;
   @OneToMany(mappedBy = "dbvView")
+  private List<DbvHtmlBlock> dbvHtmlBlockList;
+  @OneToMany(mappedBy = "dbvView")
   private List<DbvTable> dbvTableList;
   @ManyToOne
   @JoinColumn(name = "connection_id")
@@ -99,6 +101,31 @@ public class DbvView
     getDbvGraphList().remove(dbvGraph);
     dbvGraph.setDbvView(null);
     return dbvGraph;
+  }
+
+
+  public List<DbvHtmlBlock> getDbvHtmlBlockList()
+  {
+    return dbvHtmlBlockList;
+  }
+
+  public void setDbvHtmlBlockList(List<DbvHtmlBlock> dbvHtmlBlockList)
+  {
+    this.dbvHtmlBlockList = dbvHtmlBlockList;
+  }
+
+  public DbvHtmlBlock addDbvHtmlBlock(DbvHtmlBlock dbvHtmlBlock)
+  {
+    getDbvHtmlBlockList().add(dbvHtmlBlock);
+    dbvHtmlBlock.setDbvView(this);
+    return dbvHtmlBlock;
+  }
+
+  public DbvHtmlBlock removeDbvHtmlBlock(DbvHtmlBlock dbvHtmlBlock)
+  {
+    getDbvHtmlBlockList().remove(dbvHtmlBlock);
+    dbvHtmlBlock.setDbvView(null);
+    return dbvHtmlBlock;
   }
 
   public List<DbvTable> getDbvTableList()

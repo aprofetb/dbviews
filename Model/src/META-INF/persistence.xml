@@ -9,6 +9,7 @@
     <class>org.dbviews.model.DbvTable</class>
     <class>org.dbviews.model.DbvView</class>
     <class>org.dbviews.model.DbvTableField</class>
+    <class>org.dbviews.model.DbvHtmlBlock</class>
     <properties>
       <property name="eclipselink.target-server" value="WebLogic_10"/>
       <property name="javax.persistence.jtaDataSource"

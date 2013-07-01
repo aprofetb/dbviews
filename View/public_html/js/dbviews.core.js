@@ -79,6 +79,13 @@ function buildItem(item, container) {
   else if (item.type == 'graph') {
     buildGraph(item, $item);
   }
+  else if (item.type == 'block') {
+    buildBlock(item, $item);
+  }
+  else {
+    alert('Unknown item type');
+    return false;
+  }
   $item.append(buildModal());
   return $item;
 }
@@ -474,9 +481,13 @@ function buildGraph(item, container) {
           show: true,
           radius: 2/3,
           formatter: function (label, series) {
-            return '<div style="font-size:8pt; text-align:center; padding:2px; color:white; width:50px; height:50px;">' + label + ': ' + series.data[0][1] + ' (' + series.percent.toFixed(1) + '%)<\/div>';
+            return '<div class="pie-label">' + label + ': ' + series.data[0][1] + ' (' + series.percent.toFixed(1) + '%)<\/div>';
           },
-          threshold: 0.05
+          threshold: 0.05,
+          background: {
+            opacity: 0.3,
+            color: '#000'
+          }
         },
         stroke: {
           color: '#fff',
@@ -535,7 +546,7 @@ function buildGraph(item, container) {
             top: pos.pageY + 5,
             left: pos.pageX + 5
           })
-          .html((label ? label + ': ' : '') + '[x=' + gItem.datapoint[0] + ', y=' + gItem.datapoint[1] + ']')
+          .html((label ? label + ': ' : '') + '[x=' + gItem.datapoint[0] + (tPie ? '' : ', y=' + gItem.datapoint[1]) + ']')
           .appendTo('body')
           .fadeIn(200);
       }
@@ -587,4 +598,12 @@ function buildGraph(item, container) {
   }
 
   return $graphContainer;
+}
+
+function buildBlock(item, container) {
+  if (item.rows.length > 0) {
+    var block = item.rows[0][1];
+    if (block)
+      $(container).append(block);
+  }
 }

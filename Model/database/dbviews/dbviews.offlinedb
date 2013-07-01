@@ -3,6 +3,6 @@
    <hash n="dataTypeSettings">
       <value n="sourceKey" v="oracle.javatools.db.mysql.MySQL5"/>
    </hash>
-   <value n="id" v="191535e7-013f-1000-8001-0a1509a6a548"/>
+   <value n="id" v="967a54ff-013f-1000-8001-0a1509a63187"/>
    <value n="name" v="dbviews"/>
 </ProviderSettings>

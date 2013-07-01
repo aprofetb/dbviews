@@ -200,4 +200,17 @@ public class DbViewsEJBBean
       return null;
     }
   }
+
+  /** <code>select o from DbvHtmlBlock o where o.id = :id</code> */
+  public DbvHtmlBlock getDbvHtmlBlockFindById(int id)
+  {
+    try
+    {
+      return (DbvHtmlBlock)em.createNamedQuery("DbvHtmlBlock.findById").setParameter("id", id).setMaxResults(1).getSingleResult();
+    }
+    catch (NoResultException e)
+    {
+      return null;
+    }
+  }
 }
