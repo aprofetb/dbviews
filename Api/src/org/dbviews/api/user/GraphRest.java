@@ -84,7 +84,7 @@ public class GraphRest
 
   @GET
   @Path("/{graphId}/excel")
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.TEXT_HTML)
   public Response excel(@PathParam("graphId") Integer graphId,
                         @QueryParam("args") String args,
                         @QueryParam("filter") String filter,

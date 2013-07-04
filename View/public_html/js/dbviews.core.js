@@ -31,7 +31,7 @@ function buildView(view, container) {
           .css('padding', '.3em 1em')
           .append(
             $('<span/>')
-              .addClass(item.type == 'table' ? 'ui-icon ui-icon-calculator' : 'ui-icon ui-icon-image')
+              .addClass('ui-icon ' + (item.type == 'table' ? 'ui-icon-calculator' : item.type == 'graph' ? 'ui-icon-image' : 'ui-icon-carat-2-e-w'))
               .css('display', 'inline-block')
           )
           .append(item.label)
@@ -43,7 +43,7 @@ function buildView(view, container) {
         .attr('title', item.description)
         .append(
           $('<span/>')
-            .addClass(item.type == 'table' ? 'ui-icon ui-icon-calculator' : 'ui-icon ui-icon-image')
+            .addClass('ui-icon ' + (item.type == 'table' ? 'ui-icon-calculator' : item.type == 'graph' ? 'ui-icon-image' : 'ui-icon-carat-2-e-w'))
             .css('display', 'inline-block')
         )
         .append(item.label);
@@ -461,7 +461,7 @@ function buildGraph(item, container) {
     .css('border', 'none')
     .append($('<tr/>')
       .append($('<td/>').attr('valign', 'top').append($graph))
-      .append($('<td/>').attr('width', '100px'))
+      .append($('<td/>').attr('width', '30px'))
       .append($('<td/>').attr('valign', 'top').append($filterItem))
     )
     .append($('<tr/>')
