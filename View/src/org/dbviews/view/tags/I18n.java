@@ -1,10 +1,11 @@
 package org.dbviews.view.tags;
 
-import javax.servlet.jsp.tagext.*;
-import javax.servlet.jsp.*;
-
-import java.util.*;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
+
+import javax.servlet.jsp.JspException;
+import javax.servlet.jsp.JspWriter;
+import javax.servlet.jsp.tagext.TagSupport;
 
 public class I18n
   extends TagSupport
