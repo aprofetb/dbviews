@@ -52,7 +52,7 @@ function buildView(view, container) {
     buildItem(item, $view, true);
   }
   if ($.type($view[view.jquiPlugin]) !== 'function') {
-    alert(msg['jqui_plugin_not_found']);
+    dlg.alert(msg['jqui_plugin_not_found']);
     return null;
   }
   var options;
@@ -60,7 +60,7 @@ function buildView(view, container) {
     options = $.parseJSON(view.jquiPluginOptions);
   }
   catch (err) {
-    alert(msg['jqui_plugin_parsing_error'] + '<br>' + err);
+    dlg.alert(msg['jqui_plugin_parsing_error'] + '<br>' + err);
     return null;
   }
   $view[view.jquiPlugin](options);
@@ -83,7 +83,7 @@ function buildItem(item, container) {
     buildBlock(item, $item);
   }
   else {
-    alert('Unknown item type');
+    dlg.alert('Unknown item type');
     return false;
   }
   $item.append(buildModal());
@@ -145,7 +145,7 @@ function buildTable(item, container) {
           buildToolbar(newItem, $item);
           $item.append(buildModal()).removeClass('loading');
         }).error(function() {
-          alert(msg['alert_error']);
+          dlg.alert(msg['alert_error']);
         });
       })
     );
@@ -178,7 +178,7 @@ function buildTable(item, container) {
         sft.focus();
         sft.select();
       }).error(function() {
-        alert(msg['alert_error']);
+        dlg.alert(msg['alert_error']);
       });
       return false;
     });
@@ -201,7 +201,7 @@ function buildTable(item, container) {
           sft.focus();
           sft.select();
         }).error(function() {
-          alert(msg['alert_error']);
+          dlg.alert(msg['alert_error']);
         });
         return false;
       });
@@ -260,7 +260,7 @@ function buildToolbar(item, container) {
         buildToolbar(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
-        alert(msg['alert_error']);
+        dlg.alert(msg['alert_error']);
         $('#item-' + item.type + '-' + item.id).removeClass('loading');
       });
     }));
@@ -281,7 +281,7 @@ function buildToolbar(item, container) {
         buildToolbar(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
-        alert(msg['alert_error']);
+        dlg.alert(msg['alert_error']);
         $('#item-' + item.type + '-' + item.id).removeClass('loading');
       });
     }));
@@ -306,7 +306,7 @@ function buildToolbar(item, container) {
             buildToolbar(newItem, $item);
             $item.append(buildModal()).removeClass('loading');
           }).error(function() {
-            alert(msg['alert_error']);
+            dlg.alert(msg['alert_error']);
             $('#item-' + item.type + '-' + item.id).removeClass('loading');
           });
         }));
@@ -329,7 +329,7 @@ function buildToolbar(item, container) {
         buildToolbar(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
-        alert(msg['alert_error']);
+        dlg.alert(msg['alert_error']);
         $('#item-' + item.type + '-' + item.id).removeClass('loading');
       });
     }));
@@ -350,7 +350,7 @@ function buildToolbar(item, container) {
         buildToolbar(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
-        alert(msg['alert_error']);
+        dlg.alert(msg['alert_error']);
         $('#item-' + item.type + '-' + item.id).removeClass('loading');
       });
     }));
@@ -377,7 +377,7 @@ function buildToolbar(item, container) {
       }
       $item.append(buildModal()).removeClass('loading');
     }).error(function() {
-      alert(msg['alert_error']);
+      dlg.alert(msg['alert_error']);
       $('#item-' + item.type + '-' + item.id).removeClass('loading');
     });
   })).append($('<a/>').attr({
@@ -450,7 +450,6 @@ function buildGraph(item, container) {
   var tLines = item.graphType.indexOf('lines') != -1;
   var tPoints = item.graphType.indexOf('points') != -1;
   var data = getGraphData(item);
-  //alert(item.label + ': ' + JSON.stringify(data));
   var $graph = $('<div/>').addClass('graph').css({
     width: item.width,
     height: item.height
@@ -556,9 +555,9 @@ function buildGraph(item, container) {
         return;
       var label = gItem.series.label;
       if (tPie)
-        info(gItem.series.label + ': ' + parseFloat(gItem.series.percent).toFixed(2) + '%');
+        dlg.info(gItem.series.label + ': ' + parseFloat(gItem.series.percent).toFixed(2) + '%');
       else
-        info((label ? label + ': ' : '') + '[x=' + gItem.datapoint[0].toFixed(2) + ', y=' + gItem.datapoint[1].toFixed(2) + ']');
+        dlg.info((label ? label + ': ' : '') + '[x=' + gItem.datapoint[0].toFixed(2) + ', y=' + gItem.datapoint[1].toFixed(2) + ']');
     }
   );
 
@@ -590,7 +589,7 @@ function buildGraph(item, container) {
         sft.focus();
         sft.select();
       }).error(function() {
-        alert(msg['alert_error']);
+        dlg.alert(msg['alert_error']);
       });
       return false;
     });

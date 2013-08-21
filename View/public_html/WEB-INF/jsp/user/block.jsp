@@ -25,7 +25,7 @@
         $.get('/api/user/block/${it.blockId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(block, textStatus) {
           buildItem(block, '#content');
         }).error(function(jqXHR) {
-          alert(jqXHR.statusText);
+          dlg.alert(jqXHR.statusText);
         });
       });
     </script>

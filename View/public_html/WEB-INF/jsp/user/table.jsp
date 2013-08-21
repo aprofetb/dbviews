@@ -25,7 +25,7 @@
         $.get('/api/user/table/${it.tableId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(table, textStatus) {
           buildItem(table, '#content');
         }).error(function(jqXHR) {
-          alert(jqXHR.statusText);
+          dlg.alert(jqXHR.statusText);
         });
       });
     </script>

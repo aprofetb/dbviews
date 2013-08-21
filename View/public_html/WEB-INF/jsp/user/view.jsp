@@ -30,7 +30,7 @@
         $.get('/api/user/view/${it.viewId}', { "args": "${it.args}", "filter": "${it.filter}", "countRows": "${it.countRows}" }, function(view, textStatus) {
           buildView(view, '#content');
         }).error(function(jqXHR) {
-          alert(jqXHR.statusText);
+          dlg.alert(jqXHR.statusText);
         });
       });
     </script>

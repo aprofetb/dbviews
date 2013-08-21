@@ -30,7 +30,7 @@
         $.get('/api/user/graph/${it.graphId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(graph, textStatus) {
           buildItem(graph, '#content');
         }).error(function(jqXHR) {
-          alert(jqXHR.statusText);
+          dlg.alert(jqXHR.statusText);
         });
       });
     </script>
