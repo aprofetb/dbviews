@@ -26,7 +26,7 @@ import org.codehaus.jackson.map.type.TypeFactory;
 
 import org.dbviews.model.DbvTable;
 
-import org.dbviews.api.EJBClient;
+import org.dbviews.api.ServiceBase;
 
 import org.dbviews.api.vo.Item;
 
@@ -37,7 +37,7 @@ import org.dbviews.model.DbvView;
 @Path("user/table")
 @RolesAllowed("valid-users")
 public class TableRest
-  extends EJBClient
+  extends ServiceBase
 {
   private final static Logger logger = Logger.getLogger(TableRest.class.getName());
 

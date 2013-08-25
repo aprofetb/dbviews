@@ -22,7 +22,7 @@
     <script type="text/javascript" src="/dbviews/js/dbviews.dialogs.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
-        $.get('/api/user/table/${it.tableId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(table, textStatus) {
+        $.get('/api/user/table/${it.tableId}' + window.location.search, {}, function(table, textStatus) {
           buildItem(table, '#content');
         }).error(function(jqXHR) {
           dlg.alert(jqXHR.statusText);

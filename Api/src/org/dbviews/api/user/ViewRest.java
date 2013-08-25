@@ -29,7 +29,7 @@ import org.codehaus.jackson.map.type.TypeFactory;
 
 import org.dbviews.model.DbvTable;
 import org.dbviews.model.DbvView;
-import org.dbviews.api.EJBClient;
+import org.dbviews.api.ServiceBase;
 import org.dbviews.api.vo.Graph;
 import org.dbviews.api.vo.HtmlBlock;
 import org.dbviews.api.vo.Item;
@@ -41,7 +41,7 @@ import org.dbviews.model.DbvHtmlBlock;
 @Path("user/view")
 @RolesAllowed("valid-users")
 public class ViewRest
-  extends EJBClient
+  extends ServiceBase
 {
   private final static Logger logger = Logger.getLogger(ViewRest.class.getName());
 
@@ -56,11 +56,8 @@ public class ViewRest
   @Produces(MediaType.APPLICATION_JSON)
   public Response getView(@PathParam("viewId") Integer viewId,
                           @QueryParam("args") String args,
-                          @QueryParam("filter") String filter,
-                          @QueryParam("options") String options,
-                          @QueryParam("offsetRow") @DefaultValue("1") Integer offsetRow,
                           @QueryParam("countRows") @DefaultValue("20") Integer countRows,
-                          @QueryParam("sortby") String sortby)
+                          @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
     if (dbvView == null)
@@ -70,19 +67,12 @@ public class ViewRest
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
-    Map<Integer, String> filterMap = null;
-    Map<Integer, Map<String, String>> optionsMap = null;
-    Map<Integer, String> sortbyMap = null;
     try
     {
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
-      if (StringUtils.isNotBlank(filter))
-        filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
-      if (StringUtils.isNotBlank(options))
-        optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
-      if (StringUtils.isNotBlank(sortby))
-        sortbyMap = (Map<Integer, String>)om.readValue(sortby, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
+      if (paqp)
+        processAllQueryParams(argsMap, "args,countRows,pap");
     }
     catch (Exception e)
     {
@@ -97,11 +87,11 @@ public class ViewRest
     {
       Item item = null;
       if (o instanceof DbvTable)
-        item = Table.getInstance((DbvTable)o, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, null);
+        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, countRows, null);
       else if (o instanceof DbvGraph)
-        item = Graph.getInstance((DbvGraph)o, argsMap, filterMap, optionsMap, null);
+        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null);
       else if (o instanceof DbvHtmlBlock)
-        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, null);
+        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap, null, null, null, 1, Integer.MAX_VALUE - 1, null);
       if (item == null)
         return Response.status(Response.Status.BAD_REQUEST).build();
       items.add(item);
@@ -121,9 +111,7 @@ public class ViewRest
   @Produces(MediaType.TEXT_HTML)
   public Response excel(@PathParam("viewId") Integer viewId,
                         @QueryParam("args") String args,
-                        @QueryParam("filter") String filter,
-                        @QueryParam("options") String options,
-                        @QueryParam("sortby") String sortby)
+                        @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
     if (dbvView == null)
@@ -133,19 +121,12 @@ public class ViewRest
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
-    Map<Integer, String> filterMap = null;
-    Map<Integer, Map<String, String>> optionsMap = null;
-    Map<Integer, String> sortbyMap = null;
     try
     {
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
-      if (StringUtils.isNotBlank(filter))
-        filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
-      if (StringUtils.isNotBlank(options))
-        optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
-      if (StringUtils.isNotBlank(sortby))
-        sortbyMap = (Map<Integer, String>)om.readValue(sortby, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
+      if (paqp)
+        processAllQueryParams(argsMap, "args,countRows,pap");
     }
     catch (Exception e)
     {
@@ -160,11 +141,9 @@ public class ViewRest
     {
       Item item = null;
       if (o instanceof DbvTable)
-        item = Table.getInstance((DbvTable)o, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, null);
+        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, Integer.MAX_VALUE - 1, null);
       else if (o instanceof DbvGraph)
-        item = Graph.getInstance((DbvGraph)o, argsMap, filterMap, optionsMap, null);
-      else if (o instanceof DbvHtmlBlock)
-        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, null);
+        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null);
       if (item == null)
         return Response.status(Response.Status.BAD_REQUEST).build();
       items.add(item);

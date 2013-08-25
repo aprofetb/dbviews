@@ -24,7 +24,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import org.codehaus.jackson.map.type.TypeFactory;
 
-import org.dbviews.api.EJBClient;
+import org.dbviews.api.ServiceBase;
 
 import org.dbviews.api.vo.HtmlBlock;
 import org.dbviews.api.vo.Item;
@@ -36,7 +36,7 @@ import org.dbviews.model.DbvView;
 @Path("user/block")
 @RolesAllowed("valid-users")
 public class HtmlBlockRest
-  extends EJBClient
+  extends ServiceBase
 {
   private final static Logger logger = Logger.getLogger(HtmlBlockRest.class.getName());
 

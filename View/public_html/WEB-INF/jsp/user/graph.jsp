@@ -27,7 +27,7 @@
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.time.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
-        $.get('/api/user/graph/${it.graphId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(graph, textStatus) {
+        $.get('/api/user/graph/${it.graphId}' + window.location.search, {}, function(graph, textStatus) {
           buildItem(graph, '#content');
         }).error(function(jqXHR) {
           dlg.alert(jqXHR.statusText);

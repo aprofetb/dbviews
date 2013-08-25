@@ -19,7 +19,7 @@
     <script type="text/javascript" src="/dbviews/js/dbviews.i18n.js.jsp"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.core.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.util.js"></script>
-    <script type="text/javascript" src="/dbviews/js/flot/dbviews.dialogs.js"></script>
+    <script type="text/javascript" src="/dbviews/js/dbviews.dialogs.js"></script>
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.pie.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.categories.min.js"></script>
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.time.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
-        $.get('/api/user/view/${it.viewId}', { "args": "${it.args}", "filter": "${it.filter}", "countRows": "${it.countRows}" }, function(view, textStatus) {
+        $.get('/api/user/view/${it.viewId}' + window.location.search, {}, function(view, textStatus) {
           buildView(view, '#content');
         }).error(function(jqXHR) {
           dlg.alert(jqXHR.statusText);

@@ -56,4 +56,9 @@ public class StrUtils
     }    
     return str;
   }
+
+  public static String toString(Object obj)
+  {
+    return obj == null ? null : obj.toString();
+  }
 }
