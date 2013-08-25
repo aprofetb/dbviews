@@ -14,13 +14,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.dbviews.model.DbvConnection;
-import org.dbviews.api.EJBClient;
+import org.dbviews.api.ServiceBase;
 import org.dbviews.api.wrappers.BeanWrapper;
 
 @Path("admin/connection")
 @RolesAllowed("admins")
 public class ConnectionRest
-  extends EJBClient
+  extends ServiceBase
 {
   public ConnectionRest()
     throws NamingException

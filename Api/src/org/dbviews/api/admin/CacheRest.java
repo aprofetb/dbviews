@@ -10,12 +10,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.dbviews.api.EJBClient;
+import org.dbviews.api.ServiceBase;
 
 @Path("admin/cache")
 @RolesAllowed("admins")
 public class CacheRest
-  extends EJBClient
+  extends ServiceBase
 {
   public CacheRest()
     throws NamingException
