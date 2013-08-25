@@ -19,12 +19,12 @@
     <script type="text/javascript" src="/dbviews/js/dbviews.i18n.js.jsp"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.core.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.util.js"></script>
-    <script type="text/javascript" src="/dbviews/js/dbviews.dialogs.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.min.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.pie.min.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.categories.min.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.canvas.min.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.time.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/dbviews.dialogs.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.pie.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.categories.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.canvas.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.time.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/api/user/view/${it.viewId}', { "args": "${it.args}", "filter": "${it.filter}", "countRows": "${it.countRows}" }, function(view, textStatus) {

@@ -20,11 +20,11 @@
     <script type="text/javascript" src="/dbviews/js/dbviews.core.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.util.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.dialogs.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.min.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.pie.min.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.categories.min.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.canvas.min.js"></script>
-    <script type="text/javascript" src="/dbviews/js/jquery.flot.time.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.pie.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.categories.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.canvas.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.time.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/api/user/graph/${it.graphId}', { "args": "${it.args}", "filter": "${it.filter}" }, function(graph, textStatus) {
