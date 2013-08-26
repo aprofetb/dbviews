@@ -97,12 +97,12 @@ public class TableRest
   @GET
   @Path("/{tableId}/excel")
   @Produces(MediaType.TEXT_HTML)
-  public Response excel(@PathParam("tableId") Integer tableId,
-                        @QueryParam("args") String args,
-                        @QueryParam("filter") String filter,
-                        @QueryParam("options") String options,
-                        @QueryParam("sortby") String sortby,
-                        @QueryParam("focuson") String focuson)
+  public Response exportToExcel(@PathParam("tableId") Integer tableId,
+                                @QueryParam("args") String args,
+                                @QueryParam("filter") String filter,
+                                @QueryParam("options") String options,
+                                @QueryParam("sortby") String sortby,
+                                @QueryParam("focuson") String focuson)
   {
     DbvTable t = dbViewsEJB.getDbvTableFindById(tableId);
     if (t == null)

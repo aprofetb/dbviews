@@ -109,9 +109,9 @@ public class ViewRest
   @GET
   @Path("/{viewId}/excel")
   @Produces(MediaType.TEXT_HTML)
-  public Response excel(@PathParam("viewId") Integer viewId,
-                        @QueryParam("args") String args,
-                        @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+  public Response exportToExcel(@PathParam("viewId") Integer viewId,
+                                @QueryParam("args") String args,
+                                @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
     if (dbvView == null)

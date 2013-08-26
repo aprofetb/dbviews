@@ -96,12 +96,12 @@ public class HtmlBlockRest
   @GET
   @Path("/{blockId}/excel")
   @Produces(MediaType.TEXT_HTML)
-  public Response excel(@PathParam("blockId") Integer blockId,
-                        @QueryParam("args") String args,
-                        @QueryParam("filter") String filter,
-                        @QueryParam("options") String options,
-                        @QueryParam("sortby") String sortby,
-                        @QueryParam("focuson") String focuson)
+  public Response exportToExcel(@PathParam("blockId") Integer blockId,
+                                @QueryParam("args") String args,
+                                @QueryParam("filter") String filter,
+                                @QueryParam("options") String options,
+                                @QueryParam("sortby") String sortby,
+                                @QueryParam("focuson") String focuson)
   {
     DbvHtmlBlock b = dbViewsEJB.getDbvHtmlBlockFindById(blockId);
     if (b == null)

@@ -85,11 +85,11 @@ public class GraphRest
   @GET
   @Path("/{graphId}/excel")
   @Produces(MediaType.TEXT_HTML)
-  public Response excel(@PathParam("graphId") Integer graphId,
-                        @QueryParam("args") String args,
-                        @QueryParam("filter") String filter,
-                        @QueryParam("options") String options,
-                        @QueryParam("focuson") String focuson)
+  public Response exportToExcel(@PathParam("graphId") Integer graphId,
+                                @QueryParam("args") String args,
+                                @QueryParam("filter") String filter,
+                                @QueryParam("options") String options,
+                                @QueryParam("focuson") String focuson)
   {
     DbvGraph g = dbViewsEJB.getDbvGraphFindById(graphId);
     if (g == null)
