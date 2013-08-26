@@ -35,18 +35,11 @@ public class HtmlBlock
     this.focuson = focuson;
   }
 
-  public static Item getInstance(DbvHtmlBlock t,
-                                Map<String, String> args,
-                                Map<Integer, String> filter,
-                                Map<Integer, Map<String, String>> options,
-                                Map<Integer, String> sortby,
-                                Integer offsetRow,
-                                Integer countRows,
-                                String focuson)
+  public static Item getInstance(DbvHtmlBlock t, Map<String, String> args)
   {
     DbvConnection dbvConn = t.getDbvView().getDbvConnection();
-    Item block = new HtmlBlock(t, args, filter, options, sortby, focuson);
-    return getInstance(block, dbvConn, args, filter, options, sortby, offsetRow, countRows);
+    Item block = new HtmlBlock(t, args, null, null, null, null);
+    return getInstance(block, dbvConn, args, null, null, null, 1, Integer.MAX_VALUE - 1);
   }
 
   public String getType()

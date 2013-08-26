@@ -57,7 +57,8 @@ public class TableRest
                            @QueryParam("offsetRow") @DefaultValue("1") Integer offsetRow, 
                            @QueryParam("countRows") @DefaultValue("20") Integer countRows, 
                            @QueryParam("sortby") String sortby, 
-                           @QueryParam("focuson") String focuson)
+                           @QueryParam("focuson") String focuson,
+                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvTable t = dbViewsEJB.getDbvTableFindById(tableId);
     if (t == null)
@@ -75,6 +76,8 @@ public class TableRest
     {
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
+      if (paqp)
+        processAllQueryParams(argsMap, "args,filter,options,offsetRow,countRows,sortby,focuson,paqp");
       if (StringUtils.isNotBlank(filter))
         filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
       if (StringUtils.isNotBlank(options))
@@ -102,7 +105,8 @@ public class TableRest
                                 @QueryParam("filter") String filter,
                                 @QueryParam("options") String options,
                                 @QueryParam("sortby") String sortby,
-                                @QueryParam("focuson") String focuson)
+                                @QueryParam("focuson") String focuson,
+                                @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvTable t = dbViewsEJB.getDbvTableFindById(tableId);
     if (t == null)
@@ -120,6 +124,8 @@ public class TableRest
     {
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
+      if (paqp)
+        processAllQueryParams(argsMap, "args,filter,options,sortby,focuson,paqp");
       if (StringUtils.isNotBlank(filter))
         filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
       if (StringUtils.isNotBlank(options))

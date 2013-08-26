@@ -41,7 +41,7 @@ public class ServiceBase
     for (Object k : params.keySet())
     {
       String key = k.toString();
-      if (!p2s.contains(key))
+      if (!p2s.contains(key) && !argsMap.containsKey(key))
         argsMap.put(key, request.getParameter(key));
     }
   }

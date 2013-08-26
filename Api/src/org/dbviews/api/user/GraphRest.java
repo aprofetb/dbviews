@@ -7,6 +7,7 @@ import javax.annotation.security.RolesAllowed;
 
 import javax.naming.NamingException;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -48,7 +49,8 @@ public class GraphRest
                            @QueryParam("args") String args, 
                            @QueryParam("filter") String filter, 
                            @QueryParam("options") String options, 
-                           @QueryParam("focuson") String focuson)
+                           @QueryParam("focuson") String focuson,
+                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvGraph g = dbViewsEJB.getDbvGraphFindById(graphId);
     if (g == null)
@@ -65,6 +67,8 @@ public class GraphRest
     {
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
+      if (paqp)
+        processAllQueryParams(argsMap, "args,filter,options,focuson,paqp");
       if (StringUtils.isNotBlank(filter))
         filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
       if (StringUtils.isNotBlank(options))
@@ -89,7 +93,8 @@ public class GraphRest
                                 @QueryParam("args") String args,
                                 @QueryParam("filter") String filter,
                                 @QueryParam("options") String options,
-                                @QueryParam("focuson") String focuson)
+                                @QueryParam("focuson") String focuson,
+                                @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvGraph g = dbViewsEJB.getDbvGraphFindById(graphId);
     if (g == null)
@@ -106,6 +111,8 @@ public class GraphRest
     {
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
+      if (paqp)
+        processAllQueryParams(argsMap, "args,filter,options,focuson,paqp");
       if (StringUtils.isNotBlank(filter))
         filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
       if (StringUtils.isNotBlank(options))

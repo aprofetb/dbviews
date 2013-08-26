@@ -72,7 +72,7 @@ public class ViewRest
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
       if (paqp)
-        processAllQueryParams(argsMap, "args,countRows,pap");
+        processAllQueryParams(argsMap, "args,countRows,paqp");
     }
     catch (Exception e)
     {
@@ -91,7 +91,7 @@ public class ViewRest
       else if (o instanceof DbvGraph)
         item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null);
       else if (o instanceof DbvHtmlBlock)
-        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap, null, null, null, 1, Integer.MAX_VALUE - 1, null);
+        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap);
       if (item == null)
         return Response.status(Response.Status.BAD_REQUEST).build();
       items.add(item);
@@ -126,7 +126,7 @@ public class ViewRest
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
       if (paqp)
-        processAllQueryParams(argsMap, "args,countRows,pap");
+        processAllQueryParams(argsMap, "args,paqp");
     }
     catch (Exception e)
     {

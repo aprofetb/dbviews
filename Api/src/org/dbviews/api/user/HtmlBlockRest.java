@@ -51,12 +51,7 @@ public class HtmlBlockRest
   @Produces(MediaType.APPLICATION_JSON)
   public Response getBlock(@PathParam("blockId") Integer blockId, 
                            @QueryParam("args") String args, 
-                           @QueryParam("filter") String filter, 
-                           @QueryParam("options") String options, 
-                           @QueryParam("offsetRow") @DefaultValue("1") Integer offsetRow, 
-                           @QueryParam("countRows") @DefaultValue("20") Integer countRows, 
-                           @QueryParam("sortby") String sortby, 
-                           @QueryParam("focuson") String focuson)
+                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvHtmlBlock b = dbViewsEJB.getDbvHtmlBlockFindById(blockId);
     if (b == null)
@@ -67,74 +62,22 @@ public class HtmlBlockRest
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
-    Map<Integer, String> filterMap = null;
-    Map<Integer, Map<String, String>> optionsMap = null;
-    Map<Integer, String> sortbyMap = null;
     try
     {
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
-      if (StringUtils.isNotBlank(filter))
-        filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
-      if (StringUtils.isNotBlank(options))
-        optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
-      if (StringUtils.isNotBlank(sortby))
-        sortbyMap = (Map<Integer, String>)om.readValue(sortby, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
+      if (paqp)
+        processAllQueryParams(argsMap, "args,paqp");
     }
     catch (Exception e)
     {
       logger.warning(e.getMessage());
     }
 
-    Item item = HtmlBlock.getInstance(b, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson);
+    Item item = HtmlBlock.getInstance(b, argsMap);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 
     return Response.ok(item).build();
-  }
-
-  @GET
-  @Path("/{blockId}/excel")
-  @Produces(MediaType.TEXT_HTML)
-  public Response exportToExcel(@PathParam("blockId") Integer blockId,
-                                @QueryParam("args") String args,
-                                @QueryParam("filter") String filter,
-                                @QueryParam("options") String options,
-                                @QueryParam("sortby") String sortby,
-                                @QueryParam("focuson") String focuson)
-  {
-    DbvHtmlBlock b = dbViewsEJB.getDbvHtmlBlockFindById(blockId);
-    if (b == null)
-      return Response.status(Response.Status.NOT_FOUND).build();
-    DbvView dbvView = b.getDbvView();
-    if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
-      return Response.status(Response.Status.UNAUTHORIZED).build();
-
-    ObjectMapper om = new ObjectMapper();
-    Map<String, String> argsMap = null;
-    Map<Integer, String> filterMap = null;
-    Map<Integer, Map<String, String>> optionsMap = null;
-    Map<Integer, String> sortbyMap = null;
-    try
-    {
-      if (StringUtils.isNotBlank(args))
-        argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
-      if (StringUtils.isNotBlank(filter))
-        filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
-      if (StringUtils.isNotBlank(options))
-        optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
-      if (StringUtils.isNotBlank(sortby))
-        sortbyMap = (Map<Integer, String>)om.readValue(sortby, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
-    }
-    catch (Exception e)
-    {
-      logger.warning(e.getMessage());
-    }
-
-    Item item = HtmlBlock.getInstance(b, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, focuson);
-    if (item == null)
-      return Response.status(Response.Status.BAD_REQUEST).build();
-
-    return Response.ok(item.getHtml()).header("Content-Disposition", String.format("attachment;filename=\"%s.xls\"", item.getLabel())).build();
   }
 }
