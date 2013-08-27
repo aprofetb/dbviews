@@ -72,7 +72,7 @@ public class ViewRest
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
       if (paqp)
-        processAllQueryParams(argsMap, "args,countRows,paqp");
+        argsMap = processAllQueryParams(argsMap, "args,countRows,paqp");
     }
     catch (Exception e)
     {
@@ -126,7 +126,7 @@ public class ViewRest
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
       if (paqp)
-        processAllQueryParams(argsMap, "args,paqp");
+        argsMap = processAllQueryParams(argsMap, "args,paqp");
     }
     catch (Exception e)
     {

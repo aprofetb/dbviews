@@ -32,7 +32,7 @@ public class ServiceBase
     dbViewsEJB = (DbViewsEJB)context.lookup(EJB_SB_NAME);
   }
 
-  public void processAllQueryParams(Map<String, String> argsMap, String paramsToSkip)
+  public Map<String, String> processAllQueryParams(Map<String, String> argsMap, String paramsToSkip)
   {
     if (argsMap == null)
       argsMap = new HashMap<String, String>();
@@ -44,5 +44,6 @@ public class ServiceBase
       if (!p2s.contains(key) && !argsMap.containsKey(key))
         argsMap.put(key, request.getParameter(key));
     }
+    return argsMap;
   }
 }

@@ -68,7 +68,7 @@ public class GraphRest
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
       if (paqp)
-        processAllQueryParams(argsMap, "args,filter,options,focuson,paqp");
+        argsMap = processAllQueryParams(argsMap, "args,filter,options,focuson,paqp");
       if (StringUtils.isNotBlank(filter))
         filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
       if (StringUtils.isNotBlank(options))
@@ -112,7 +112,7 @@ public class GraphRest
       if (StringUtils.isNotBlank(args))
         argsMap = (Map<String, String>)om.readValue(args, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.lang.String>"));
       if (paqp)
-        processAllQueryParams(argsMap, "args,filter,options,focuson,paqp");
+        argsMap = processAllQueryParams(argsMap, "args,filter,options,focuson,paqp");
       if (StringUtils.isNotBlank(filter))
         filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
       if (StringUtils.isNotBlank(options))
