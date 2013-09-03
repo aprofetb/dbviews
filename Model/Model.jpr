@@ -73,6 +73,7 @@
                      <value n="DB Diagram.ejb_diagram" v="Model"/>
                      <value n="DBViews Diagram.ejb_diagram" v="Model"/>
                      <value n="EJB Diagram.ejb_diagram" v="Model"/>
+                     <value n="EJB Session Diagram.ejb_diagram" v="Model"/>
                   </hash>
                </hash>
             </hash>

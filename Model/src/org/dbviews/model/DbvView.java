@@ -41,7 +41,6 @@ public class DbvView
   @OneToMany(mappedBy = "dbvView")
   private List<DbvTable> dbvTableList;
   @ManyToOne
-  @JoinColumn(name = "connection_id")
   private DbvConnection dbvConnection;
 
   public DbvView()
@@ -152,21 +151,13 @@ public class DbvView
     return dbvTable;
   }
 
-  public DbvConnection getDbvConnection()
-  {
-    return dbvConnection;
-  }
-
-  public void setDbvConnection(DbvConnection dbvConnection)
-  {
-    this.dbvConnection = dbvConnection;
-  }
 
   public void setAuthPrincipals(String authPrincipals)
   {
     this.authPrincipals = authPrincipals;
   }
 
+  @XmlElement
   public String getAuthPrincipals()
   {
     return authPrincipals;
@@ -177,6 +168,7 @@ public class DbvView
     this.jquiPlugin = jquiPlugin;
   }
 
+  @XmlElement
   public String getJquiPlugin()
   {
     return jquiPlugin;
@@ -187,8 +179,19 @@ public class DbvView
     this.jquiPluginOptions = jquiPluginOptions;
   }
 
+  @XmlElement
   public String getJquiPluginOptions()
   {
     return jquiPluginOptions;
+  }
+
+  public DbvConnection getDbvConnection()
+  {
+    return dbvConnection;
+  }
+
+  public void setDbvConnection(DbvConnection dbvConnection)
+  {
+    this.dbvConnection = dbvConnection;
   }
 }

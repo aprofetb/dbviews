@@ -13,12 +13,11 @@
     <title>Database Views</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link type="text/css" rel="stylesheet" href="/dbviews/css/ui/jquery-ui.min.css"/>
-    <link type="text/css" rel="stylesheet" href="/dbviews/css/styles.css"/>
     <script type="text/javascript" src="/dbviews/js/jquery.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/ui/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.i18n.js.jsp"></script>
-    <script type="text/javascript" src="/dbviews/js/dbviews.core.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.util.js"></script>
+    <script type="text/javascript" src="/dbviews/js/dbviews.core.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.dialogs.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {

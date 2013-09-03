@@ -103,15 +103,6 @@ public class DbvConnection
     this.username = username;
   }
 
-  public List<DbvView> getDbvViewList()
-  {
-    return dbvViewList;
-  }
-
-  public void setDbvViewList(List<DbvView> dbvViewList)
-  {
-    this.dbvViewList = dbvViewList;
-  }
 
   public DbvView addDbvView(DbvView dbvView)
   {
@@ -125,5 +116,15 @@ public class DbvConnection
     getDbvViewList().remove(dbvView);
     dbvView.setDbvConnection(null);
     return dbvView;
+  }
+
+  public List<DbvView> getDbvViewList()
+  {
+    return dbvViewList;
+  }
+
+  public void setDbvViewList(List<DbvView> dbvViewList)
+  {
+    this.dbvViewList = dbvViewList;
   }
 }

@@ -98,6 +98,7 @@ public class ViewRest
     }
 
     Map<String, Object> view = new HashMap<String, Object>();
+    view.put("id", dbvView.getId());
     view.put("description", dbvView.getDescription());
     view.put("jquiPlugin", dbvView.getJquiPlugin());
     view.put("jquiPluginOptions", dbvView.getJquiPluginOptions());

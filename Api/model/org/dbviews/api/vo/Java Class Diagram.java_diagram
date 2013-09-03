@@ -25,7 +25,7 @@
           <size height='0.5323079228401184' width='0.0'/>
         </contained>
         <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='SYMBOLIC'/>
-        <size height='120.0' width='200.0'/>
+        <size height='98.8564453125' width='200.0'/>
       </contained>
       <contained xmi:type='DI:GraphNode' xmi:id='id062cb57d-42ca-427f-8fac-e762cb0a2606'>
         <contained xmi:type='DI:GraphNode' xmi:id='idd7832a66-2205-4135-8881-c255e16e9c4f'>
@@ -47,9 +47,9 @@
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='BodyCompartment'/>
         </contained>
         <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='EXPANDED'/>
-        <size height='120.0' width='120.0'/>
+        <size height='98.8564453125' width='200.0'/>
       </contained>
-      <position x='328.0' y='180.60000610351562'/>
+      <position x='487.9999694824219' y='376.5975341796875'/>
       <property key='filterMethodViz' value='PUBLIC PROTECTED PACKAGE PRIVATE'/>
       <property key='showAttributeStatic' value='true'/>
       <property key='showMethodVisibility' value='true'/>
@@ -72,8 +72,8 @@
       <property key='showInnerClasses' value='false'/>
       <property key='lineColor' value='#a5a5a5'/>
       <property key='fillColor' value='#c6d6ff'/>
-      <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDC;;org.dbviews.api.vo;;###;;HtmlBlock' presentation='COMPACT'/>
-      <size height='120.0' width='120.0'/>
+      <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDC;;org.dbviews.api.vo;;###;;HtmlBlock' presentation='SYMBOLIC'/>
+      <size height='98.8564453125' width='200.0'/>
     </contained>
     <contained xmi:type='DI:GraphNode' xmi:id='id2fba4a20-a34a-4933-b197-2c0db9c7efaa'>
       <anchorage xmi:id='idfb36c7c0-d6a8-433c-8374-0d06d913054e' graphEdge='id4bad9632-c6fa-4139-a8c1-c2a0658f3485'/>
@@ -98,7 +98,7 @@
           <size height='0.5323079228401184' width='0.0'/>
         </contained>
         <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='SYMBOLIC'/>
-        <size height='120.0' width='200.0'/>
+        <size height='98.8564453125' width='200.0'/>
       </contained>
       <contained xmi:type='DI:GraphNode' xmi:id='id9a8d0761-4436-4a41-97b7-d08da3897900'>
         <contained xmi:type='DI:GraphNode' xmi:id='ida41374be-d6c5-4394-82ce-1d3e1e4c16d0'>
@@ -120,9 +120,9 @@
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='BodyCompartment'/>
         </contained>
         <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='EXPANDED'/>
-        <size height='120.0' width='120.0'/>
+        <size height='98.8564453125' width='200.0'/>
       </contained>
-      <position x='0.0' y='180.60000610351562'/>
+      <position x='0.0' y='376.5975341796875'/>
       <property key='filterMethodViz' value='PUBLIC PROTECTED PACKAGE PRIVATE'/>
       <property key='showAttributeStatic' value='true'/>
       <property key='showMethodVisibility' value='true'/>
@@ -145,8 +145,8 @@
       <property key='showInnerClasses' value='false'/>
       <property key='lineColor' value='#a5a5a5'/>
       <property key='fillColor' value='#c6d6ff'/>
-      <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDC;;org.dbviews.api.vo;;###;;Table' presentation='COMPACT'/>
-      <size height='120.0' width='120.0'/>
+      <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDC;;org.dbviews.api.vo;;###;;Table' presentation='SYMBOLIC'/>
+      <size height='98.8564453125' width='200.0'/>
     </contained>
     <contained xmi:type='DI:GraphNode' xmi:id='id3ee5e2f3-0cb2-4a50-8170-6bae7fcf6ca3'>
       <anchorage xmi:id='idb3f6cb58-7617-4a93-a79c-9ccc2a44005c' graphEdge='id4bad9632-c6fa-4139-a8c1-c2a0658f3485 id74b61cc0-55a8-4f9c-86ae-e9647f974af2 id78b8c2db-7683-4844-97c9-1a08fb09e8a2'/>
@@ -158,20 +158,20 @@
         <contained xmi:type='DI:GraphNode' xmi:id='idf4608d46-2720-46f4-9f19-63e20fef37f4'>
           <property key='FirstVisibleIndex' value='0'/>
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='FieldCompartment'/>
-          <size height='1.4456543922424316' width='0.0'/>
+          <size height='1.420276403427124' width='0.0'/>
         </contained>
         <contained xmi:type='DI:GraphNode' xmi:id='id01fb764f-6573-401a-8a49-f2598b4dff37'>
           <property key='FirstVisibleIndex' value='0'/>
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='MethodCompartment'/>
-          <size height='1.4456543922424316' width='0.0'/>
+          <size height='1.420276403427124' width='0.0'/>
         </contained>
         <contained xmi:type='DI:GraphNode' xmi:id='idec6aa981-8ffd-44c6-adb6-e0a02aaf5fc9'>
           <property key='FirstVisibleIndex' value='0'/>
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='InnerCompartment'/>
-          <size height='0.10869119316339493' width='0.0'/>
+          <size height='0.15944713354110718' width='0.0'/>
         </contained>
         <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='SYMBOLIC'/>
-        <size height='460.75830078125' width='200.0'/>
+        <size height='315.99755859375' width='200.0'/>
       </contained>
       <contained xmi:type='DI:GraphNode' xmi:id='idfeb8608a-5bb3-4542-ba3b-172f74ffefb1'>
         <contained xmi:type='DI:GraphNode' xmi:id='id6bb096a5-4fbf-4792-81c7-683ca6ad37bc'>
@@ -193,9 +193,9 @@
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='BodyCompartment'/>
         </contained>
         <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='EXPANDED'/>
-        <size height='120.0' width='120.0'/>
+        <size height='315.99755859375' width='200.0'/>
       </contained>
-      <position x='164.0' y='0.0'/>
+      <position x='243.99993896484375' y='0.0'/>
       <property key='filterMethodViz' value='PUBLIC PROTECTED PACKAGE PRIVATE'/>
       <property key='showAttributeStatic' value='true'/>
       <property key='showMethodVisibility' value='true'/>
@@ -218,8 +218,8 @@
       <property key='showInnerClasses' value='false'/>
       <property key='lineColor' value='#a5a5a5'/>
       <property key='fillColor' value='#c6d6ff'/>
-      <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDC;;org.dbviews.api.vo;;###;;Item' presentation='COMPACT'/>
-      <size height='120.0' width='120.0'/>
+      <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDC;;org.dbviews.api.vo;;###;;Item' presentation='SYMBOLIC'/>
+      <size height='315.99755859375' width='200.0'/>
     </contained>
     <contained xmi:type='DI:GraphNode' xmi:id='id3df961b5-028e-40d5-b3c5-b319b36978c9'>
       <anchorage xmi:id='id1bbf743d-b585-4a56-9747-f5fcca6b3991' graphEdge='id78b8c2db-7683-4844-97c9-1a08fb09e8a2'/>
@@ -231,20 +231,20 @@
         <contained xmi:type='DI:GraphNode' xmi:id='idf47f47d4-327c-4a4b-8b95-977767c73139'>
           <property key='FirstVisibleIndex' value='0'/>
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='FieldCompartment'/>
-          <size height='1.1514321565628052' width='0.0'/>
+          <size height='1.420276403427124' width='0.0'/>
         </contained>
         <contained xmi:type='DI:GraphNode' xmi:id='id7376441a-d307-46ac-baef-c616e13fafa1'>
           <property key='FirstVisibleIndex' value='0'/>
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='MethodCompartment'/>
-          <size height='1.7193025350570679' width='0.0'/>
+          <size height='1.420276403427124' width='0.0'/>
         </contained>
         <contained xmi:type='DI:GraphNode' xmi:id='idcbb34877-a7b9-4c5a-bc80-e94645047ef2'>
           <property key='FirstVisibleIndex' value='0'/>
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='InnerCompartment'/>
-          <size height='0.12926536798477173' width='0.0'/>
+          <size height='0.15944713354110718' width='0.0'/>
         </contained>
         <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='SYMBOLIC'/>
-        <size height='388.3779296875' width='200.0'/>
+        <size height='315.99755859375' width='200.0'/>
       </contained>
       <contained xmi:type='DI:GraphNode' xmi:id='id808b6ed2-c073-4376-af88-35d2ff0a33ca'>
         <contained xmi:type='DI:GraphNode' xmi:id='id43b3eeef-4050-4f42-8ae8-5595289fd823'>
@@ -266,9 +266,9 @@
           <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='BodyCompartment'/>
         </contained>
         <semanticModel xmi:type='DI:SimpleSemanticModelBridge' typeInfo='EXPANDED'/>
-        <size height='120.0' width='120.0'/>
+        <size height='315.99755859375' width='200.0'/>
       </contained>
-      <position x='164.0' y='180.60000610351562'/>
+      <position x='243.9999542236328' y='376.5975341796875'/>
       <property key='filterMethodViz' value='PUBLIC PROTECTED PACKAGE PRIVATE'/>
       <property key='showAttributeStatic' value='true'/>
       <property key='showMethodVisibility' value='true'/>
@@ -291,32 +291,32 @@
       <property key='showInnerClasses' value='false'/>
       <property key='lineColor' value='#a5a5a5'/>
       <property key='fillColor' value='#c6d6ff'/>
-      <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDC;;org.dbviews.api.vo;;###;;Graph' presentation='COMPACT'/>
-      <size height='120.0' width='120.0'/>
+      <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDC;;org.dbviews.api.vo;;###;;Graph' presentation='SYMBOLIC'/>
+      <size height='315.99755859375' width='200.0'/>
     </contained>
     <contained xmi:type='DI:GraphEdge' xmi:id='id74b61cc0-55a8-4f9c-86ae-e9647f974af2' anchor='idae13daa5-4164-4768-bb3f-f8251dd8d98d idb3f6cb58-7617-4a93-a79c-9ccc2a44005c'>
       <property key='fontColor' value='#0'/>
-      <property key='EdgeType' value='1'/>
+      <property key='EdgeType' value='0'/>
       <property key='lineColor' value='#646464'/>
       <property key='lineWidth' value='1.0'/>
       <property key='font' value='SansSerif,plain,11'/>
       <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDEXT;;org.dbviews.api.vo;;HtmlBlock;;org.dbviews.api.vo.Item'/>
-      <waypoint x='388.0' y='180.60000610351562'/>
-      <waypoint x='388.0' y='150.3000030517578'/>
-      <waypoint x='254.0' y='150.3000030517578'/>
-      <waypoint x='254.0' y='120.0'/>
+      <waypoint x='587.9998779296875' y='376.5975341796875'/>
+      <waypoint x='588.0' y='346.29754638671875'/>
+      <waypoint x='394.0' y='346.29754638671875'/>
+      <waypoint x='393.99993896484375' y='315.99755859375'/>
     </contained>
     <contained xmi:type='DI:GraphEdge' xmi:id='id4bad9632-c6fa-4139-a8c1-c2a0658f3485' anchor='idfb36c7c0-d6a8-433c-8374-0d06d913054e idb3f6cb58-7617-4a93-a79c-9ccc2a44005c'>
       <property key='fontColor' value='#0'/>
-      <property key='EdgeType' value='1'/>
+      <property key='EdgeType' value='0'/>
       <property key='lineColor' value='#646464'/>
       <property key='lineWidth' value='1.0'/>
       <property key='font' value='SansSerif,plain,11'/>
       <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDEXT;;org.dbviews.api.vo;;Table;;org.dbviews.api.vo.Item'/>
-      <waypoint x='60.0' y='180.60000610351562'/>
-      <waypoint x='60.0' y='150.3000030517578'/>
-      <waypoint x='194.0' y='150.3000030517578'/>
-      <waypoint x='194.0' y='120.0'/>
+      <waypoint x='100.0000228881836' y='376.5975341796875'/>
+      <waypoint x='100.0' y='346.29754638671875'/>
+      <waypoint x='294.0' y='346.29754638671875'/>
+      <waypoint x='293.9999694824219' y='315.99755859375'/>
     </contained>
     <contained xmi:type='DI:GraphEdge' xmi:id='id78b8c2db-7683-4844-97c9-1a08fb09e8a2' anchor='id1bbf743d-b585-4a56-9747-f5fcca6b3991 idb3f6cb58-7617-4a93-a79c-9ccc2a44005c'>
       <property key='fontColor' value='#0'/>
@@ -325,8 +325,8 @@
       <property key='lineWidth' value='1.0'/>
       <property key='font' value='SansSerif,plain,11'/>
       <semanticModel xmi:type='DI:CoreSemanticModelBridge' element='JAVA:JIDEXT;;org.dbviews.api.vo;;Graph;;org.dbviews.api.vo.Item'/>
-      <waypoint x='224.0' y='180.60000610351562'/>
-      <waypoint x='224.0' y='120.0'/>
+      <waypoint x='343.99993896484375' y='376.5975341796875'/>
+      <waypoint x='343.99993896484375' y='315.99755859375'/>
     </contained>
     <property key='showClassifierOwnedEnds' value='false'/>
     <property key='showGrid' value='true'/>
