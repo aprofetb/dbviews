@@ -581,7 +581,7 @@ function buildGraph(item, container) {
       $(this).data('filterItem').find('input').each(function() {
         item.filter[$(this).attr('colId')] = $(this).val();
       });
-      $.get('/api/user/graph/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby) }, function(newItem) {
+      $.get('/api/user/graph/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
         buildGraph(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
