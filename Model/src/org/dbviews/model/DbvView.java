@@ -41,6 +41,7 @@ public class DbvView
   @OneToMany(mappedBy = "dbvView")
   private List<DbvTable> dbvTableList;
   @ManyToOne
+  @JoinColumn(name = "connection_id")
   private DbvConnection dbvConnection;
 
   public DbvView()
