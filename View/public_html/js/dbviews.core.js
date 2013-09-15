@@ -128,7 +128,7 @@ function buildTable(item, container) {
       align: th.align,
       valign: th.valign
     }).addClass('sortable ui-state-default')
-      .append($('<div/>').addClass('sort-wrapper').html(th.columnName).append(dirIcon && $('<span/>').addClass('sort-icon ui-icon ' + dirIcon)))
+      .append($('<div/>').addClass('sort-wrapper').text(th.columnName).append(dirIcon && $('<span/>').addClass('sort-icon ui-icon ' + dirIcon)))
       .data({
         'item': item,
         'sortby': sortby
@@ -224,7 +224,7 @@ function buildTable(item, container) {
     });
     for (var v in item.headers) {
       th = item.headers[v];
-      $tr.append($('<td/>').addClass(item.sortby[th.id] ? 'sorted' : '').html(cells[th.id])).attr({
+      $tr.append($('<td/>').addClass(item.sortby[th.id] ? 'sorted' : '').text(cells[th.id])).attr({
         align: th.align,
         valign: th.valign
       });
@@ -480,7 +480,8 @@ function buildGraph(item, container) {
           show: true,
           radius: 2/3,
           formatter: function (label, series) {
-            return '<div class="pie-label">' + label + ': ' + series.data[0][1] + ' (' + series.percent.toFixed(1) + '%)<\/div>';
+            //return '<div class="pie-label">' + label + ': ' + series.data[0][1] + ' (' + series.percent.toFixed(1) + '%)<\/div>';
+            return '<div class="pie-label">' + series.percent.toFixed(1) + '%<\/div>';
           },
           threshold: 0.05,
           background: {
@@ -527,6 +528,7 @@ function buildGraph(item, container) {
       position: item.legendPosition || 'ne'
     }
   });
+  var previousPoint = null;
   $graph.unbind()
     .bind('plothover', function (event, pos, gItem) {
       if (!gItem) {
@@ -545,7 +547,7 @@ function buildGraph(item, container) {
             top: pos.pageY + 5,
             left: pos.pageX + 5
           })
-          .html((label ? label + ': ' : '') + '[x=' + gItem.datapoint[0] + (tPie ? '' : ', y=' + gItem.datapoint[1]) + ']')
+          .text((label ? label + ': ' : '') + (tPie ? gItem.series.data[0][1] : '[x=' + gItem.datapoint[0] + (tPie ? '' : ', y=' + gItem.datapoint[1]) + ']'))
           .appendTo('body')
           .fadeIn(200);
       }
@@ -555,7 +557,7 @@ function buildGraph(item, container) {
         return;
       var label = gItem.series.label;
       if (tPie)
-        dlg.info(gItem.series.label + ': ' + parseFloat(gItem.series.percent).toFixed(2) + '%');
+        dlg.info(gItem.series.label + ': ' + gItem.series.data[0][1] + ' (' + parseFloat(gItem.series.percent).toFixed(2) + '%)');
       else
         dlg.info((label ? label + ': ' : '') + '[x=' + gItem.datapoint[0].toFixed(2) + ', y=' + gItem.datapoint[1].toFixed(2) + ']');
     }
@@ -593,7 +595,7 @@ function buildGraph(item, container) {
       });
       return false;
     });
-    $filterItem.append($('<tr/>').append($('<th/>').attr('align', 'right').html(th.columnName)).append($('<td/>').append($('<div/>').addClass('filter').append($input))));
+    $filterItem.append($('<tr/>').append($('<th/>').attr('align', 'right').text(th.columnName)).append($('<td/>').append($('<div/>').addClass('filter').append($input))));
   }
 
   return $graphContainer;

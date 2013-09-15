@@ -181,3 +181,7 @@ div.filter input {
   color: white;
   width: 50px;
 }
+
+.legend .legendLabel {
+  text-align: left;
+}
