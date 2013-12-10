@@ -10,10 +10,27 @@ $.ajaxSetup({
   cache: false
 });
 
-function buildView(view, container) {
-  document.title = 'Database Views - ' + view.description;
+function buildView(view, container, replaceContent) {
+  document.title = msg['title'] + ' - ' + view.description;
   var $view = $('<div/>').attr('id', 'view');
-  $(container).append($view);
+
+  if ($.type($view[view.jquiPlugin]) !== 'function') {
+    dlg.alert(msg['jqui_plugin_not_found']);
+    return null;
+  }
+  var options;
+  try {
+    options = $.parseJSON(view.jquiPluginOptions);
+  }
+  catch (err) {
+    dlg.alert(msg['jqui_plugin_parsing_error'] + '<br>' + err);
+    return null;
+  }
+
+  var $container = $(container);
+  if (replaceContent)
+    $container.empty();
+  $container.append($view);
   var $itemHeader;
   if (view.jquiPlugin == 'tabs') {
     $itemHeader = $('<ul/>');
@@ -49,27 +66,18 @@ function buildView(view, container) {
         .append(item.label);
       $view.append($itemHeader);
     }
-    buildItem(item, $view, true);
-  }
-  if ($.type($view[view.jquiPlugin]) !== 'function') {
-    dlg.alert(msg['jqui_plugin_not_found']);
-    return null;
-  }
-  var options;
-  try {
-    options = $.parseJSON(view.jquiPluginOptions);
-  }
-  catch (err) {
-    dlg.alert(msg['jqui_plugin_parsing_error'] + '<br>' + err);
-    return null;
+    buildItem(item, $view, false);
   }
   $view[view.jquiPlugin](options);
   return $view;
 }
 
-function buildItem(item, container) {
+function buildItem(item, container, replaceContent) {
   var $item = $('<div/>').attr('id', 'item-' + item.type + '-' + item.id).css('text-align', 'center').css('position', 'relative');
-  $(container).append($item);
+  var $container = $(container);
+  if (replaceContent)
+    $container.empty();
+  $container.append($item);
   if (item.type == 'table') {
     buildInfoTag(item, $item);
     buildTable(item, $item);
@@ -401,7 +409,7 @@ function buildToolbar(item, container) {
 }
 
 function buildModal(container) {
-  var $modal = $('<div/>').addClass('modal');
+  var $modal = $('<div/>').addClass('modal').attr('title', msg['loading_please_wait']);
   $(container).append($modal);
   return $modal;
 }
@@ -456,20 +464,53 @@ function buildGraph(item, container) {
   });
   var $filterItem = $('<table/>').css('border', 'none');
   var $toolbar = buildToolbar(item);
-  $graphContainer.append($('<table/>')
-    .css('border', 'none')
-    .append($('<tr/>')
-      .append($('<td/>').attr('valign', 'top').append($graph))
-      .append($('<td/>').attr('width', '30px'))
-      .append($('<td/>').attr('valign', 'top').append($filterItem))
-    )
-    .append($('<tr/>')
+  var $table = $('<table/>').css('border', 'none');
+  $graphContainer.append($table);
+  var tbHAlign, tbVAlign;
+  if (item.toolbarPosition && item.toolbarPosition.length == 2) {
+    tbVAlign = item.toolbarPosition.charAt(0);
+    tbHAlign = item.toolbarPosition.charAt(1);
+  }
+  var fHAlign, fVAlign;
+  if (item.filterPosition && item.filterPosition.length == 2) {
+    fVAlign = item.filterPosition.charAt(0);
+    fHAlign = item.filterPosition.charAt(1);
+  }
+  if (tbVAlign == 'n') {
+    $table.append($('<tr/>')
       .append($('<td/>')
-        .attr('align', 'right')
+        .attr('align', tbHAlign == 'w' ? 'left' : 'right')
         .append($toolbar)
       )
-    )
-  );
+    );
+  }
+  if (fHAlign == 'w') {
+    $table.append($('<tr/>')
+      .append($('<td/>').attr('valign', fVAlign == 's' ? 'bottom' : 'top').append($filterItem))
+      .append($('<td/>').attr('width', '30px'))
+      .append($('<td/>').attr('valign', 'top').append($graph))
+    );
+  }
+  else if (fHAlign == 'e') {
+    $table.append($('<tr/>')
+      .append($('<td/>').attr('valign', 'top').append($graph))
+      .append($('<td/>').attr('width', '30px'))
+      .append($('<td/>').attr('valign', fVAlign == 's' ? 'bottom' : 'top').append($filterItem))
+    );
+  }
+  else {
+    $table.append($('<tr/>')
+      .append($('<td/>').attr('valign', 'top').append($graph))
+    );
+  }
+  if (tbVAlign == 's') {
+    $table.append($('<tr/>')
+      .append($('<td/>')
+        .attr('align', tbHAlign == 'w' ? 'left' : 'right')
+        .append($toolbar)
+      )
+    );
+  }
   $.plot($graph, data, {
     canvas: false,
     series: {

@@ -20,6 +20,8 @@ public class Graph
   private int width;
   private int height;
   private String legendPosition;
+  private String filterPosition;
+  private String toolbarPosition;
 
   public Graph(DbvGraph g, Map<String, String> args, Map<Integer, String> filter, Map<Integer, Map<String, String>> options, String focuson)
   {
@@ -47,9 +49,13 @@ public class Graph
     index = g.getTabIndex();
     query = g.getSqlQuery();
     graphType = g.getGraphType().split(",");
+    xmode = g.getXmode();
+    ymode = g.getYmode();
     width = g.getWidth();
     height = g.getHeight();
     legendPosition = g.getLegendPosition();
+    filterPosition = g.getFilterPosition();
+    toolbarPosition = g.getToolbarPosition();
     this.args = args != null ? args : new HashMap<String, String>();
     this.filter = filter != null ? filter : new HashMap<Integer, String>();
     this.options = options != null ? options : new HashMap<Integer, Map<String, String>>();
@@ -157,5 +163,25 @@ public class Graph
   public String getLegendPosition()
   {
     return legendPosition;
+  }
+
+  public void setFilterPosition(String filterPosition)
+  {
+    this.filterPosition = filterPosition;
+  }
+
+  public String getFilterPosition()
+  {
+    return filterPosition;
+  }
+
+  public void setToolbarPosition(String toolbarPosition)
+  {
+    this.toolbarPosition = toolbarPosition;
+  }
+
+  public String getToolbarPosition()
+  {
+    return toolbarPosition;
   }
 }

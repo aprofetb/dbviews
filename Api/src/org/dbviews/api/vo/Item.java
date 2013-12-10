@@ -45,10 +45,6 @@ public abstract class Item
   protected String label;
   protected String description;
   protected String query;
-
-  /**
-   * @aggregation composite
-   */
   protected List<Header> headers;
   protected Map<String, String> args;
   protected Map<Integer, String> filter;

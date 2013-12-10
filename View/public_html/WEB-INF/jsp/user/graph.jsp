@@ -10,7 +10,7 @@
 %>
 <html lang="<%=language%>">
   <head>
-    <title>Database Views</title>
+    <title><dbv:i18n key="title"/></title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link type="text/css" rel="stylesheet" href="/dbviews/css/ui/jquery-ui.min.css"/>
     <link type="text/css" rel="stylesheet" href="/dbviews/css/styles.css"/>
@@ -28,7 +28,7 @@
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/api/user/graph/${it.graphId}' + window.location.search, {}, function(graph, textStatus) {
-          buildItem(graph, '#content');
+          buildItem(graph, '#content', true);
         }).error(function(jqXHR) {
           dlg.alert(jqXHR.statusText);
         });
@@ -36,6 +36,6 @@
     </script>
   </head>
   <body>
-    <div id="content" class="ui-widget"></div>
+    <div id="content" class="ui-widget"><div class="loading"><span class="modal" title="<dbv:i18n key="loading_please_wait"/>"></span></div></div>
   </body>
 </html>

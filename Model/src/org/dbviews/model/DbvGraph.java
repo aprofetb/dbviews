@@ -52,6 +52,10 @@ public class DbvGraph
   private int height;
   @Column(name = "legend_position")
   private String legendPosition;
+  @Column(name = "filter_position")
+  private String filterPosition;
+  @Column(name = "toolbar_position")
+  private String toolbarPosition;
 
   public DbvGraph()
   {
@@ -224,5 +228,25 @@ public class DbvGraph
   public String getLegendPosition()
   {
     return legendPosition;
+  }
+
+  public void setFilterPosition(String filterPosition)
+  {
+    this.filterPosition = filterPosition;
+  }
+
+  public String getFilterPosition()
+  {
+    return filterPosition;
+  }
+
+  public void setToolbarPosition(String toolbarPosition)
+  {
+    this.toolbarPosition = toolbarPosition;
+  }
+
+  public String getToolbarPosition()
+  {
+    return toolbarPosition;
   }
 }
