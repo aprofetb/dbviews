@@ -4,9 +4,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
-  Locale locale = request.getLocale();
+  Locale locale = (Locale)session.getAttribute("locale");
   String language = locale.getLanguage();
-  String country = locale.getCountry();
 %>
 <html lang="<%=language%>">
   <head>
@@ -27,10 +26,11 @@
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.time.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
-        $.get('/api/user/view/${it.viewId}' + window.location.search, {}, function(view, textStatus) {
+        $.get('/dbviews-api/user/view/${it.viewId}' + window.location.search, {}, function(view, textStatus) {
           buildView(view, '#content', true);
         }).error(function(jqXHR) {
           dlg.alert(jqXHR.statusText);
+          $('.loading').removeClass('loading');
         });
       });
     </script>

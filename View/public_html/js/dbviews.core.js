@@ -16,6 +16,7 @@ function buildView(view, container, replaceContent) {
 
   if ($.type($view[view.jquiPlugin]) !== 'function') {
     dlg.alert(msg['jqui_plugin_not_found']);
+    $('.loading').removeClass('loading');
     return null;
   }
   var options;
@@ -24,6 +25,7 @@ function buildView(view, container, replaceContent) {
   }
   catch (err) {
     dlg.alert(msg['jqui_plugin_parsing_error'] + '<br>' + err);
+    $('.loading').removeClass('loading');
     return null;
   }
 
@@ -73,6 +75,8 @@ function buildView(view, container, replaceContent) {
 }
 
 function buildItem(item, container, replaceContent) {
+  if (replaceContent)
+    document.title = msg['title'] + ' - ' + item.description;
   var $item = $('<div/>').attr('id', 'item-' + item.type + '-' + item.id).css('text-align', 'center').css('position', 'relative');
   var $container = $(container);
   if (replaceContent)
@@ -92,6 +96,7 @@ function buildItem(item, container, replaceContent) {
   }
   else {
     dlg.alert('Unknown item type');
+    $('.loading').removeClass('loading');
     return false;
   }
   $item.append(buildModal());
@@ -116,13 +121,17 @@ function buildTable(item, container) {
   var $tableContainer = $('<div/>').css('overflow', 'auto').append($table);
   $(container).append($tableContainer);
   var $tr = $('<tr/>');
-  $tr.append($('<th/>').addClass('ui-state-default').css('padding', '4px').html('#').attr({
+  var $nRow = $('<th/>').addClass('ui-state-default').css('padding', '4px').text('#').attr({
     width: '5%', //(item.totalRows.toString().length * 7) + 'px',
     align: 'left',
-    valign: 'top',
-    rowspan: 2
-  }));
+    valign: item.filterPosition == 'top' ? 'bottom' : 'top',
+    rowspan: item.filterPosition == 'top' || item.filterPosition == 'bottom' ? 2 : 1
+  });
   var $filter = $('<tr/>');
+  if (item.filterPosition == 'top')
+    $filter.append($nRow);
+  else
+    $tr.append($nRow);
   for (var v in item.headers) {
     th = item.headers[v];
     var dir = item.sortby[th.id];
@@ -145,7 +154,7 @@ function buildTable(item, container) {
         $('#item-' + item.type + '-' + item.id).addClass('loading');
         item = $(this).data('item');
         sortby = $(this).data('sortby');
-        $.get('/api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(sortby) }, function(newItem) {
+        $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(sortby) }, function(newItem) {
           var $item = $('#item-' + item.type + '-' + item.id).empty();
           buildInfoTag(newItem, $item);
           buildTable(newItem, $item);
@@ -154,6 +163,7 @@ function buildTable(item, container) {
           $item.append(buildModal()).removeClass('loading');
         }).error(function() {
           dlg.alert(msg['alert_error']);
+          $('.loading').removeClass('loading');
         });
       })
     );
@@ -175,7 +185,7 @@ function buildTable(item, container) {
       $(this).data('$tr').find('input').each(function() {
         item.filter[$(this).attr('colId')] = $(this).val();
       });
-      $.get('/api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
+      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
         buildInfoTag(newItem, $item);
         buildTable(newItem, $item);
@@ -187,6 +197,7 @@ function buildTable(item, container) {
         sft.select();
       }).error(function() {
         dlg.alert(msg['alert_error']);
+        $('.loading').removeClass('loading');
       });
       return false;
     });
@@ -198,7 +209,7 @@ function buildTable(item, container) {
         $(this).data('$tr').find('input').each(function() {
           item.filter[$(this).attr('colId')] = $(this).val();
         });
-        $.get('/api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
+        $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
           var $item = $('#item-' + item.type + '-' + item.id).empty();
           buildInfoTag(newItem, $item);
           buildTable(newItem, $item);
@@ -210,14 +221,24 @@ function buildTable(item, container) {
           sft.select();
         }).error(function() {
           dlg.alert(msg['alert_error']);
+          $('.loading').removeClass('loading');
         });
         return false;
       });
     }
     $filter.append($('<td/>').append($('<div/>').addClass('filter').append($input)));
   }
-  $table.append($tr);
-  $table.append($filter);
+  if (item.filterPosition == 'top') {
+    $table.append($filter);
+    $table.append($tr);
+  }
+  else if (item.filterPosition == 'bottom') {
+    $table.append($tr);
+    $table.append($filter);
+  }
+  else {
+    $table.append($tr);
+  }
   for (var j = 0; j < item.rows.length; j++) {
     var cells = item.rows[j];
     var even = j % 2 == 0;
@@ -232,7 +253,8 @@ function buildTable(item, container) {
     });
     for (var v in item.headers) {
       th = item.headers[v];
-      $tr.append($('<td/>').addClass(item.sortby[th.id] ? 'sorted' : '').text(cells[th.id])).attr({
+      var value = cells[th.id];
+      $tr.append($('<td/>').addClass(item.sortby[th.id] ? 'sorted' : '').text(value === null ? '' : value)).attr({
         align: th.align,
         valign: th.valign
       });
@@ -260,7 +282,7 @@ function buildToolbar(item, container) {
     }).click(function() {
       $('#item-' + item.type + '-' + item.id).addClass('loading');
       item = $(this).data('item');
-      $.get('/api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
         buildInfoTag(newItem, $item);
         buildTable(newItem, $item);
@@ -281,7 +303,7 @@ function buildToolbar(item, container) {
     }).click(function() {
       $('#item-' + item.type + '-' + item.id).addClass('loading');
       item = $(this).data('item');
-      $.get('/api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow - item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow - item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
         buildInfoTag(newItem, $item);
         buildTable(newItem, $item);
@@ -306,7 +328,7 @@ function buildToolbar(item, container) {
           item = $(this).data('item');
           sortby = $(this).data('sortby');
           pagToShow = $(this).data('pagToShow');
-          $.get('/api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: (pagToShow - 1) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+          $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: (pagToShow - 1) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
             var $item = $('#item-' + item.type + '-' + item.id).empty();
             buildInfoTag(newItem, $item);
             buildTable(newItem, $item);
@@ -329,7 +351,7 @@ function buildToolbar(item, container) {
       $('#item-' + item.type + '-' + item.id).addClass('loading');
       item = $(this).data('item');
       sortby = $(this).data('sortby');
-      $.get('/api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow + item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow + item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
         buildInfoTag(newItem, $item);
         buildTable(newItem, $item);
@@ -350,7 +372,7 @@ function buildToolbar(item, container) {
     }).click(function() {
       $('#item-' + item.type + '-' + item.id).addClass('loading');
       item = $(this).data('item');
-      $.get('/api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: Math.floor((item.totalRows - 1) / item.countRows) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: Math.floor((item.totalRows - 1) / item.countRows) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
         buildInfoTag(newItem, $item);
         buildTable(newItem, $item);
@@ -372,7 +394,7 @@ function buildToolbar(item, container) {
   }).click(function() {
     $('#item-' + item.type + '-' + item.id).addClass('loading');
     item = $(this).data('item');
-    $.get('/api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+    $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }, function(newItem) {
       var $item = $('#item-' + item.type + '-' + item.id).empty();
       if (item.type == 'table') {
         buildInfoTag(newItem, $item);
@@ -396,7 +418,7 @@ function buildToolbar(item, container) {
       primary : 'ui-icon-newwin'
     }
   })).append($('<a/>')
-    .attr('href', '/api/user/' + item.type + '/' + item.id + '/excel?' + $.param({ args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby) }))
+    .attr('href', '/dbviews-api/user/' + item.type + '/' + item.id + '/excel?' + $.param({ args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby) }))
     .html(msg['export_to_excel'])
     .button({
       text: false,
@@ -462,7 +484,7 @@ function buildGraph(item, container) {
     width: item.width,
     height: item.height
   });
-  var $filterItem = $('<table/>').css('border', 'none');
+  var $filter = $('<table/>').css('border', 'none');
   var $toolbar = buildToolbar(item);
   var $table = $('<table/>').css('border', 'none');
   $graphContainer.append($table);
@@ -486,7 +508,7 @@ function buildGraph(item, container) {
   }
   if (fHAlign == 'w') {
     $table.append($('<tr/>')
-      .append($('<td/>').attr('valign', fVAlign == 's' ? 'bottom' : 'top').append($filterItem))
+      .append($('<td/>').attr('valign', fVAlign == 's' ? 'bottom' : 'top').append($filter))
       .append($('<td/>').attr('width', '30px'))
       .append($('<td/>').attr('valign', 'top').append($graph))
     );
@@ -495,7 +517,7 @@ function buildGraph(item, container) {
     $table.append($('<tr/>')
       .append($('<td/>').attr('valign', 'top').append($graph))
       .append($('<td/>').attr('width', '30px'))
-      .append($('<td/>').attr('valign', fVAlign == 's' ? 'bottom' : 'top').append($filterItem))
+      .append($('<td/>').attr('valign', fVAlign == 's' ? 'bottom' : 'top').append($filter))
     );
   }
   else {
@@ -588,7 +610,7 @@ function buildGraph(item, container) {
             top: pos.pageY + 5,
             left: pos.pageX + 5
           })
-          .text((label ? label + ': ' : '') + (tPie ? gItem.series.data[0][1] : '[x=' + gItem.datapoint[0] + (tPie ? '' : ', y=' + gItem.datapoint[1]) + ']'))
+          .text((label ? label + ': ' : '') + (tPie ? gItem.series.data[0][1] : '[x=' + (item.xmode == 'time' ? $.datepicker.formatDate(msg['dateFormat'], new Date(gItem.datapoint[0])) : gItem.datapoint[0]) + (tPie ? '' : ', y=' + (item.ymode == 'time' ? $.datepicker.formatDate(msg['dateFormat'], new Date(gItem.datapoint[1])) : gItem.datapoint[1])) + ']'))
           .appendTo('body')
           .fadeIn(200);
       }
@@ -600,20 +622,23 @@ function buildGraph(item, container) {
       if (tPie)
         dlg.info(gItem.series.label + ': ' + gItem.series.data[0][1] + ' (' + parseFloat(gItem.series.percent).toFixed(2) + '%)');
       else
-        dlg.info((label ? label + ': ' : '') + '[x=' + gItem.datapoint[0].toFixed(2) + ', y=' + gItem.datapoint[1].toFixed(2) + ']');
+        dlg.info((label ? label + ': ' : '') + '[x=' + (item.xmode == 'time' ? $.datepicker.formatDate(msg['dateFormat'], new Date(gItem.datapoint[0])) : gItem.datapoint[0].toFixed(2)) + ', y=' + (item.ymode == 'time' ? $.datepicker.formatDate(msg['dateFormat'], new Date(gItem.datapoint[1])) : gItem.datapoint[1].toFixed(2)) + ']');
     }
   );
 
   for (var v in item.headers) {
     th = item.headers[v];
+    var id = 'filter-' + item.type + '-' + item.id + '-' + th.id;
     var $input = $('<input/>').val(item.filter[th.id]).attr({
       'placeholder': msg['filter'],
-      'id': 'filter-' + item.type + '-' + item.id + '-' + th.id,
+      'id': id,
       'colId': th.id
+    }).css({
+      'min-width': '50px'
     }).data({
       'item': item,
       'th': th,
-      'filterItem': $filterItem
+      'filter': $filter
     }).keypress(function(e) {
       var code = (e.keyCode ? e.keyCode : e.which);
       if (code != 13)
@@ -621,10 +646,10 @@ function buildGraph(item, container) {
       $('#item-' + item.type + '-' + item.id).addClass('loading');
       item = $(this).data('item');
       th = $(this).data('th');
-      $(this).data('filterItem').find('input').each(function() {
+      $(this).data('filter').find('input').each(function() {
         item.filter[$(this).attr('colId')] = $(this).val();
       });
-      $.get('/api/user/graph/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
+      $.get('/dbviews-api/user/graph/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
         buildGraph(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
@@ -633,10 +658,11 @@ function buildGraph(item, container) {
         sft.select();
       }).error(function() {
         dlg.alert(msg['alert_error']);
+        $('.loading').removeClass('loading');
       });
       return false;
     });
-    $filterItem.append($('<tr/>').append($('<th/>').attr('align', 'right').text(th.columnName)).append($('<td/>').append($('<div/>').addClass('filter').append($input))));
+    $filter.append($('<tr/>').append($('<th/>').attr('align', 'right').append($('<label/>').attr('for', id).text(th.columnName))).append($('<td/>').append($('<div/>').addClass('filter').append($input))));
   }
 
   return $graphContainer;

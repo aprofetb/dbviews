@@ -56,7 +56,7 @@ public class SecUtils
     if (StringUtils.isBlank(authPrincipals))
       return true;
     String[] authPals = authPrincipals.split("\\s*,\\s*");
-    Set<String> principals = SecUtils.getPrincipalsName();
+    Set<String> principals = getPrincipalsName();
     for (String pal : authPals)
       if (principals.contains(pal))
         return true;

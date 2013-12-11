@@ -8,7 +8,7 @@
   </security-role-assignment>
   <security-role-assignment>
     <role-name>admins</role-name>
-    <principal-name>Administrators</principal-name>
+    <principal-name>DBVIEWS_ADMINS</principal-name>
   </security-role-assignment>
   <jsp-descriptor>
     <keepgenerated>true</keepgenerated>

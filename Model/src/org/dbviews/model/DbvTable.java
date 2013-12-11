@@ -39,6 +39,8 @@ public class DbvTable
   private DbvView dbvView;
   @OneToMany(mappedBy = "dbvTable")
   private List<DbvTableField> dbvTableFieldList;
+  @Column(name = "filter_position")
+  private String filterPosition;
 
   public DbvTable()
   {
@@ -145,5 +147,15 @@ public class DbvTable
     getDbvTableFieldList().remove(dbvTableField);
     dbvTableField.setDbvTable(null);
     return dbvTableField;
+  }
+
+  public void setFilterPosition(String filterPosition)
+  {
+    this.filterPosition = filterPosition;
+  }
+
+  public String getFilterPosition()
+  {
+    return filterPosition;
   }
 }

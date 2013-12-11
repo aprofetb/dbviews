@@ -14,6 +14,8 @@ import org.dbviews.model.DbvTableField;
 public class Table
   extends Item
 {
+  String filterPosition;
+
   public Table(DbvTable t, Map<String, String> args, Map<Integer, String> filter, Map<Integer, Map<String, String>> options, Map<Integer, String> sortby, String focuson)
   {
     headers = new ArrayList<Header>();
@@ -60,6 +62,7 @@ public class Table
     this.options = options != null ? options : new HashMap<Integer, Map<String, String>>();
     this.sortby = sortby != null ? sortby : new HashMap<Integer, String>();
     this.focuson = focuson;
+    this.filterPosition = t.getFilterPosition();
   }
 
   public static Item getInstance(DbvTable t,
@@ -79,5 +82,15 @@ public class Table
   public String getType()
   {
     return "table";
+  }
+
+  public void setFilterPosition(String filterPosition)
+  {
+    this.filterPosition = filterPosition;
+  }
+
+  public String getFilterPosition()
+  {
+    return filterPosition;
   }
 }

@@ -4,9 +4,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
-  Locale locale = request.getLocale();
+  Locale locale = (Locale)session.getAttribute("locale");
   String language = locale.getLanguage();
-  String country = locale.getCountry();
 %>
 <html lang="<%=language%>">
   <head>
@@ -21,10 +20,11 @@
     <script type="text/javascript" src="/dbviews/js/dbviews.dialogs.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
-        $.get('/api/user/block/${it.blockId}' + window.location.search, {}, function(block, textStatus) {
+        $.get('/dbviews-api/user/block/${it.blockId}' + window.location.search, {}, function(block, textStatus) {
           buildItem(block, '#content', true);
         }).error(function(jqXHR) {
           dlg.alert(jqXHR.statusText);
+          $('.loading').removeClass('loading');
         });
       });
     </script>

@@ -173,7 +173,7 @@
    </hash>
    <hash n="oracle.jdeveloper.model.J2eeSettings">
       <value n="j2eeWebAppName" v="dbviews-Api-webapp"/>
-      <value n="j2eeWebContextRoot" v="api"/>
+      <value n="j2eeWebContextRoot" v="dbviews-api"/>
    </hash>
    <hash n="oracle.jdeveloper.model.PathsConfiguration">
       <hash n="javaContentSet">

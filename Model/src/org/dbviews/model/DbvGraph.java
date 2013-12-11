@@ -38,9 +38,9 @@ public class DbvGraph
   private String graphType;
   @Column(name = "serie_column")
   private String serieColumn;
-  @Column(name = "xaxis_column", nullable = false)
+  @Column(name = "xaxis_column")
   private String xaxisColumn;
-  @Column(name = "yaxis_column", nullable = false)
+  @Column(name = "yaxis_column")
   private String yaxisColumn;
   @Column(name = "xmode")
   private String xmode;
