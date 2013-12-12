@@ -68,6 +68,8 @@ function buildView(view, container, replaceContent) {
         .append(item.label);
       $view.append($itemHeader);
     }
+    else if (view.jquiPlugin == 'dashboard') {
+    }
     buildItem(item, $view, false);
   }
   $view[view.jquiPlugin](options);
@@ -77,7 +79,10 @@ function buildView(view, container, replaceContent) {
 function buildItem(item, container, replaceContent) {
   if (replaceContent)
     document.title = msg['title'] + ' - ' + item.description;
-  var $item = $('<div/>').attr('id', 'item-' + item.type + '-' + item.id).css('text-align', 'center').css('position', 'relative');
+  var $item = $('<div/>').attr({
+    'id': 'item-' + item.type + '-' + item.id,
+    'data-title': item.description
+  }).css('text-align', 'center').css('position', 'relative');
   var $container = $(container);
   if (replaceContent)
     $container.empty();
@@ -473,7 +478,7 @@ function getGraphData(item) {
 }
 
 function buildGraph(item, container) {
-  var $graphContainer = $('<div/>').addClass('graph-container');
+  var $graphContainer = $('<div/>'); //.addClass('graph-container');
   $(container).append($graphContainer);
   var tPie = item.graphType.indexOf('pie') != -1;
   var tBars = item.graphType.indexOf('bars') != -1;
