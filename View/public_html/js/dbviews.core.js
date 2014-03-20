@@ -81,6 +81,7 @@ function buildItem(item, container, replaceContent) {
     document.title = msg['title'] + ' - ' + item.description;
   var $item = $('<div/>').attr({
     'id': 'item-' + item.type + '-' + item.id,
+    'data-label': item.label,
     'data-title': item.description
   }).css('text-align', 'center').css('position', 'relative');
   var $container = $(container);
@@ -596,6 +597,12 @@ function buildGraph(item, container) {
       position: item.legendPosition || 'ne'
     }
   });
+  $graph.resize(function () {
+    console.info("Placeholder is now " + $(this).width() + "x" + $(this).height() + " pixels");
+  });
+  /*$(window).resize(function() {
+    console.info("Window is now " + $(window).width() + "x" + $(window).height() + " pixels");
+  });*/
   var previousPoint = null;
   $graph.unbind()
     .bind('plothover', function (event, pos, gItem) {

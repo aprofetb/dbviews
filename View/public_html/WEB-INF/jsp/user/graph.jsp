@@ -24,6 +24,7 @@
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.categories.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.canvas.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.time.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.resize.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/dbviews-api/user/graph/${it.graphId}' + window.location.search, {}, function(graph, textStatus) {
