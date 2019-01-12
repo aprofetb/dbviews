@@ -127,6 +127,6 @@ public class GraphRest
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 
-    return Response.ok(item.getHtml()).header("Content-Disposition", String.format("attachment;filename=\"%s.xls\"", item.getLabel())).build();
+    return Response.ok(item.getHtmlAsStream()).header("Content-Disposition", String.format("attachment;filename=\"%s.xls\"", item.getLabel())).build();
   }
 }

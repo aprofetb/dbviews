@@ -147,9 +147,9 @@ public class Discoverer
     return rsw;
   }
 
-  public static Map.Entry<String, List> processArgs(String queryStr, Map<String, String> args)
+  public static Map.Entry<String, List<?>> processArgs(String queryStr, Map<String, String> args)
   {
-    List qParams = new LinkedList();
+    List<String> qParams = new LinkedList<>();
     if (args != null && args.size() > 0)
     {
       Pattern p = Pattern.compile(".*(?:[^\\\\]?(?:\\\\{2})*)\\{(\\w+)\\}.*");
@@ -162,7 +162,7 @@ public class Discoverer
         qParams.add(v);
       }
     }
-    return new HashMap.SimpleEntry<String, List>(queryStr, qParams);
+    return new HashMap.SimpleEntry<String, List<?>>(queryStr, qParams);
   }
 
   public Map<Integer, Map<String, Object>> getColumns(Connection con, String sqlQuery, Map<String, String> args, boolean showHidden)
@@ -172,7 +172,7 @@ public class Discoverer
     ResultSet rs = null;
     try
     {
-      Map.Entry<String, List> queryArgs = Discoverer.processArgs(sqlQuery, args);
+      Map.Entry<String, List<?>> queryArgs = Discoverer.processArgs(sqlQuery, args);
       sqlQuery = queryArgs.getKey();
       List qParams = queryArgs.getValue();
       ps = con.prepareStatement(String.format("select * from (%s) sq1", sqlQuery));

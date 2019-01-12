@@ -12,14 +12,16 @@
    <value n="appTemplateId" v="javaEEWebAppTemplate"/>
    <hash n="component-versions">
       <value n="oracle.adf.share.dt.migration.jps.JaznCredStoreMigratorHelper" v="11.1.1.1.0"/>
+      <value n="oracle.adf.share.dt.migration.wsm.PolicyAttachmentMigratorHelper" v="12.1.2.0.0"/>
       <value n="oracle.adfdt.controller.adfc.source.migration.SavePointDataSourceForWLSMigrator" v="11.1.1.1.0"/>
       <value n="oracle.adfdtinternal.model.ide.security.extension.AdfSecurityMigrator" v="11.1.1.1.0.13"/>
       <value n="oracle.adfdtinternal.model.ide.security.wizard.AdfSecurityMigrator" v="11.1.1.1.0.13"/>
-      <value n="oracle.ide.model.Project" v="11.1.1.1.0;11.1.2.0.0"/>
+      <value n="oracle.ide.model.Project" v="11.1.1.1.0;11.1.2.0.0;12.1.3.0.0"/>
       <value n="oracle.jbo.dt.jdevx.deployment.JbdProjectMigrator" v="11.1.2.0.0"/>
       <value n="oracle.jdevimpl.appresources.ApplicationSrcDirMigrator" v="11.1.2.0.0"/>
       <value n="oracle.jdevimpl.deploy.ear.OarMigratorHelper" v="11.1.1.1.0"/>
       <value n="oracle.jdevimpl.deploy.mar.MarMigratorHelper" v="11.1.1.1.0"/>
+      <value n="oracle.jdevimpl.deploy.migrators.JeeDeploymentMigrator" v="12.1.2.0.0"/>
       <value n="oracle.jdevimpl.xml.oc4j.jps.JpsConfigMigratorHelper" v="11.1.1.1.0.1"/>
       <value n="oracle.jdevimpl.xml.wl.WeblogicMigratorHelper" v="11.1.1.1.0"/>
       <value n="oracle.mds.internal.dt.deploy.base.MarMigratorHelper" v="11.1.1.1.0"/>
@@ -32,6 +34,8 @@
       <string v="oracle.jdeveloper.model.PathsConfiguration/ApplicationSrcContentSet"/>
       <string v="oracle.jdeveloper.model.PathsConfiguration/MobileResourcesContentSet"/>
       <string v="oracle.jdeveloper.model.PathsConfiguration/ApplicationLevelMavenPOMContentSet"/>
+      <string v="oracle.jdeveloper.model.PathsConfiguration/ApplicationBuildToolContentSet"/>
+      <string v="oracle.jdeveloper.model.PathsConfiguration/ResourceBundlesContentSet"/>
    </list>
    <list n="listOfChildren">
       <hash><url n="URL" path="Api/Api.jpr"/></hash>
@@ -82,7 +86,8 @@
                      <hash n="filters">
                         <list n="rules">
                            <hash>
-                              <value n="DefaultFilters" v=""/>
+                              <value n="pattern" v="**"/>
+                              <value n="type" v="0"/>
                            </hash>
                         </list>
                      </hash>
@@ -104,9 +109,7 @@
                   </hash>
                </list>
             </hash>
-            <hash n="libraryDependencies">
-               <value n="IncludeLibrariesFromOtherContainers" v="true"/>
-            </hash>
+            <hash n="libraryDependencies"/>
             <value n="profileClass" v="oracle.jdeveloper.deploy.ear.EarProfile"/>
             <value n="profileName" v="dbviews"/>
          </hash>
@@ -114,10 +117,11 @@
       <list n="profileList">
          <string v="dbviews"/>
       </list>
+   </hash>
+   <hash n="oracle.jdeveloper.deploy.SecurityDeploymentSettings">
       <value n="Security-Deployment-Migrate-Users-And-Groups-Key" v="false"/>
       <value n="Security-Deployment-Overwrite-Application-Policies-Key" v="false"/>
       <value n="Security-Deployment-Overwrite-Credentials-Key" v="false"/>
-      <value n="Weblogic-JDBC-Auto-Sync-Key" v="false"/>
    </hash>
    <hash n="oracle.jdeveloper.model.ApplicationLibraries">
       <hash n="internalDefinitions">
@@ -144,5 +148,8 @@
       <list n="customizationLibraries">
          <hash/>
       </list>
+   </hash>
+   <hash n="Weblogic JDBC">
+      <value n="Weblogic-JDBC-Auto-Sync-Key" v="false"/>
    </hash>
 </jws:workspace>

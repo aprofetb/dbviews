@@ -1,16 +1,13 @@
 package org.dbviews.api.vo;
 
-import java.util.Map;
-
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang.StringUtils;
 
-import org.dbviews.commons.utils.StrUtils;
 import org.dbviews.model.DbvTableField;
 
 public class Header
-  implements Comparable
+  implements Comparable<Header>
 {
   private Integer id;
   private String columnName;
@@ -195,12 +192,6 @@ public class Header
     return exportable;
   }
 
-  public int compareTo(Object o)
-  {
-    Header h = (Header)o;
-    return this.getOrderPriority() > h.getOrderPriority() ? 1 : this.getOrderPriority() < h.getOrderPriority() ? -1 : 0;
-  }
-
   @XmlTransient
   public int getHashCode()
   {
@@ -216,4 +207,9 @@ public class Header
   {
     return id;
   }
+
+    @Override
+    public int compareTo(Header h) {
+        return this.getOrderPriority() > h.getOrderPriority() ? 1 : this.getOrderPriority() < h.getOrderPriority() ? -1 : 0;
+    }
 }

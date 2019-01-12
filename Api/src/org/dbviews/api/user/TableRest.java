@@ -90,7 +90,7 @@ public class TableRest
       logger.warning(e.getMessage());
     }
 
-    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson);
+    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson, true);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 
@@ -138,10 +138,10 @@ public class TableRest
       logger.warning(e.getMessage());
     }
 
-    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, focuson);
+    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, focuson, false);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 
-    return Response.ok(item.getHtml()).header("Content-Disposition", String.format("attachment;filename=\"%s.xls\"", item.getLabel())).build();
+    return Response.ok(item.getHtmlAsStream()).header("Content-Disposition", String.format("attachment;filename=\"%s.xls\"", item.getLabel())).build();
   }
 }

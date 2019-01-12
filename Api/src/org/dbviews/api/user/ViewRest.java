@@ -87,7 +87,7 @@ public class ViewRest
     {
       Item item = null;
       if (o instanceof DbvTable)
-        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, countRows, null);
+        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, countRows, null, true);
       else if (o instanceof DbvGraph)
         item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null);
       else if (o instanceof DbvHtmlBlock)
@@ -142,7 +142,7 @@ public class ViewRest
     {
       Item item = null;
       if (o instanceof DbvTable)
-        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, Integer.MAX_VALUE - 1, null);
+        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, Integer.MAX_VALUE - 1, null, false);
       else if (o instanceof DbvGraph)
         item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null);
       if (item == null)
@@ -150,6 +150,6 @@ public class ViewRest
       items.add(item);
     }
 
-    return Response.ok(Item.getHtml(items)).header("Content-Disposition", String.format("attachment;filename=%s.xls", dbvView.getDescription())).build();
+    return Response.ok(Item.getHtmlAsStream(items)).header("Content-Disposition", String.format("attachment;filename=%s.xls", dbvView.getDescription())).build();
   }
 }
