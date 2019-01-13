@@ -44,9 +44,9 @@ import org.dbviews.model.DbvConnection;
 
 public abstract class Item implements Comparable {
   private final static Logger logger = Logger.getLogger(Item.class.getName());
-  private final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-  private final static String FUNC_TOCHAR_MYSQL = "date_format(%s, '%%d/%%m/%%Y')";
-  private final static String FUNC_TOCHAR_ORACLE = "to_char(%s, 'dd/mm/yyyy')";
+  private final static SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+  private final static String FUNC_TOCHAR_MYSQL = "date_format(%s, '%%m/%%d/%%Y')";
+  private final static String FUNC_TOCHAR_ORACLE = "to_char(%s, 'mm/dd/yyyy')";
 
   protected int id;
   protected String label;
@@ -400,9 +400,9 @@ public abstract class Item implements Comparable {
                 String columnName = (String) attrs.get("ColumnName");
                 if (columnName == null)
                   continue;
-                String colExp =
-                  header.getType() == Types.DATE || header.getType() == Types.TIMESTAMP ?
-                  String.format(mysql ? FUNC_TOCHAR_MYSQL : FUNC_TOCHAR_ORACLE, columnName) : columnName;
+                String colExp = String.format("\"%s\"", columnName);
+                if (header.getType() == Types.DATE || header.getType() == Types.TIMESTAMP)
+                  colExp = String.format(mysql ? FUNC_TOCHAR_MYSQL : FUNC_TOCHAR_ORACLE, colExp);
                 if (regex) {
                   if (mysql)
                     queryStr += String.format("\"%s\" regexp %s ?", colExp, caseSensitive ? "binary" : "");
@@ -412,7 +412,8 @@ public abstract class Item implements Comparable {
                   if (caseSensitive)
                     queryStr += String.format("\"%s\" like ?", colExp);
                   else
-                    queryStr += String.format("lower(\"%s\") like lower(?)", colExp);
+                    queryStr +=
+                      String.format("lower(%s) like lower(?)", colExp);
                 }
 
                 qParams.add(regex ? value : "%" + value + "%");

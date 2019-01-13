@@ -115,7 +115,7 @@ function buildInfoTag(item, container) {
   var totalRows = item.totalRows;
   var totalPag = Math.floor(totalRows / countRows) + (totalRows % countRows == 0 ? 0 : 1);
   var currentPag = Math.floor((offsetRow - 1) / countRows) + 1;
-  var $infoTag = $('<div/>').css('margin', '10px').addClass('bold').attr('title', str4mat(msg['query_delay'], { query_delay: item.queryDelay })).html(str4mat(msg['page_info'], { current_pag: currentPag, total_pag: totalPag, total_rows: totalRows, s: totalRows > 1 ? 's' : '' }))
+  var $infoTag = $('<div/>').css('margin', '10px').addClass('bold').attr('title', str4mat(msg['query_delay'], { query_delay: item.queryDelay })).html(str4mat(msg['page_info'], { current_pag: currentPag, total_pag: Math.max(totalPag, 1), total_rows: totalRows, s: totalRows > 1 ? 's' : '' }))
   $(container).append($infoTag);
   return $infoTag;
 }
@@ -323,7 +323,7 @@ function buildToolbar(item, container) {
     }));
     for (var p = -4; p <= 4; p++) {
       var pagToShow = currentPag + p;
-      if (pagToShow >= 1 && pagToShow <= totalPag)
+      if (pagToShow >= 1 && pagToShow <= totalPag) {
         $toolbar.append($('<button/>').html(pagToShow).attr('title', p != 0 ? msg['go_to_page'] + ' ' + pagToShow : '').button( {
           disabled: p == 0
         }).data({
@@ -346,6 +346,7 @@ function buildToolbar(item, container) {
             $('#item-' + item.type + '-' + item.id).removeClass('loading');
           });
         }));
+      }
     }
     $toolbar.append($('<button/>').html(msg['next_page']).css('margin-left', '20px').button( {
       text : false, icons :  {
@@ -401,6 +402,31 @@ function buildToolbar(item, container) {
     $('#item-' + item.type + '-' + item.id).addClass('loading');
     item = $(this).data('item');
     $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+      var $item = $('#item-' + item.type + '-' + item.id).empty();
+      if (item.type == 'table') {
+        buildInfoTag(newItem, $item);
+        buildTable(newItem, $item);
+        buildInfoTag(newItem, $item);
+        buildToolbar(newItem, $item);
+      }
+      else if (item.type == 'graph') {
+        buildGraph(item, $item);
+      }
+      $item.append(buildModal()).removeClass('loading');
+    }).error(function() {
+      dlg.alert(msg['alert_error']);
+      $('#item-' + item.type + '-' + item.id).removeClass('loading');
+    });
+  })).append($('<button/>').html(msg['clear']).button( {
+    text : false, icons :  {
+      primary : 'ui-icon-cancel'
+    }
+  }).data({
+    'item': item
+  }).click(function() {
+    $('#item-' + item.type + '-' + item.id).addClass('loading');
+    item = $(this).data('item');
+    $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: '', options: '', countRows: item.countRows, offsetRow: item.offsetRow, sortby: '' }, function(newItem) {
       var $item = $('#item-' + item.type + '-' + item.id).empty();
       if (item.type == 'table') {
         buildInfoTag(newItem, $item);

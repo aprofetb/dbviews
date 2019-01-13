@@ -108,6 +108,17 @@ div.filter input {
   margin: 0px;
 }
 
+div.filter input::placeholder {
+  color: #c9c9c9;
+}
+
+div.filter input::-moz-placeholder,
+div.filter input:-ms-input-placeholder,
+div.filter input::-ms-input-placeholder,
+div.filter input::-webkit-input-placeholder {
+  color: #c9c9c9;
+}
+
 .modal {
   display: none;
   position: absolute;
