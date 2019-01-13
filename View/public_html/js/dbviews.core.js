@@ -89,10 +89,7 @@ function buildItem(item, container, replaceContent) {
     $container.empty();
   $container.append($item);
   if (item.type == 'table') {
-    buildInfoTag(item, $item);
-    buildTable(item, $item);
-    buildInfoTag(item, $item);
-    buildToolbar(item, $item);
+    buildTableElements(item, $item);
   }
   else if (item.type == 'graph') {
     buildGraph(item, $item);
@@ -118,6 +115,20 @@ function buildInfoTag(item, container) {
   var $infoTag = $('<div/>').css('margin', '10px').addClass('bold').attr('title', str4mat(msg['query_delay'], { query_delay: item.queryDelay })).html(str4mat(msg['page_info'], { current_pag: currentPag, total_pag: Math.max(totalPag, 1), total_rows: totalRows, s: totalRows > 1 ? 's' : '' }))
   $(container).append($infoTag);
   return $infoTag;
+}
+
+function buildTableElements(item, $item) {
+  var toolbarPosition = item.toolbarPosition ? item.toolbarPosition.split(/\s*,\s*/) : [];
+  var topToolbar = false;
+  if ($.inArray('top', toolbarPosition) != -1) {
+    buildToolbar(item, $item);
+    topToolbar = true;
+  }
+  buildInfoTag(item, $item);
+  buildTable(item, $item);
+  buildInfoTag(item, $item);
+  if (!topToolbar || $.inArray('bottom', toolbarPosition) != -1)
+    buildToolbar(item, $item);
 }
 
 function buildTable(item, container) {
@@ -162,10 +173,7 @@ function buildTable(item, container) {
         sortby = $(this).data('sortby');
         $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(sortby) }, function(newItem) {
           var $item = $('#item-' + item.type + '-' + item.id).empty();
-          buildInfoTag(newItem, $item);
-          buildTable(newItem, $item);
-          buildInfoTag(newItem, $item);
-          buildToolbar(newItem, $item);
+          buildTableElements(newItem, $item);
           $item.append(buildModal()).removeClass('loading');
         }).error(function() {
           dlg.alert(msg['alert_error']);
@@ -193,10 +201,7 @@ function buildTable(item, container) {
       });
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
-        buildInfoTag(newItem, $item);
-        buildTable(newItem, $item);
-        buildInfoTag(newItem, $item);
-        buildToolbar(newItem, $item);
+        buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
         var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
         sft.focus();
@@ -217,10 +222,7 @@ function buildTable(item, container) {
         });
         $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
           var $item = $('#item-' + item.type + '-' + item.id).empty();
-          buildInfoTag(newItem, $item);
-          buildTable(newItem, $item);
-          buildInfoTag(newItem, $item);
-          buildToolbar(newItem, $item);
+          buildTableElements(newItem, $item);
           $item.append(buildModal()).removeClass('loading');
           var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
           sft.focus();
@@ -279,10 +281,12 @@ function buildToolbar(item, container) {
   var $toolbar = $('<div/>').addClass('toolbar ui-widget-header ui-corner-all');
   $(container).append($toolbar);
   if (item.type == 'table') {
-    $toolbar.append($('<button/>').html(msg['first_page']).button( {
-      text : false, icons :  {
-        primary : 'ui-icon-seek-start'
-      }, disabled: offsetRow == 1
+    $toolbar.append($('<button/>').html(msg['first_page']).button({
+      text: false,
+      icons: {
+        primary: 'ui-icon-seek-start'
+      },
+      disabled: offsetRow == 1
     }).data({
       'item': item
     }).click(function() {
@@ -290,20 +294,19 @@ function buildToolbar(item, container) {
       item = $(this).data('item');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
-        buildInfoTag(newItem, $item);
-        buildTable(newItem, $item);
-        buildInfoTag(newItem, $item);
-        buildToolbar(newItem, $item);
+        buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
         dlg.alert(msg['alert_error']);
         $('#item-' + item.type + '-' + item.id).removeClass('loading');
       });
     }));
-    $toolbar.append($('<button/>').html(msg['previous_page']).css('margin-right', '20px').button( {
-      text : false, icons :  {
-        primary : 'ui-icon-seek-prev'
-      }, disabled: offsetRow == 1
+    $toolbar.append($('<button/>').html(msg['previous_page']).css('margin-right', '20px').button({
+      text: false,
+      icons: {
+        primary: 'ui-icon-seek-prev'
+      },
+      disabled: offsetRow == 1
     }).data({
       'item': item
     }).click(function() {
@@ -311,10 +314,7 @@ function buildToolbar(item, container) {
       item = $(this).data('item');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow - item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
-        buildInfoTag(newItem, $item);
-        buildTable(newItem, $item);
-        buildInfoTag(newItem, $item);
-        buildToolbar(newItem, $item);
+        buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
         dlg.alert(msg['alert_error']);
@@ -324,7 +324,7 @@ function buildToolbar(item, container) {
     for (var p = -4; p <= 4; p++) {
       var pagToShow = currentPag + p;
       if (pagToShow >= 1 && pagToShow <= totalPag) {
-        $toolbar.append($('<button/>').html(pagToShow).attr('title', p != 0 ? msg['go_to_page'] + ' ' + pagToShow : '').button( {
+        $toolbar.append($('<button/>').html(pagToShow).attr('title', p != 0 ? msg['go_to_page'] + ' ' + pagToShow : '').button({
           disabled: p == 0
         }).data({
           'item': item,
@@ -336,10 +336,7 @@ function buildToolbar(item, container) {
           pagToShow = $(this).data('pagToShow');
           $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: (pagToShow - 1) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
             var $item = $('#item-' + item.type + '-' + item.id).empty();
-            buildInfoTag(newItem, $item);
-            buildTable(newItem, $item);
-            buildInfoTag(newItem, $item);
-            buildToolbar(newItem, $item);
+            buildTableElements(newItem, $item);
             $item.append(buildModal()).removeClass('loading');
           }).error(function() {
             dlg.alert(msg['alert_error']);
@@ -348,10 +345,12 @@ function buildToolbar(item, container) {
         }));
       }
     }
-    $toolbar.append($('<button/>').html(msg['next_page']).css('margin-left', '20px').button( {
-      text : false, icons :  {
-        primary : 'ui-icon-seek-next'
-      }, disabled: offsetRow + countRows > totalRows
+    $toolbar.append($('<button/>').html(msg['next_page']).css('margin-left', '20px').button({
+      text: false,
+      icons: {
+        primary: 'ui-icon-seek-next'
+      },
+      disabled: offsetRow + countRows > totalRows
     }).data({
       'item': item
     }).click(function() {
@@ -360,20 +359,19 @@ function buildToolbar(item, container) {
       sortby = $(this).data('sortby');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow + item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
-        buildInfoTag(newItem, $item);
-        buildTable(newItem, $item);
-        buildInfoTag(newItem, $item);
-        buildToolbar(newItem, $item);
+        buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
         dlg.alert(msg['alert_error']);
         $('#item-' + item.type + '-' + item.id).removeClass('loading');
       });
     }));
-    $toolbar.append($('<button/>').css('margin-right', '20px').html(msg['last_page']).button( {
-      text : false, icons :  {
-        primary : 'ui-icon-seek-end'
-      }, disabled: offsetRow + countRows > totalRows
+    $toolbar.append($('<button/>').css('margin-right', '20px').html(msg['last_page']).button({
+      text: false,
+      icons: {
+        primary: 'ui-icon-seek-end'
+      },
+      disabled: offsetRow + countRows > totalRows
     }).data({
       'item': item
     }).click(function() {
@@ -381,10 +379,7 @@ function buildToolbar(item, container) {
       item = $(this).data('item');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: Math.floor((item.totalRows - 1) / item.countRows) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
         var $item = $('#item-' + item.type + '-' + item.id).empty();
-        buildInfoTag(newItem, $item);
-        buildTable(newItem, $item);
-        buildInfoTag(newItem, $item);
-        buildToolbar(newItem, $item);
+        buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
         dlg.alert(msg['alert_error']);
@@ -392,9 +387,10 @@ function buildToolbar(item, container) {
       });
     }));
   }
-  $toolbar.append($('<button/>').html(msg['refresh']).button( {
-    text : false, icons :  {
-      primary : 'ui-icon-refresh'
+  $toolbar.append($('<button/>').html(msg['refresh']).button({
+    text: false,
+    icons: {
+      primary: 'ui-icon-refresh'
     }
   }).data({
     'item': item
@@ -404,10 +400,7 @@ function buildToolbar(item, container) {
     $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }, function(newItem) {
       var $item = $('#item-' + item.type + '-' + item.id).empty();
       if (item.type == 'table') {
-        buildInfoTag(newItem, $item);
-        buildTable(newItem, $item);
-        buildInfoTag(newItem, $item);
-        buildToolbar(newItem, $item);
+        buildTableElements(newItem, $item);
       }
       else if (item.type == 'graph') {
         buildGraph(item, $item);
@@ -417,22 +410,20 @@ function buildToolbar(item, container) {
       dlg.alert(msg['alert_error']);
       $('#item-' + item.type + '-' + item.id).removeClass('loading');
     });
-  })).append($('<button/>').html(msg['clear']).button( {
-    text : false, icons :  {
-      primary : 'ui-icon-cancel'
+  })).append($('<button/>').html(msg['clear']).button({
+    text: false,
+    icons: {
+      primary: 'ui-icon-cancel'
     }
   }).data({
     'item': item
   }).click(function() {
     $('#item-' + item.type + '-' + item.id).addClass('loading');
     item = $(this).data('item');
-    $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: '', options: '', countRows: item.countRows, offsetRow: item.offsetRow, sortby: '' }, function(newItem) {
+    $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), countRows: item.countRows, offsetRow: 1 }, function(newItem) {
       var $item = $('#item-' + item.type + '-' + item.id).empty();
       if (item.type == 'table') {
-        buildInfoTag(newItem, $item);
-        buildTable(newItem, $item);
-        buildInfoTag(newItem, $item);
-        buildToolbar(newItem, $item);
+        buildTableElements(newItem, $item);
       }
       else if (item.type == 'graph') {
         buildGraph(item, $item);
@@ -445,9 +436,10 @@ function buildToolbar(item, container) {
   })).append($('<a/>').attr({
     'href': '/dbviews/rest/user/' + item.type + '/' + item.id + '?' + $.param({ args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }),
     'target': '_blank'
-  }).html(msg['new_window']).button( {
-    text : false, icons :  {
-      primary : 'ui-icon-newwin'
+  }).html(msg['new_window']).button({
+    text: false,
+    icons: {
+      primary: 'ui-icon-newwin'
     }
   })).append($('<a/>')
     .attr('href', '/dbviews-api/user/' + item.type + '/' + item.id + '/excel?' + $.param({ args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby) }))

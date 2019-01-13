@@ -13,6 +13,7 @@ import org.dbviews.model.DbvTableField;
 
 public class Table extends Item {
   String filterPosition;
+  String toolbarPosition;
 
   public Table(DbvTable t, Map<String, String> args, Map<Integer, String> filter,
                Map<Integer, Map<String, String>> options, Map<Integer, String> sortby, String focuson) {
@@ -58,6 +59,7 @@ public class Table extends Item {
     this.sortby = sortby != null ? sortby : new HashMap<Integer, String>();
     this.focuson = focuson;
     this.filterPosition = t.getFilterPosition();
+    this.toolbarPosition = t.getToolbarPosition();
   }
 
   public static Item getInstance(DbvTable t, Map<String, String> args, Map<Integer, String> filter,
@@ -78,5 +80,13 @@ public class Table extends Item {
 
   public String getFilterPosition() {
     return filterPosition;
+  }
+
+  public void setToolbarPosition(String toolbarPosition) {
+    this.toolbarPosition = toolbarPosition;
+  }
+
+  public String getToolbarPosition() {
+    return toolbarPosition;
   }
 }

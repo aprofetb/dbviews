@@ -127,4 +127,17 @@ public class DbvConnection
   {
     this.dbvViewList = dbvViewList;
   }
+
+  @Override
+  public boolean equals(Object object) {
+    if (!(object instanceof DbvConnection))
+      return false;
+    DbvConnection co = (DbvConnection) object;
+    return id == co.id;
+  }
+
+  @Override
+  public int hashCode() {
+    return Integer.valueOf(id).hashCode();
+  }
 }
