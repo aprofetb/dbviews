@@ -329,6 +329,7 @@ public abstract class Item implements Comparable {
       queryStr = getQuery();
       DbvConnection dbvConn = getDbvConnection();
       con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
+      con.setReadOnly(true);
       if (getHeaderCount() == 0) {
         Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
         Map<Integer, Map<String, Object>> columnMap =
@@ -366,8 +367,10 @@ public abstract class Item implements Comparable {
     ResultSet rs = null;
     String queryStr = null;
     try {
-      if (createConnection)
+      if (createConnection) {
         con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
+        con.setReadOnly(true);
+      }
       startTiming();
       queryStr = getQuery();
       Map.Entry<String, List<?>> queryArgs = Discoverer.processArgs(queryStr, args);
@@ -572,6 +575,7 @@ public abstract class Item implements Comparable {
           Connection con = conMap.get(dbvConn);
           if (con == null) {
             con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
+            con.setReadOnly(true);
             conMap.put(dbvConn, con);
           }
           item.fetchRows(1, Integer.MAX_VALUE - 1, con, new RowWriter() {
