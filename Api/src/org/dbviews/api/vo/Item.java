@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,11 +36,13 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import org.dbviews.api.database.Connector;
 import org.dbviews.api.database.Discoverer;
+import org.dbviews.api.vo.exporters.CsvExporter;
+import org.dbviews.api.vo.exporters.Exporter;
+import org.dbviews.api.vo.exporters.HtmlExporter;
 import org.dbviews.model.DbvConnection;
 
 public abstract class Item implements Comparable {
@@ -53,6 +56,7 @@ public abstract class Item implements Comparable {
   protected String description;
   protected String query;
   protected String queryIndex;
+  protected String csvSeparator;
   protected List<Header> headers;
   protected Map<String, String> args;
   protected Map<Integer, String> filter;
@@ -73,6 +77,8 @@ public abstract class Item implements Comparable {
   public Item(DbvConnection dbvConnection) {
     this.dbvConnection = dbvConnection;
   }
+
+  public abstract String getType();
 
   public void setHeaders(List<Header> headers) {
     this.headers = headers;
@@ -199,6 +205,14 @@ public abstract class Item implements Comparable {
   @XmlTransient
   public String getQueryIndex() {
     return queryIndex;
+  }
+
+  public void setCsvSeparator(String csvSeparator) {
+    this.csvSeparator = csvSeparator;
+  }
+
+  public String getCsvSeparator() {
+    return csvSeparator;
   }
 
   public void setRowsFetched(boolean rowsFetched) {
@@ -354,7 +368,7 @@ public abstract class Item implements Comparable {
     stopTiming();
   }
 
-  private void fetchRows(Integer offsetRow, Integer countRows, Connection con, RowWriter rowWriter) {
+  public void fetchRows(Integer offsetRow, Integer countRows, Connection con, RowWriter rowWriter) {
     setRowsFetched(true);
     Map<String, String> args = getArgs();
     Map<Integer, String> filter = getFilter();
@@ -510,126 +524,111 @@ public abstract class Item implements Comparable {
     stopTiming();
   }
 
+  public static interface RowWriter {
+    void write(Map<Integer, Object> row) throws IOException;
+  }
+
+
   @XmlTransient
   public String getHtml() throws IOException {
     return getHtml(this);
   }
 
   public static String getHtml(Item item) throws IOException {
-    List<Item> items = new LinkedList<Item>();
-    items.add(item);
-    return getHtml(items);
+    return getHtml(Arrays.asList(item));
   }
 
   public static String getHtml(Collection<Item> items) throws IOException {
     StringBuilder html = new StringBuilder();
-    return getHtml(items, html).toString();
+    Exporter exporter = new HtmlExporter(html);
+    exporter.writeItems(items);
+    return html.toString();
   }
 
-  private static Appendable getRowHtml(Item item, Map<Integer, Object> r, Appendable html) throws IOException {
-    html.append("<tr>");
-    for (Header header : item.getHeaders()) {
-      if (!header.isExportable())
-        continue;
-      Object value = r.get(header.getId());
-      /* html.append(String.format("<td align='%s' valign='%s' style='color:black;background-color:#FFFFCC'>",
-                                header.getAlign(), header.getVAlign())); */
-      html.append("<td>");
-      //html.append(header.getType() == Type.Html ? value : StringEscapeUtils.escapeHtml(value.toString()));
-      if (value != null)
-        html.append(StringEscapeUtils.escapeHtml(value.toString()));
-      html.append("</td>");
-    }
-    html.append("</tr>");
-    return html;
-  }
-
-  public static Appendable getHtml(Collection<Item> items, final Appendable html) throws IOException {
-    Map<DbvConnection, Connection> conMap = new HashMap<>();
-    try {
-      html.append("<table border='1' style='border:none'>");
-      for (final Item item : items) {
-        html.append("<tr>");
-        int exp = 0;
-        for (Header header : item.getHeaders())
-          if (header.isExportable())
-            exp++;
-        html.append(String.format("<th align='left' colspan='%d' style='border:none;font-size:18pt'>", exp));
-        html.append(StringEscapeUtils.escapeHtml(item.getLabel()));
-        html.append("</th>");
-        html.append("</tr>");
-
-        html.append("<tr>");
-        for (Header header : item.getHeaders()) {
-          if (!header.isExportable())
-            continue;
-          html.append(String.format("<th align='%s' valign='%s' style='color:white;background-color:#3366FF'>",
-                                    header.getAlign(), header.getVAlign()));
-          html.append(StringEscapeUtils.escapeHtml(header.getColumnName()));
-          html.append("</th>");
-        }
-        html.append("</tr>");
-
-        if (!item.isRowsFetched()) {
-          DbvConnection dbvConn = item.getDbvConnection();
-          Connection con = conMap.get(dbvConn);
-          if (con == null) {
-            con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
-            con.setReadOnly(true);
-            conMap.put(dbvConn, con);
-          }
-          item.fetchRows(1, Integer.MAX_VALUE - 1, con, new RowWriter() {
-            @Override
-            public void write(Map<Integer, Object> row) throws IOException {
-              getRowHtml(item, row, html);
-            }
-          });
-        } else {
-          for (Map<Integer, Object> r : item.getRows()) {
-            getRowHtml(item, r, html);
-          }
-        }
-      }
-      html.append("</table>");
-    } catch (Exception e) {
-      e.printStackTrace();
-      logger.severe(e.getMessage());
-    } finally {
-      for (Connection con : conMap.values())
-        Connector.relres(con);
-    }
-
-    return html;
-  }
-
-  static interface RowWriter {
-    void write(Map<Integer, Object> row) throws IOException;
-  }
 
   @XmlTransient
-  public StreamingOutput getHtmlAsStream() {
-    return getHtmlAsStream(Arrays.asList(this));
+  public String getCsv() throws IOException {
+    return getCsv(this);
   }
 
-  public static StreamingOutput getHtmlAsStream(Collection<Item> items) {
-    return new HtmlStreamingOutput(items);
+  public static String getCsv(Item item) throws IOException {
+    return getCsv(Arrays.asList(item));
   }
+
+  public static String getCsv(Collection<Item> items) throws IOException {
+    StringBuilder csv = new StringBuilder();
+    Exporter exporter = new CsvExporter(csv);
+    exporter.writeItems(items);
+    return csv.toString();
+  }
+
+
+  public StreamingOutput getStreamingOutput(Class<? extends Exporter> exporterType) {
+    return getStreamingOutput(this, exporterType);
+  }
+
+  public static StreamingOutput getStreamingOutput(Item item, Class<? extends Exporter> exporterType) {
+    return getStreamingOutput(Arrays.asList(item), exporterType);
+  }
+
+  public static StreamingOutput getStreamingOutput(Collection<Item> items, Class<? extends Exporter> exporterType) {
+    return new StreamingOutputImpl(items, exporterType);
+  }
+
 
   @XmlTransient
-  static class HtmlStreamingOutput implements StreamingOutput {
+  public StreamingOutput getHtmlStreamingOutput() {
+    return getHtmlStreamingOutput(this);
+  }
+
+  public static StreamingOutput getHtmlStreamingOutput(Item item) {
+    return getHtmlStreamingOutput(Arrays.asList(item));
+  }
+
+  public static StreamingOutput getHtmlStreamingOutput(Collection<Item> items) {
+    return new StreamingOutputImpl(items, HtmlExporter.class);
+  }
+
+
+  @XmlTransient
+  public StreamingOutput getCsvStreamingOutput() {
+    return getCsvStreamingOutput(this);
+  }
+
+  public static StreamingOutput getCsvStreamingOutput(Item item) {
+    return getCsvStreamingOutput(Arrays.asList(item));
+  }
+
+  public static StreamingOutput getCsvStreamingOutput(Collection<Item> items) {
+    return new StreamingOutputImpl(items, CsvExporter.class);
+  }
+
+
+  static class StreamingOutputImpl implements StreamingOutput {
     Collection<Item> items;
+    Class<? extends Exporter> exporterType;
 
-    public HtmlStreamingOutput(Collection<Item> items) {
+    public StreamingOutputImpl(Collection<Item> items, Class<? extends Exporter> exporterType) {
+      if (items == null)
+        throw new IllegalArgumentException("Argument 'items' cannot be null");
+      if (exporterType == null)
+        throw new IllegalArgumentException("Argument 'exporterType' cannot be null");
       this.items = items;
+      this.exporterType = exporterType;
     }
 
     @Override
     public void write(OutputStream os) throws IOException, WebApplicationException {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      getHtml(items, writer);
+      Exporter exporter = null;
+      try {
+        exporter = exporterType.getConstructor(Appendable.class).newInstance(writer);
+      } catch (Exception e) {
+        logger.log(Level.SEVERE, e.getMessage(), e);
+        return;
+      }
+      exporter.writeItems(items);
       writer.flush();
     }
   }
-
-  public abstract String getType();
 }

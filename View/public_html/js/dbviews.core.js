@@ -450,6 +450,15 @@ function buildToolbar(item, container) {
         primary: 'excel'
       }
     }
+  )).append($('<a/>')
+    .attr('href', '/dbviews-api/user/' + item.type + '/' + item.id + '/csv?' + $.param({ args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby) }))
+    .html(msg['export_to_csv'])
+    .button({
+      text: false,
+      icons: {
+        primary: 'ui-icon-grip-solid-vertical'
+      }
+    }
   ));
   return $toolbar;
 }

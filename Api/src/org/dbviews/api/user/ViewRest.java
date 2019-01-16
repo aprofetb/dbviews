@@ -21,6 +21,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import javax.ws.rs.core.StreamingOutput;
+
 import org.apache.commons.lang.StringUtils;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -34,6 +36,8 @@ import org.dbviews.api.vo.Graph;
 import org.dbviews.api.vo.HtmlBlock;
 import org.dbviews.api.vo.Item;
 import org.dbviews.api.vo.Table;
+import org.dbviews.api.vo.exporters.CsvExporter;
+import org.dbviews.api.vo.exporters.HtmlExporter;
 import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvGraph;
 import org.dbviews.model.DbvHtmlBlock;
@@ -108,11 +112,12 @@ public class ViewRest
   }
 
   @GET
-  @Path("/{viewId}/excel")
-  @Produces(MediaType.TEXT_HTML)
-  public Response exportToExcel(@PathParam("viewId") Integer viewId,
-                                @QueryParam("args") String args,
-                                @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+  @Path("/{viewId}/{exporter:(excel|csv)}")
+  @Produces({ MediaType.TEXT_HTML, MediaType.TEXT_PLAIN })
+  public Response export(@PathParam("viewId") Integer viewId,
+                         @PathParam("exporter") String exporter,
+                         @QueryParam("args") String args,
+                         @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
     if (dbvView == null)
@@ -150,6 +155,21 @@ public class ViewRest
       items.add(item);
     }
 
-    return Response.ok(Item.getHtmlAsStream(items)).header("Content-Disposition", String.format("attachment;filename=%s.xls", dbvView.getDescription())).build();
+    StreamingOutput so = null;
+    MediaType mediaType = null;
+    String fileExtension = null;
+    if ("excel".equalsIgnoreCase(exporter)) {
+      so = Item.getStreamingOutput(items, HtmlExporter.class);
+      mediaType = MediaType.TEXT_HTML_TYPE;
+      fileExtension = "xls";
+    } else if ("csv".equalsIgnoreCase(exporter)) {
+      so = Item.getStreamingOutput(items, CsvExporter.class);
+      mediaType = MediaType.TEXT_PLAIN_TYPE;
+      fileExtension = "csv";
+    } else {
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
+    return Response.ok(so, mediaType).header("Content-Disposition", String.format("attachment;filename=%s.%s", dbvView.getDescription(), fileExtension)).build();
   }
 }

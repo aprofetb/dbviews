@@ -34,6 +34,8 @@ public class DbvTable implements Serializable, Comparable {
   private String sqlQuery;
   @Column(name = "sql_query_index")
   private String sqlQueryIndex;
+  @Column(name = "csv_separator")
+  private String csvSeparator;
   @Column(name = "tab_index", nullable = false)
   private int tabIndex;
   @ManyToOne
@@ -98,6 +100,14 @@ public class DbvTable implements Serializable, Comparable {
 
   public String getSqlQueryIndex() {
     return sqlQueryIndex;
+  }
+
+  public void setCsvSeparator(String csvSeparator) {
+    this.csvSeparator = csvSeparator;
+  }
+
+  public String getCsvSeparator() {
+    return csvSeparator;
   }
 
   @XmlElement

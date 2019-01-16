@@ -14,12 +14,12 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
 
 @Entity
-@NamedQueries( { @NamedQuery(name = "DbvGraph.findAll", query = "select o from DbvGraph o"),
-                 @NamedQuery(name = "DbvGraph.findById", query = "select o from DbvGraph o where o.id = :id")})
+@NamedQueries({
+              @NamedQuery(name = "DbvGraph.findAll", query = "select o from DbvGraph o"),
+              @NamedQuery(name = "DbvGraph.findById", query = "select o from DbvGraph o where o.id = :id")
+  })
 @Table(name = "dbv_graph")
-public class DbvGraph
-  implements Serializable, Comparable
-{
+public class DbvGraph implements Serializable, Comparable {
   @Column(name = "description", nullable = false)
   private String description;
   @Id
@@ -56,13 +56,13 @@ public class DbvGraph
   private String filterPosition;
   @Column(name = "toolbar_position")
   private String toolbarPosition;
+  @Column(name = "csv_separator")
+  private String csvSeparator;
 
-  public DbvGraph()
-  {
+  public DbvGraph() {
   }
 
-  public DbvGraph(String description, String label, String sql_query, int tab_index, DbvView dbvView)
-  {
+  public DbvGraph(String description, String label, String sql_query, int tab_index, DbvView dbvView) {
     this.description = description;
     this.label = label;
     this.sqlQuery = sql_query;
@@ -71,182 +71,155 @@ public class DbvGraph
   }
 
   @XmlElement
-  public String getDescription()
-  {
+  public String getDescription() {
     return description;
   }
 
-  public void setDescription(String description)
-  {
+  public void setDescription(String description) {
     this.description = description;
   }
 
   @XmlElement
-  public int getId()
-  {
+  public int getId() {
     return id;
   }
 
-  public void setId(int id)
-  {
+  public void setId(int id) {
     this.id = id;
   }
 
   @XmlElement
-  public String getLabel()
-  {
+  public String getLabel() {
     return label;
   }
 
-  public void setLabel(String label)
-  {
+  public void setLabel(String label) {
     this.label = label;
   }
 
-  public String getSqlQuery()
-  {
+  public String getSqlQuery() {
     return sqlQuery;
   }
 
-  public void setSqlQuery(String sqlQuery)
-  {
+  public void setSqlQuery(String sqlQuery) {
     this.sqlQuery = sqlQuery;
   }
 
   @XmlElement
-  public int getTabIndex()
-  {
+  public int getTabIndex() {
     return tabIndex;
   }
 
-  public void setTabIndex(int tabIndex)
-  {
+  public void setTabIndex(int tabIndex) {
     this.tabIndex = tabIndex;
   }
 
-  public DbvView getDbvView()
-  {
+  public DbvView getDbvView() {
     return dbvView;
   }
 
-  public void setDbvView(DbvView dbvView)
-  {
+  public void setDbvView(DbvView dbvView) {
     this.dbvView = dbvView;
   }
 
-  public int compareTo(Object o)
-  {
-    DbvGraph t = (DbvGraph)o;
+  public int compareTo(Object o) {
+    DbvGraph t = (DbvGraph) o;
     return tabIndex > t.tabIndex ? 1 : tabIndex < t.tabIndex ? -1 : 0;
   }
 
-  public void setSerieColumn(String labelColumn)
-  {
+  public void setSerieColumn(String labelColumn) {
     this.serieColumn = labelColumn;
   }
 
-  public String getSerieColumn()
-  {
+  public String getSerieColumn() {
     return serieColumn;
   }
 
-  public void setXaxisColumn(String dataColumn)
-  {
+  public void setXaxisColumn(String dataColumn) {
     this.xaxisColumn = dataColumn;
   }
 
-  public String getXaxisColumn()
-  {
+  public String getXaxisColumn() {
     return xaxisColumn;
   }
 
-  public void setGraphType(String type)
-  {
+  public void setGraphType(String type) {
     this.graphType = type;
   }
 
-  public String getGraphType()
-  {
+  public String getGraphType() {
     return graphType;
   }
 
-  public void setYaxisColumn(String yaxisColumn)
-  {
+  public void setYaxisColumn(String yaxisColumn) {
     this.yaxisColumn = yaxisColumn;
   }
 
-  public String getYaxisColumn()
-  {
+  public String getYaxisColumn() {
     return yaxisColumn;
   }
 
-  public void setWidth(int width)
-  {
+  public void setWidth(int width) {
     this.width = width;
   }
 
-  public int getWidth()
-  {
+  public int getWidth() {
     return width;
   }
 
-  public void setHeight(int height)
-  {
+  public void setHeight(int height) {
     this.height = height;
   }
 
-  public int getHeight()
-  {
+  public int getHeight() {
     return height;
   }
 
-  public void setXmode(String xmode)
-  {
+  public void setXmode(String xmode) {
     this.xmode = xmode;
   }
 
-  public String getXmode()
-  {
+  public String getXmode() {
     return xmode;
   }
 
-  public void setYmode(String ymode)
-  {
+  public void setYmode(String ymode) {
     this.ymode = ymode;
   }
 
-  public String getYmode()
-  {
+  public String getYmode() {
     return ymode;
   }
 
-  public void setLegendPosition(String legendPosition)
-  {
+  public void setLegendPosition(String legendPosition) {
     this.legendPosition = legendPosition;
   }
 
-  public String getLegendPosition()
-  {
+  public String getLegendPosition() {
     return legendPosition;
   }
 
-  public void setFilterPosition(String filterPosition)
-  {
+  public void setFilterPosition(String filterPosition) {
     this.filterPosition = filterPosition;
   }
 
-  public String getFilterPosition()
-  {
+  public String getFilterPosition() {
     return filterPosition;
   }
 
-  public void setToolbarPosition(String toolbarPosition)
-  {
+  public void setToolbarPosition(String toolbarPosition) {
     this.toolbarPosition = toolbarPosition;
   }
 
-  public String getToolbarPosition()
-  {
+  public String getToolbarPosition() {
     return toolbarPosition;
+  }
+
+  public void setCsvSeparator(String csvSeparator) {
+    this.csvSeparator = csvSeparator;
+  }
+
+  public String getCsvSeparator() {
+    return csvSeparator;
   }
 }

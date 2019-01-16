@@ -16,6 +16,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import javax.ws.rs.core.StreamingOutput;
+
 import org.apache.commons.lang.StringUtils;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -25,6 +27,8 @@ import org.codehaus.jackson.map.type.TypeFactory;
 import org.dbviews.api.ServiceBase;
 import org.dbviews.api.vo.Graph;
 import org.dbviews.api.vo.Item;
+import org.dbviews.api.vo.exporters.CsvExporter;
+import org.dbviews.api.vo.exporters.HtmlExporter;
 import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvGraph;
 import org.dbviews.model.DbvView;
@@ -87,14 +91,15 @@ public class GraphRest
   }
 
   @GET
-  @Path("/{graphId}/excel")
-  @Produces(MediaType.TEXT_HTML)
-  public Response exportToExcel(@PathParam("graphId") Integer graphId,
-                                @QueryParam("args") String args,
-                                @QueryParam("filter") String filter,
-                                @QueryParam("options") String options,
-                                @QueryParam("focuson") String focuson,
-                                @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+  @Path("/{graphId}/{exporter:(excel|csv)}")
+  @Produces({ MediaType.TEXT_HTML, MediaType.TEXT_PLAIN })
+  public Response export(@PathParam("graphId") Integer graphId,
+                         @PathParam("exporter") String exporter,
+                         @QueryParam("args") String args,
+                         @QueryParam("filter") String filter,
+                         @QueryParam("options") String options,
+                         @QueryParam("focuson") String focuson,
+                         @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
   {
     DbvGraph g = dbViewsEJB.getDbvGraphFindById(graphId);
     if (g == null)
@@ -127,6 +132,21 @@ public class GraphRest
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 
-    return Response.ok(item.getHtmlAsStream()).header("Content-Disposition", String.format("attachment;filename=\"%s.xls\"", item.getLabel())).build();
+    StreamingOutput so = null;
+    MediaType mediaType = null;
+    String fileExtension = null;
+    if ("excel".equalsIgnoreCase(exporter)) {
+      so = item.getStreamingOutput(HtmlExporter.class);
+      mediaType = MediaType.TEXT_HTML_TYPE;
+      fileExtension = "xls";
+    } else if ("csv".equalsIgnoreCase(exporter)) {
+      so = item.getStreamingOutput(CsvExporter.class);
+      mediaType = MediaType.TEXT_PLAIN_TYPE;
+      fileExtension = "csv";
+    } else {
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
+    return Response.ok(so, mediaType).header("Content-Disposition", String.format("attachment;filename=\"%s.%s\"", item.getLabel(), fileExtension)).build();
   }
 }

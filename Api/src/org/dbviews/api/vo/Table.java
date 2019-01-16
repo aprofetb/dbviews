@@ -53,6 +53,7 @@ public class Table extends Item {
     index = t.getTabIndex();
     query = t.getSqlQuery();
     queryIndex = t.getSqlQueryIndex();
+    csvSeparator = t.getCsvSeparator();
     this.args = args != null ? args : new HashMap<String, String>();
     this.filter = filter != null ? filter : new HashMap<Integer, String>();
     this.options = options != null ? options : new HashMap<Integer, Map<String, String>>();

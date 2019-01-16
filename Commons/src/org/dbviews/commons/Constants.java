@@ -11,6 +11,6 @@ public class Constants
   {
     LANGUAGES = new TreeMap<String, String>();
     LANGUAGES.put("en", "English");
-    LANGUAGES.put("es", "Spanish (Español)");
+    LANGUAGES.put("es", "Spanish");
   }
 }
