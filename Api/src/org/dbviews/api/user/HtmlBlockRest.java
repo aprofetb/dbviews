@@ -51,7 +51,8 @@ public class HtmlBlockRest
   @Produces(MediaType.APPLICATION_JSON)
   public Response getBlock(@PathParam("blockId") Integer blockId, 
                            @QueryParam("args") String args, 
-                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp,
+                           @QueryParam("lazyLoad") @DefaultValue("false") Boolean lazyLoad)
   {
     DbvHtmlBlock b = dbViewsEJB.getDbvHtmlBlockFindById(blockId);
     if (b == null)
@@ -74,7 +75,7 @@ public class HtmlBlockRest
       logger.warning(e.getMessage());
     }
 
-    Item item = HtmlBlock.getInstance(b, argsMap);
+    Item item = HtmlBlock.getInstance(b, argsMap, !lazyLoad);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 

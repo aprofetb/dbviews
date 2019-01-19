@@ -10,6 +10,10 @@ $.ajaxSetup({
   cache: false
 });
 
+function getItemContainer(item) {
+  return '#item-' + item.type + '-' + item.id;
+}
+
 function buildView(view, container, replaceContent) {
   document.title = msg['title'] + ' - ' + view.description;
   var $view = $('<div/>').attr('id', 'view');
@@ -38,23 +42,29 @@ function buildView(view, container, replaceContent) {
     $itemHeader = $('<ul/>');
     $view.append($itemHeader);
   }
+  var loadContent = true;
   for (var i in view.items) {
     var item = view.items[i];
     if (view.jquiPlugin == 'tabs') {
       $itemHeader.append(
-        $('<li/>').append(
+        $('<li>').append(
           $('<a/>').attr({
-            href: '#item-' + item.type + '-' + item.id,
+            href: getItemContainer(item),
             title: item.description
           })
-          .css('padding', '.3em 1em')
+          .css({
+            'padding': '.3em 1em',
+            'color': loadContent ? '' : '#aaa'
+          })
           .append(
             $('<span/>')
               .addClass('ui-icon ' + (item.type == 'table' ? 'ui-icon-calculator' : item.type == 'graph' ? 'ui-icon-image' : 'ui-icon-carat-2-e-w'))
               .css('display', 'inline-block')
           )
           .append(item.label)
-        )
+        ).data({
+          'item': item
+        })
       );
     }
     else if (view.jquiPlugin == 'accordion') {
@@ -69,41 +79,103 @@ function buildView(view, container, replaceContent) {
       $view.append($itemHeader);
     }
     else if (view.jquiPlugin == 'dashboard') {
+      //TODO
     }
-    buildItem(item, $view, false);
+
+    buildItem(item, $view, false, loadContent);
+    if (view.lazyLoad)
+      loadContent = false;
   }
+
+  if (view.lazyLoad === true) {
+    options = $.extend({}, options, {
+      beforeActivate: function(e, ui) {
+        var $tab = $(ui.newTab);
+        loadItem($tab.data('item'), $tab.children('a[href]').first().attr('href'));
+      },
+      beforeLoad: function(event, ui) {
+        ui.jqXHR.fail(function() {
+          dlg.alert('An error occurred when trying to load the content');
+          $('.loading').removeClass('loading');
+        });
+      }
+    });
+  }
+
   $view[view.jquiPlugin](options);
   return $view;
 }
 
-function buildItem(item, container, replaceContent) {
+function buildItem(item, container, replaceContent, loadContent) {
   if (replaceContent)
     document.title = msg['title'] + ' - ' + item.description;
   var $item = $('<div/>').attr({
     'id': 'item-' + item.type + '-' + item.id,
     'data-label': item.label,
     'data-title': item.description
-  }).css('text-align', 'center').css('position', 'relative');
+  }).css({
+    'text-align': 'center',
+    'position': 'relative'
+  });
   var $container = $(container);
   if (replaceContent)
     $container.empty();
   $container.append($item);
+  if (loadContent && !loadItem(item, $item))
+    return false;
+  $item.append(buildModal());
+  return $item;
+}
+
+function loadItem(item, container) {
+  var $container = $(container);
+  if ($container.data('loaded') === true)
+    return true;
+
+  if (!item.rows) {
+    $container.css('min-height', '100px').addClass('loading');
+    $.get('/dbviews-api/user/' + item.type + '/' + item.id, {
+      args: JSON.stringify(item.args),
+      filter: JSON.stringify(item.filter),
+      options: JSON.stringify(item.options),
+      countRows: item.countRows,
+      offsetRow: item.offsetRow,
+      sortby: JSON.stringify(item.sortby)
+    }, function(newItem) {
+      var $item = $(getItemContainer(newItem)).empty();
+      buildItemContent(newItem, $item);
+      $item.append(buildModal()).removeClass('loading');
+      $('#view a[href="#' + $item.attr('id') + '"]').css('color', '');
+      $item.data('loaded', true);
+    }).error(function() {
+      dlg.alert(msg['alert_error']);
+      $(getItemContainer(item)).removeClass('loading');
+    });
+  } else {
+    if (!buildItemContent(item, $container))
+      return false;
+    $container.data('loaded', true);
+  }
+
+  return true;
+}
+
+function buildItemContent(item, $container) {
   if (item.type == 'table') {
-    buildTableElements(item, $item);
+    buildTableElements(item, $container);
   }
   else if (item.type == 'graph') {
-    buildGraph(item, $item);
+    buildGraph(item, $container);
   }
   else if (item.type == 'block') {
-    buildBlock(item, $item);
+    buildBlock(item, $container);
   }
   else {
     dlg.alert('Unknown item type');
     $('.loading').removeClass('loading');
     return false;
   }
-  $item.append(buildModal());
-  return $item;
+  return true;
 }
 
 function buildInfoTag(item, container) {
@@ -117,18 +189,18 @@ function buildInfoTag(item, container) {
   return $infoTag;
 }
 
-function buildTableElements(item, $item) {
+function buildTableElements(item, container) {
   var toolbarPosition = item.toolbarPosition ? item.toolbarPosition.split(/\s*,\s*/) : [];
   var topToolbar = false;
   if ($.inArray('top', toolbarPosition) != -1) {
-    buildToolbar(item, $item);
+    buildToolbar(item, container);
     topToolbar = true;
   }
-  buildInfoTag(item, $item);
-  buildTable(item, $item);
-  buildInfoTag(item, $item);
+  buildInfoTag(item, container);
+  buildTable(item, container);
+  buildInfoTag(item, container);
   if (!topToolbar || $.inArray('bottom', toolbarPosition) != -1)
-    buildToolbar(item, $item);
+    buildToolbar(item, container);
 }
 
 function buildTable(item, container) {
@@ -168,11 +240,11 @@ function buildTable(item, container) {
         'sortby': sortby
       })
       .click(function() {
-        $('#item-' + item.type + '-' + item.id).addClass('loading');
+        $(getItemContainer(item)).addClass('loading');
         item = $(this).data('item');
         sortby = $(this).data('sortby');
         $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(sortby) }, function(newItem) {
-          var $item = $('#item-' + item.type + '-' + item.id).empty();
+          var $item = $(getItemContainer(item)).empty();
           buildTableElements(newItem, $item);
           $item.append(buildModal()).removeClass('loading');
         }).error(function() {
@@ -193,14 +265,14 @@ function buildTable(item, container) {
       var code = (e.keyCode ? e.keyCode : e.which);
       if (code != 13)
         return;
-      $('#item-' + item.type + '-' + item.id).addClass('loading');
+      $(getItemContainer(item)).addClass('loading');
       item = $(this).data('item');
       th = $(this).data('th');
       $(this).data('$tr').find('input').each(function() {
         item.filter[$(this).attr('colId')] = $(this).val();
       });
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
-        var $item = $('#item-' + item.type + '-' + item.id).empty();
+        var $item = $(getItemContainer(item)).empty();
         buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
         var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
@@ -214,14 +286,14 @@ function buildTable(item, container) {
     });
     if (th.type == 93) {
       $input.datepicker({ dateFormat: 'dd/mm/yy' }).change(function() {
-        $('#item-' + item.type + '-' + item.id).addClass('loading');
+        $(getItemContainer(item)).addClass('loading');
         item = $(this).data('item');
         th = $(this).data('th');
         $(this).data('$tr').find('input').each(function() {
           item.filter[$(this).attr('colId')] = $(this).val();
         });
         $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
-          var $item = $('#item-' + item.type + '-' + item.id).empty();
+          var $item = $(getItemContainer(item)).empty();
           buildTableElements(newItem, $item);
           $item.append(buildModal()).removeClass('loading');
           var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
@@ -247,27 +319,29 @@ function buildTable(item, container) {
   else {
     $table.append($tr);
   }
-  for (var j = 0; j < item.rows.length; j++) {
-    var cells = item.rows[j];
-    var even = j % 2 == 0;
-    $tr = $('<tr/>').addClass(even ? 'even' : 'odd').hover(function() {
-      $(this).children('td').addClass('hover');
-    }, function() {
-      $(this).children('td').removeClass('hover');
-    });
-    $tr.append($('<td/>').html(item.offsetRow + j)).attr({
-      align: 'left',
-      valign: 'top'
-    });
-    for (var v in item.headers) {
-      th = item.headers[v];
-      var value = cells[th.id];
-      $tr.append($('<td/>').addClass(item.sortby[th.id] ? 'sorted' : '').text(value === null ? '' : value)).attr({
-        align: th.align,
-        valign: th.valign
+  if (item.rows) {
+    for (var j = 0; j < item.rows.length; j++) {
+      var cells = item.rows[j];
+      var even = j % 2 == 0;
+      $tr = $('<tr/>').addClass(even ? 'even' : 'odd').hover(function() {
+        $(this).children('td').addClass('hover');
+      }, function() {
+        $(this).children('td').removeClass('hover');
       });
+      $tr.append($('<td/>').html(item.offsetRow + j)).attr({
+        align: 'left',
+        valign: 'top'
+      });
+      for (var v in item.headers) {
+        th = item.headers[v];
+        var value = cells[th.id];
+        $tr.append($('<td/>').addClass(item.sortby[th.id] ? 'sorted' : '').text(value === null ? '' : value)).attr({
+          align: th.align,
+          valign: th.valign
+        });
+      }
+      $table.append($tr);
     }
-    $table.append($tr);
   }
   return $tableContainer;
 }
@@ -290,15 +364,15 @@ function buildToolbar(item, container) {
     }).data({
       'item': item
     }).click(function() {
-      $('#item-' + item.type + '-' + item.id).addClass('loading');
+      $(getItemContainer(item)).addClass('loading');
       item = $(this).data('item');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $('#item-' + item.type + '-' + item.id).empty();
+        var $item = $(getItemContainer(item)).empty();
         buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
         dlg.alert(msg['alert_error']);
-        $('#item-' + item.type + '-' + item.id).removeClass('loading');
+        $(getItemContainer(item)).removeClass('loading');
       });
     }));
     $toolbar.append($('<button/>').html(msg['previous_page']).css('margin-right', '20px').button({
@@ -310,15 +384,15 @@ function buildToolbar(item, container) {
     }).data({
       'item': item
     }).click(function() {
-      $('#item-' + item.type + '-' + item.id).addClass('loading');
+      $(getItemContainer(item)).addClass('loading');
       item = $(this).data('item');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow - item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $('#item-' + item.type + '-' + item.id).empty();
+        var $item = $(getItemContainer(item)).empty();
         buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
         dlg.alert(msg['alert_error']);
-        $('#item-' + item.type + '-' + item.id).removeClass('loading');
+        $(getItemContainer(item)).removeClass('loading');
       });
     }));
     for (var p = -4; p <= 4; p++) {
@@ -330,17 +404,17 @@ function buildToolbar(item, container) {
           'item': item,
           'pagToShow': pagToShow
         }).click(function() {
-          $('#item-' + item.type + '-' + item.id).addClass('loading');
+          $(getItemContainer(item)).addClass('loading');
           item = $(this).data('item');
           sortby = $(this).data('sortby');
           pagToShow = $(this).data('pagToShow');
           $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: (pagToShow - 1) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-            var $item = $('#item-' + item.type + '-' + item.id).empty();
+            var $item = $(getItemContainer(item)).empty();
             buildTableElements(newItem, $item);
             $item.append(buildModal()).removeClass('loading');
           }).error(function() {
             dlg.alert(msg['alert_error']);
-            $('#item-' + item.type + '-' + item.id).removeClass('loading');
+            $(getItemContainer(item)).removeClass('loading');
           });
         }));
       }
@@ -354,16 +428,16 @@ function buildToolbar(item, container) {
     }).data({
       'item': item
     }).click(function() {
-      $('#item-' + item.type + '-' + item.id).addClass('loading');
+      $(getItemContainer(item)).addClass('loading');
       item = $(this).data('item');
       sortby = $(this).data('sortby');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow + item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $('#item-' + item.type + '-' + item.id).empty();
+        var $item = $(getItemContainer(item)).empty();
         buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
         dlg.alert(msg['alert_error']);
-        $('#item-' + item.type + '-' + item.id).removeClass('loading');
+        $(getItemContainer(item)).removeClass('loading');
       });
     }));
     $toolbar.append($('<button/>').css('margin-right', '20px').html(msg['last_page']).button({
@@ -375,15 +449,15 @@ function buildToolbar(item, container) {
     }).data({
       'item': item
     }).click(function() {
-      $('#item-' + item.type + '-' + item.id).addClass('loading');
+      $(getItemContainer(item)).addClass('loading');
       item = $(this).data('item');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: Math.floor((item.totalRows - 1) / item.countRows) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $('#item-' + item.type + '-' + item.id).empty();
+        var $item = $(getItemContainer(item)).empty();
         buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
         dlg.alert(msg['alert_error']);
-        $('#item-' + item.type + '-' + item.id).removeClass('loading');
+        $(getItemContainer(item)).removeClass('loading');
       });
     }));
   }
@@ -395,10 +469,10 @@ function buildToolbar(item, container) {
   }).data({
     'item': item
   }).click(function() {
-    $('#item-' + item.type + '-' + item.id).addClass('loading');
+    $(getItemContainer(item)).addClass('loading');
     item = $(this).data('item');
     $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-      var $item = $('#item-' + item.type + '-' + item.id).empty();
+      var $item = $(getItemContainer(item)).empty();
       if (item.type == 'table') {
         buildTableElements(newItem, $item);
       }
@@ -408,7 +482,7 @@ function buildToolbar(item, container) {
       $item.append(buildModal()).removeClass('loading');
     }).error(function() {
       dlg.alert(msg['alert_error']);
-      $('#item-' + item.type + '-' + item.id).removeClass('loading');
+      $(getItemContainer(item)).removeClass('loading');
     });
   })).append($('<button/>').html(msg['clear']).button({
     text: false,
@@ -418,10 +492,10 @@ function buildToolbar(item, container) {
   }).data({
     'item': item
   }).click(function() {
-    $('#item-' + item.type + '-' + item.id).addClass('loading');
+    $(getItemContainer(item)).addClass('loading');
     item = $(this).data('item');
     $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), countRows: item.countRows, offsetRow: 1 }, function(newItem) {
-      var $item = $('#item-' + item.type + '-' + item.id).empty();
+      var $item = $(getItemContainer(item)).empty();
       if (item.type == 'table') {
         buildTableElements(newItem, $item);
       }
@@ -431,7 +505,7 @@ function buildToolbar(item, container) {
       $item.append(buildModal()).removeClass('loading');
     }).error(function() {
       dlg.alert(msg['alert_error']);
-      $('#item-' + item.type + '-' + item.id).removeClass('loading');
+      $(getItemContainer(item)).removeClass('loading');
     });
   })).append($('<a/>').attr({
     'href': '/dbviews/rest/user/' + item.type + '/' + item.id + '?' + $.param({ args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }),
@@ -472,17 +546,19 @@ function buildModal(container) {
 function getGraphData(item) {
   var data = [];
   var dataMap = {};
-  for (var r in item.rows) {
-    var row = item.rows[r];
-    var point = item.yaxisColumn == null ? row[item.xaxisColumn] : [row[item.xaxisColumn], row[item.yaxisColumn]];
-    if (item.serieColumn == null) {
-      data.push(point);
-    }
-    else {
-      var k = row[item.serieColumn];
-      if (!(k in dataMap))
-        dataMap[k] = [];
-      dataMap[k].push(point);
+  if (item.rows) {
+    for (var r in item.rows) {
+      var row = item.rows[r];
+      var point = item.yaxisColumn == null ? row[item.xaxisColumn] : [row[item.xaxisColumn], row[item.yaxisColumn]];
+      if (item.serieColumn == null) {
+        data.push(point);
+      }
+      else {
+        var k = row[item.serieColumn];
+        if (!(k in dataMap))
+          dataMap[k] = [];
+        dataMap[k].push(point);
+      }
     }
   }
   if (item.serieColumn == null)
@@ -682,14 +758,14 @@ function buildGraph(item, container) {
       var code = (e.keyCode ? e.keyCode : e.which);
       if (code != 13)
         return;
-      $('#item-' + item.type + '-' + item.id).addClass('loading');
+      $(getItemContainer(item)).addClass('loading');
       item = $(this).data('item');
       th = $(this).data('th');
       $(this).data('filter').find('input').each(function() {
         item.filter[$(this).attr('colId')] = $(this).val();
       });
       $.get('/dbviews-api/user/graph/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
-        var $item = $('#item-' + item.type + '-' + item.id).empty();
+        var $item = $(getItemContainer(item)).empty();
         buildGraph(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
         var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
@@ -708,7 +784,7 @@ function buildGraph(item, container) {
 }
 
 function buildBlock(item, container) {
-  if (item.rows.length > 0) {
+  if (item.rows && item.rows.length > 0) {
     var block = item.rows[0][1];
     if (block)
       $(container).append(block);

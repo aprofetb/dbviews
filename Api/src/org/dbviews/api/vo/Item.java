@@ -357,6 +357,9 @@ public abstract class Item implements Comparable {
       }
       if (fetchRows) {
         this.fetchRows(offsetRow, countRows, con, null);
+      } else {
+        setOffsetRow(offsetRow);
+        setCountRows(countRows);
       }
     } catch (Exception e) {
       e.printStackTrace();

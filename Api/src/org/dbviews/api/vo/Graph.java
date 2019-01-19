@@ -63,9 +63,9 @@ public class Graph extends Item {
   }
 
   public static Item getInstance(DbvGraph g, Map<String, String> args, Map<Integer, String> filter,
-                                 Map<Integer, Map<String, String>> options, String focuson) {
+                                 Map<Integer, Map<String, String>> options, String focuson, boolean fetchRows) {
     Item item = new Graph(g, args, filter, options, focuson);
-    item.fetchFromDatabase(1, Integer.MAX_VALUE - 1, true);
+    item.fetchFromDatabase(1, Integer.MAX_VALUE - 1, fetchRows);
     return item;
   }
 

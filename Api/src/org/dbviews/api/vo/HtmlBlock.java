@@ -33,9 +33,9 @@ public class HtmlBlock extends Item {
     this.focuson = focuson;
   }
 
-  public static Item getInstance(DbvHtmlBlock b, Map<String, String> args) {
+  public static Item getInstance(DbvHtmlBlock b, Map<String, String> args, boolean fetchRows) {
     Item item = new HtmlBlock(b, args, null, null, null, null);
-    item.fetchFromDatabase(1, Integer.MAX_VALUE - 1, true);
+    item.fetchFromDatabase(1, Integer.MAX_VALUE - 1, fetchRows);
     return item;
   }
 

@@ -54,7 +54,8 @@ public class GraphRest
                            @QueryParam("filter") String filter, 
                            @QueryParam("options") String options, 
                            @QueryParam("focuson") String focuson,
-                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp,
+                           @QueryParam("lazyLoad") @DefaultValue("false") Boolean lazyLoad)
   {
     DbvGraph g = dbViewsEJB.getDbvGraphFindById(graphId);
     if (g == null)
@@ -83,7 +84,7 @@ public class GraphRest
       logger.warning(e.getMessage());
     }
 
-    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson);
+    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson, !lazyLoad);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 
@@ -128,7 +129,7 @@ public class GraphRest
       logger.warning(e.getMessage());
     }
 
-    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson);
+    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson, false);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 

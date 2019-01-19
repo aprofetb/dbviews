@@ -3,7 +3,6 @@ package org.dbviews.api.user;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -20,17 +19,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang.StringUtils;
 
 import org.codehaus.jackson.map.ObjectMapper;
-
 import org.codehaus.jackson.map.type.TypeFactory;
 
-import org.dbviews.model.DbvTable;
-import org.dbviews.model.DbvView;
 import org.dbviews.api.ServiceBase;
 import org.dbviews.api.vo.Graph;
 import org.dbviews.api.vo.HtmlBlock;
@@ -41,6 +36,8 @@ import org.dbviews.api.vo.exporters.HtmlExporter;
 import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvGraph;
 import org.dbviews.model.DbvHtmlBlock;
+import org.dbviews.model.DbvTable;
+import org.dbviews.model.DbvView;
 
 @Path("user/view")
 @RolesAllowed("valid-users")
@@ -61,7 +58,8 @@ public class ViewRest
   public Response getView(@PathParam("viewId") Integer viewId,
                           @QueryParam("args") String args,
                           @QueryParam("countRows") @DefaultValue("20") Integer countRows,
-                          @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+                          @QueryParam("paqp") @DefaultValue("false") Boolean paqp,
+                          @QueryParam("lazyLoad") @DefaultValue("false") Boolean lazyLoad)
   {
     DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
     if (dbvView == null)
@@ -91,11 +89,11 @@ public class ViewRest
     {
       Item item = null;
       if (o instanceof DbvTable)
-        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, countRows, null, true);
+        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, countRows, null, !lazyLoad);
       else if (o instanceof DbvGraph)
-        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null);
+        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null, !lazyLoad);
       else if (o instanceof DbvHtmlBlock)
-        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap);
+        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap, !lazyLoad);
       if (item == null)
         return Response.status(Response.Status.BAD_REQUEST).build();
       items.add(item);
@@ -107,6 +105,7 @@ public class ViewRest
     view.put("jquiPlugin", dbvView.getJquiPlugin());
     view.put("jquiPluginOptions", dbvView.getJquiPluginOptions());
     view.put("items", items);
+    view.put("lazyLoad", lazyLoad);
 
     return Response.ok(view).build();
   }
@@ -149,7 +148,7 @@ public class ViewRest
       if (o instanceof DbvTable)
         item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, Integer.MAX_VALUE - 1, null, false);
       else if (o instanceof DbvGraph)
-        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null);
+        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null, false);
       if (item == null)
         return Response.status(Response.Status.BAD_REQUEST).build();
       items.add(item);
