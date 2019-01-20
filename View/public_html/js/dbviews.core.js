@@ -226,8 +226,11 @@ function buildTable(item, container) {
     var dir = item.sortby[th.id];
     var asc = dir == 'Asc';
     var desc = dir == 'Desc';
-    var sortby = { };
-    sortby[th.id] = asc ? 'Desc' : 'Asc';
+    var sortby = null;
+    if (!desc) {
+      sortby = {};
+      sortby[th.id] = asc ? 'Desc' : 'Asc';
+    }
     var dirIcon = asc ? 'ui-icon-triangle-1-n' : desc ? 'ui-icon-triangle-1-s' : 'ui-icon-carat-2-n-s';
     $tr.append($('<th/>').attr({
       width: th.width,

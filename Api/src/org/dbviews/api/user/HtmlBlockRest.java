@@ -75,7 +75,7 @@ public class HtmlBlockRest
       logger.warning(e.getMessage());
     }
 
-    Item item = HtmlBlock.getInstance(b, argsMap, !lazyLoad);
+    Item item = HtmlBlock.getInstance(b, argsMap, !lazyLoad, !lazyLoad);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 

@@ -91,11 +91,12 @@ public abstract class Item implements Comparable {
 
   @XmlElement(name = "headers")
   public List<Header> getVisibleHeaders() {
+    if (headers == null || headers.isEmpty())
+      return Collections.<Header>emptyList();
     List<Header> vHeaders = new ArrayList<>();
-    if (this.headers != null && this.headers.size() > 0)
-      for (Header header : this.headers)
-        if (header.isVisible())
-          vHeaders.add(header);
+    for (Header header : headers)
+      if (header.isVisible())
+        vHeaders.add(header);
     return vHeaders;
   }
 
@@ -157,8 +158,10 @@ public abstract class Item implements Comparable {
 
   @XmlTransient
   public List<Header> getOrderHeaders() {
+    if (headers == null || headers.isEmpty())
+      return Collections.<Header>emptyList();
     List<Header> oHeaders = new ArrayList<>();
-    for (Header header : this.headers)
+    for (Header header : headers)
       if (header.getOrder() != Order.Locked && header.getOrder() != Order.None)
         oHeaders.add(header);
     Collections.<Header>sort(oHeaders);
@@ -229,8 +232,8 @@ public abstract class Item implements Comparable {
       logger.severe("Header is null");
       return;
     }
-    if (this.headers == null)
-      this.headers = new ArrayList<Header>();
+    if (headers == null)
+      headers = new ArrayList<Header>();
     headers.add(header);
   }
 
@@ -239,8 +242,8 @@ public abstract class Item implements Comparable {
       logger.severe("Header is null");
       return;
     }
-    if (this.headers == null)
-      this.headers = new ArrayList<Header>();
+    if (headers == null)
+      headers = new ArrayList<Header>();
     if (index < 0 || index > headers.size()) {
       logger.severe("Error: index out of bounds");
       return;
@@ -250,18 +253,18 @@ public abstract class Item implements Comparable {
 
   @XmlTransient
   public int getHeaderCount() {
-    return this.headers != null ? this.headers.size() : 0;
+    return headers != null ? headers.size() : 0;
   }
 
   public void removeHeaders() {
-    if (this.getHeaderCount() > 0)
-      this.headers.clear();
+    if (getHeaderCount() > 0)
+      headers.clear();
   }
 
   public void setOrderBy(OrderByVO orderBy) {
     if (orderBy == null)
       return;
-    for (Header header : this.headers)
+    for (Header header : headers)
       if (header.getOrder() != Order.Locked)
         header.setOrder(orderBy.containsField(header.getDbColumnName()) ? orderBy.getOrder(header.getDbColumnName()) :
                         Order.None);
@@ -269,8 +272,8 @@ public abstract class Item implements Comparable {
 
   @XmlTransient
   public OrderByVO getOrderBy() {
-    List<Header> oHeaders = this.getOrderHeaders();
-    return oHeaders.size() > 0 ? new OrderByVO(oHeaders) : new OrderByVO("1", Order.Asc);
+    List<Header> oHeaders = getOrderHeaders();
+    return !oHeaders.isEmpty() ? new OrderByVO(oHeaders) : new OrderByVO("1", Order.Asc);
   }
 
   public void setIndex(Integer index) {
@@ -336,39 +339,35 @@ public abstract class Item implements Comparable {
     return dbvConnection;
   }
 
+  public void fetchFromDatabase(Connection con, Integer offsetRow, Integer countRows, boolean fetchRows) {
+    DbvConnection dbvConn = getDbvConnection();
+    if (getHeaderCount() == 0) {
+      Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
+      columnMap = disco.getColumns(con, String.format("select * from (%s) sq1 where 1=2", getQuery()), getArgs(), false);
+      for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet()) {
+        Integer id = e.getKey();
+        Map<String, Object> attrs = e.getValue();
+        addHeader(new Header(id, (String) attrs.get("ColumnName"), (Integer) attrs.get("ColumnType")));
+      }
+    }
+    if (fetchRows) {
+      fetchRows(offsetRow, countRows, con, null);
+    }
+  }
+
   public void fetchFromDatabase(Integer offsetRow, Integer countRows, boolean fetchRows) {
     Connection con = null;
-    String queryStr = null;
     try {
-      queryStr = getQuery();
       DbvConnection dbvConn = getDbvConnection();
       con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
       con.setReadOnly(true);
-      if (getHeaderCount() == 0) {
-        Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
-        Map<Integer, Map<String, Object>> columnMap =
-          disco.getColumns(con, String.format("select * from (%s) sq1 where 1=2", queryStr), getArgs(), false);
-        for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet()) {
-          Integer id = e.getKey();
-          Map<String, Object> attrs = e.getValue();
-          addHeader(new Header(id, (String) attrs.get("ColumnName"), (Integer) attrs.get("ColumnType")));
-        }
-        setColumnMap(columnMap);
-      }
-      if (fetchRows) {
-        this.fetchRows(offsetRow, countRows, con, null);
-      } else {
-        setOffsetRow(offsetRow);
-        setCountRows(countRows);
-      }
+      fetchFromDatabase(con, offsetRow, countRows, fetchRows);
     } catch (Exception e) {
-      e.printStackTrace();
       logger.severe(e.getMessage());
-      logger.severe(queryStr);
+      logger.severe(getQuery());
     } finally {
       Connector.relres(con);
     }
-    stopTiming();
   }
 
   public void fetchRows(Integer offsetRow, Integer countRows, Connection con, RowWriter rowWriter) {
@@ -416,7 +415,7 @@ public abstract class Item implements Comparable {
                   }
                 }
                 queryStr += i++ == 0 ? " where " : " and ";
-                Map<String, Object> attrs = getColumnMap().get(id);
+                Map<String, Object> attrs = columnMap.get(id);
                 String columnName = (String) attrs.get("ColumnName");
                 if (columnName == null)
                   continue;
@@ -463,7 +462,7 @@ public abstract class Item implements Comparable {
         sortbySb.append("order by ");
         for (Map.Entry<Integer, String> e : sortby.entrySet()) {
           Integer id = e.getKey();
-          Map<String, Object> attrs = getColumnMap().get(id);
+          Map<String, Object> attrs = columnMap.get(id);
           String columnName = (String) attrs.get("ColumnName");
           Order dir = Order.valueOf(e.getValue());
           sortbySb.append(mysql ? String.format("%s %s", columnName, dir) :
@@ -516,7 +515,6 @@ public abstract class Item implements Comparable {
         setOptions(new HashMap<Integer, Map<String, String>>());
       setRows(rows);
     } catch (Exception e) {
-      e.printStackTrace();
       logger.severe(e.getMessage());
       logger.severe(queryStr);
     } finally {
@@ -530,7 +528,6 @@ public abstract class Item implements Comparable {
   public static interface RowWriter {
     void write(Map<Integer, Object> row) throws IOException;
   }
-
 
   @XmlTransient
   public String getHtml() throws IOException {
@@ -548,7 +545,6 @@ public abstract class Item implements Comparable {
     return html.toString();
   }
 
-
   @XmlTransient
   public String getCsv() throws IOException {
     return getCsv(this);
@@ -565,7 +561,6 @@ public abstract class Item implements Comparable {
     return csv.toString();
   }
 
-
   public StreamingOutput getStreamingOutput(Class<? extends Exporter> exporterType) {
     return getStreamingOutput(this, exporterType);
   }
@@ -577,7 +572,6 @@ public abstract class Item implements Comparable {
   public static StreamingOutput getStreamingOutput(Collection<Item> items, Class<? extends Exporter> exporterType) {
     return new StreamingOutputImpl(items, exporterType);
   }
-
 
   @XmlTransient
   public StreamingOutput getHtmlStreamingOutput() {
@@ -592,7 +586,6 @@ public abstract class Item implements Comparable {
     return new StreamingOutputImpl(items, HtmlExporter.class);
   }
 
-
   @XmlTransient
   public StreamingOutput getCsvStreamingOutput() {
     return getCsvStreamingOutput(this);
@@ -605,7 +598,6 @@ public abstract class Item implements Comparable {
   public static StreamingOutput getCsvStreamingOutput(Collection<Item> items) {
     return new StreamingOutputImpl(items, CsvExporter.class);
   }
-
 
   static class StreamingOutputImpl implements StreamingOutput {
     Collection<Item> items;

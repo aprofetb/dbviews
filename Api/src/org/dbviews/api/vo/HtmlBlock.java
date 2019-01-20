@@ -1,26 +1,22 @@
 package org.dbviews.api.vo;
 
+import java.sql.Connection;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
-import org.dbviews.api.database.Discoverer;
+import org.dbviews.api.database.Connector;
 import org.dbviews.model.DbvConnection;
 import org.dbviews.model.DbvHtmlBlock;
 
 public class HtmlBlock extends Item {
+  private final static Logger logger = Logger.getLogger(HtmlBlock.class.getName());
+
   public HtmlBlock(DbvHtmlBlock b, Map<String, String> args, Map<Integer, String> filter,
                    Map<Integer, Map<String, String>> options, Map<Integer, String> sortby, String focuson) {
     super(b.getDbvView().getDbvConnection());
-    headers = new ArrayList<Header>();
-    DbvConnection dbvConn = b.getDbvView().getDbvConnection();
-    Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
-    columnMap = disco.getColumns(b.getSqlQuery(), args, true);
-    for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet()) {
-      Integer id = e.getKey();
-      Map<String, Object> attrs = e.getValue();
-      headers.add(new Header(id, (String) attrs.get("ColumnName"), (Integer) attrs.get("ColumnType")));
-    }
     id = b.getId();
     label = b.getLabel();
     description = b.getDescription();
@@ -33,9 +29,33 @@ public class HtmlBlock extends Item {
     this.focuson = focuson;
   }
 
-  public static Item getInstance(DbvHtmlBlock b, Map<String, String> args, boolean fetchRows) {
+  @Override
+  public void fetchFromDatabase(Integer offsetRow, Integer countRows, boolean fetchRows) {
+    Connection con = null;
+    try {
+      DbvConnection dbvConn = getDbvConnection();
+      con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
+      con.setReadOnly(true);
+      fetchFromDatabase(con, offsetRow, countRows, fetchRows);
+      headers = new ArrayList<Header>();
+      for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet()) {
+        Integer id = e.getKey();
+        Map<String, Object> attrs = e.getValue();
+        headers.add(new Header(id, (String) attrs.get("ColumnName"), (Integer) attrs.get("ColumnType")));
+      }
+    } catch (Exception e) {
+      logger.severe(e.getMessage());
+      logger.severe(getQuery());
+    } finally {
+      Connector.relres(con);
+    }
+  }
+
+  public static Item getInstance(DbvHtmlBlock b, Map<String, String> args, boolean fetchFromDatabase,
+                                 boolean fetchRows) {
     Item item = new HtmlBlock(b, args, null, null, null, null);
-    item.fetchFromDatabase(1, Integer.MAX_VALUE - 1, fetchRows);
+    if (fetchFromDatabase)
+      item.fetchFromDatabase(1, Integer.MAX_VALUE - 1, fetchRows);
     return item;
   }
 

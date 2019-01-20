@@ -1,25 +1,30 @@
 package org.dbviews.api.vo;
 
+import java.sql.Connection;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
-import org.dbviews.api.database.Discoverer;
+import org.dbviews.api.database.Connector;
 import org.dbviews.model.DbvConnection;
 import org.dbviews.model.DbvTable;
 import org.dbviews.model.DbvTableField;
 
 public class Table extends Item {
+  private final static Logger logger = Logger.getLogger(Table.class.getName());
+
   String filterPosition;
   String toolbarPosition;
 
   public Table(DbvTable t, Map<String, String> args, Map<Integer, String> filter,
                Map<Integer, Map<String, String>> options, Map<Integer, String> sortby, String focuson) {
     super(t.getDbvView().getDbvConnection());
-    headers = new ArrayList<Header>();
     if (t.getDbvTableFieldList().size() > 0) {
+      //TODO: merge customized fields with query columns
+      headers = new ArrayList<Header>();
       columnMap = new TreeMap<Integer, Map<String, Object>>();
       for (DbvTableField field : t.getDbvTableFieldList()) {
         headers.add(new Header(field));
@@ -36,15 +41,6 @@ public class Table extends Item {
         attrs.put("SchemaName", "");
         attrs.put("TableName", "");
         columnMap.put(field.getId(), attrs);
-      }
-    } else {
-      DbvConnection dbvConn = t.getDbvView().getDbvConnection();
-      Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
-      columnMap = disco.getColumns(t.getSqlQuery(), args, true);
-      for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet()) {
-        Integer id = e.getKey();
-        Map<String, Object> attrs = e.getValue();
-        headers.add(new Header(id, (String) attrs.get("ColumnName"), (Integer) attrs.get("ColumnType")));
       }
     }
     id = t.getId();
@@ -63,11 +59,37 @@ public class Table extends Item {
     this.toolbarPosition = t.getToolbarPosition();
   }
 
+  @Override
+  public void fetchFromDatabase(Integer offsetRow, Integer countRows, boolean fetchRows) {
+    Connection con = null;
+    try {
+      DbvConnection dbvConn = getDbvConnection();
+      con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
+      con.setReadOnly(true);
+      fetchFromDatabase(con, offsetRow, countRows, fetchRows);
+      headers = new ArrayList<Header>();
+      for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet()) {
+        Integer id = e.getKey();
+        Map<String, Object> attrs = e.getValue();
+        headers.add(new Header(id, (String) attrs.get("ColumnName"), (Integer) attrs.get("ColumnType")));
+      }
+    } catch (Exception e) {
+      logger.severe(e.getMessage());
+      logger.severe(getQuery());
+    } finally {
+      Connector.relres(con);
+    }
+  }
+
   public static Item getInstance(DbvTable t, Map<String, String> args, Map<Integer, String> filter,
                                  Map<Integer, Map<String, String>> options, Map<Integer, String> sortby,
-                                 Integer offsetRow, Integer countRows, String focuson, boolean fetchRows) {
-    Item item = new Table(t, args, filter, options, sortby, focuson);
-    item.fetchFromDatabase(offsetRow, countRows, fetchRows);
+                                 Integer offsetRow, Integer countRows, String focuson, boolean fetchFromDatabase,
+                                 boolean fetchRows) {
+    Table item = new Table(t, args, filter, options, sortby, focuson);
+    item.setOffsetRow(offsetRow);
+    item.setCountRows(countRows);
+    if (fetchFromDatabase)
+      item.fetchFromDatabase(offsetRow, countRows, fetchRows);
     return item;
   }
 

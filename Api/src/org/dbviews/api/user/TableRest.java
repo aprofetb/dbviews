@@ -87,7 +87,7 @@ public class TableRest
       logger.warning(e.getMessage());
     }
 
-    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson, true);
+    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson, true, true);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 
@@ -136,7 +136,7 @@ public class TableRest
       logger.warning(e.getMessage());
     }
 
-    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, focuson, false);
+    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, 1, Integer.MAX_VALUE - 1, focuson, true, false);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 

@@ -89,11 +89,11 @@ public class ViewRest
     {
       Item item = null;
       if (o instanceof DbvTable)
-        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, countRows, null, !lazyLoad);
+        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, countRows, null, !lazyLoad, !lazyLoad);
       else if (o instanceof DbvGraph)
-        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null, !lazyLoad);
+        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null, !lazyLoad, !lazyLoad);
       else if (o instanceof DbvHtmlBlock)
-        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap, !lazyLoad);
+        item = HtmlBlock.getInstance((DbvHtmlBlock)o, argsMap, !lazyLoad, !lazyLoad);
       if (item == null)
         return Response.status(Response.Status.BAD_REQUEST).build();
       items.add(item);
@@ -146,9 +146,9 @@ public class ViewRest
     {
       Item item = null;
       if (o instanceof DbvTable)
-        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, Integer.MAX_VALUE - 1, null, false);
+        item = Table.getInstance((DbvTable)o, argsMap, null, null, null, 1, Integer.MAX_VALUE - 1, null, true, false);
       else if (o instanceof DbvGraph)
-        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null, false);
+        item = Graph.getInstance((DbvGraph)o, argsMap, null, null, null, true, false);
       if (item == null)
         return Response.status(Response.Status.BAD_REQUEST).build();
       items.add(item);

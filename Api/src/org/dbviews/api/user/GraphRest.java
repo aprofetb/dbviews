@@ -84,7 +84,7 @@ public class GraphRest
       logger.warning(e.getMessage());
     }
 
-    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson, !lazyLoad);
+    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson, !lazyLoad, !lazyLoad);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 
@@ -129,7 +129,7 @@ public class GraphRest
       logger.warning(e.getMessage());
     }
 
-    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson, false);
+    Item item = Graph.getInstance(g, argsMap, filterMap, optionsMap, focuson, true, false);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 

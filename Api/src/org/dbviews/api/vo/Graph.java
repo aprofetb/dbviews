@@ -1,18 +1,26 @@
 package org.dbviews.api.vo;
 
+import java.sql.Connection;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
-import org.dbviews.api.database.Discoverer;
+import org.dbviews.api.database.Connector;
 import org.dbviews.model.DbvConnection;
 import org.dbviews.model.DbvGraph;
 
 public class Graph extends Item {
+  private final static Logger logger = Logger.getLogger(Graph.class.getName());
+
   private String[] graphType;
   private Integer serieColumn;
   private Integer xaxisColumn;
   private Integer yaxisColumn;
+  private String serieColumnName;
+  private String xaxisColumnName;
+  private String yaxisColumnName;
   private String xmode;
   private String ymode;
   private int width;
@@ -24,23 +32,6 @@ public class Graph extends Item {
   public Graph(DbvGraph g, Map<String, String> args, Map<Integer, String> filter,
                Map<Integer, Map<String, String>> options, String focuson) {
     super(g.getDbvView().getDbvConnection());
-    headers = new ArrayList<Header>();
-    DbvConnection dbvConn = g.getDbvView().getDbvConnection();
-    Discoverer disco = new Discoverer(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
-    columnMap = disco.getColumns(g.getSqlQuery(), args, true);
-    for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet()) {
-      Integer id = e.getKey();
-      Map<String, Object> attrs = e.getValue();
-      String columnName = (String) attrs.get("ColumnName");
-      int columnType = (Integer) attrs.get("ColumnType");
-      headers.add(new Header(id, columnName, columnType));
-      if (columnName.equalsIgnoreCase(g.getSerieColumn()))
-        serieColumn = id;
-      if (columnName.equalsIgnoreCase(g.getXaxisColumn()))
-        xaxisColumn = id;
-      if (columnName.equalsIgnoreCase(g.getYaxisColumn()))
-        yaxisColumn = id;
-    }
     id = g.getId();
     label = g.getLabel();
     description = g.getDescription();
@@ -54,6 +45,9 @@ public class Graph extends Item {
     legendPosition = g.getLegendPosition();
     filterPosition = g.getFilterPosition();
     toolbarPosition = g.getToolbarPosition();
+    serieColumnName = g.getSerieColumn();
+    xaxisColumnName = g.getXaxisColumn();
+    yaxisColumnName = g.getYaxisColumn();
     csvSeparator = g.getCsvSeparator();
     this.args = args != null ? args : new HashMap<String, String>();
     this.filter = filter != null ? filter : new HashMap<Integer, String>();
@@ -62,10 +56,42 @@ public class Graph extends Item {
     this.focuson = focuson;
   }
 
+  @Override
+  public void fetchFromDatabase(Integer offsetRow, Integer countRows, boolean fetchRows) {
+    Connection con = null;
+    try {
+      DbvConnection dbvConn = getDbvConnection();
+      con = Connector.getConnection(dbvConn.getUrl(), dbvConn.getUsername(), dbvConn.getPassword());
+      con.setReadOnly(true);
+      fetchFromDatabase(con, offsetRow, countRows, fetchRows);
+      headers = new ArrayList<Header>();
+      for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet()) {
+        Integer id = e.getKey();
+        Map<String, Object> attrs = e.getValue();
+        String columnName = (String) attrs.get("ColumnName");
+        int columnType = (Integer) attrs.get("ColumnType");
+        headers.add(new Header(id, columnName, columnType));
+        if (columnName.equalsIgnoreCase(serieColumnName))
+          serieColumn = id;
+        if (columnName.equalsIgnoreCase(xaxisColumnName))
+          xaxisColumn = id;
+        if (columnName.equalsIgnoreCase(yaxisColumnName))
+          yaxisColumn = id;
+      }
+    } catch (Exception e) {
+      logger.severe(e.getMessage());
+      logger.severe(getQuery());
+    } finally {
+      Connector.relres(con);
+    }
+  }
+
   public static Item getInstance(DbvGraph g, Map<String, String> args, Map<Integer, String> filter,
-                                 Map<Integer, Map<String, String>> options, String focuson, boolean fetchRows) {
-    Item item = new Graph(g, args, filter, options, focuson);
-    item.fetchFromDatabase(1, Integer.MAX_VALUE - 1, fetchRows);
+                                 Map<Integer, Map<String, String>> options, String focuson, boolean fetchFromDatabase,
+                                 boolean fetchRows) {
+    Graph item = new Graph(g, args, filter, options, focuson);
+    if (fetchFromDatabase)
+      item.fetchFromDatabase(1, Integer.MAX_VALUE - 1, fetchRows);
     return item;
   }
 

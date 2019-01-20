@@ -17,6 +17,7 @@ public class Connector
   public static Connection getConnection(String url, Properties props)
     throws SQLException
   {
+    //logger.warning(String.format("getConnection(%s, %s)", url, props));
     return DriverManager.getConnection(url, props);
   }
 
