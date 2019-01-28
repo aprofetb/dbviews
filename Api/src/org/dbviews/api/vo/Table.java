@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.dbviews.api.database.Connector;
@@ -18,30 +17,15 @@ public class Table extends Item {
 
   String filterPosition;
   String toolbarPosition;
+  protected Map<String, Header> customHeaders;
 
   public Table(DbvTable t, Map<String, String> args, Map<Integer, String> filter,
                Map<Integer, Map<String, String>> options, Map<Integer, String> sortby, String focuson) {
     super(t.getDbvView().getDbvConnection());
     if (t.getDbvTableFieldList().size() > 0) {
-      //TODO: merge customized fields with query columns
-      headers = new ArrayList<Header>();
-      columnMap = new TreeMap<Integer, Map<String, Object>>();
-      for (DbvTableField field : t.getDbvTableFieldList()) {
-        headers.add(new Header(field));
-        Map<String, Object> attrs = new HashMap<String, Object>();
-        attrs.put("CatalogName", "");
-        attrs.put("ColumnClassName", "");
-        attrs.put("ColumnDisplaySize", 0);
-        attrs.put("ColumnLabel", "");
-        attrs.put("ColumnName", field.getColumnName());
-        attrs.put("ColumnType", field.getType());
-        attrs.put("ColumnTypeName", "");
-        attrs.put("Precision", 0);
-        attrs.put("Scale", 0);
-        attrs.put("SchemaName", "");
-        attrs.put("TableName", "");
-        columnMap.put(field.getId(), attrs);
-      }
+      customHeaders = new HashMap<String, Header>();
+      for (DbvTableField field : t.getDbvTableFieldList())
+        customHeaders.put(field.getColumnName(), new Header(field));
     }
     id = t.getId();
     label = t.getLabel();
@@ -71,7 +55,16 @@ public class Table extends Item {
       for (Map.Entry<Integer, Map<String, Object>> e : columnMap.entrySet()) {
         Integer id = e.getKey();
         Map<String, Object> attrs = e.getValue();
-        headers.add(new Header(id, (String) attrs.get("ColumnName"), (Integer) attrs.get("ColumnType")));
+        String columnName = (String) attrs.get("ColumnName");
+        Header header = null;
+        if (customHeaders != null) {
+          Header customHeader = customHeaders.get(columnName);
+          if (customHeader != null)
+            header = new Header(id, customHeader);
+        }
+        if (header == null)
+          header = new Header(id, columnName, (Integer) attrs.get("ColumnType"));
+        headers.add(header);
       }
     } catch (Exception e) {
       logger.severe(e.getMessage());

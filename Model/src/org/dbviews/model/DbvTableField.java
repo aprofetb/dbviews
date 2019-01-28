@@ -14,17 +14,19 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
 
 @Entity
-@NamedQueries( { @NamedQuery(name = "DbvTableField.findAll", query = "select o from DbvTableField o") })
+@NamedQueries({ @NamedQuery(name = "DbvTableField.findAll", query = "select o from DbvTableField o") })
 @Table(name = "dbv_table_field")
-public class DbvTableField
-  implements Serializable
-{
+public class DbvTableField implements Serializable {
   @Column(name = "align")
   private String align;
   @Column(name = "column_name", nullable = false)
   private String columnName;
   @Column(name = "exportable")
   private String exportable;
+  @Column(name = "filterable")
+  private String filterable;
+  @Column(name = "sortable")
+  private String sortable;
   @Column(name = "field_order")
   private String fieldOrder;
   @Column(name = "type", nullable = false)
@@ -46,12 +48,11 @@ public class DbvTableField
   @JoinColumn(name = "table_id")
   private DbvTable dbvTable;
 
-  public DbvTableField()
-  {
+  public DbvTableField() {
   }
 
-  public DbvTableField(String align, String dbField, String exportable, String fieldOrder, int type, String name, DbvTable dbvTable, String valign, String visible, String width)
-  {
+  public DbvTableField(String align, String dbField, String exportable, String fieldOrder, int type, String name,
+                       DbvTable dbvTable, String valign, String visible, String width) {
     this.align = align;
     this.columnName = dbField;
     this.exportable = exportable;
@@ -65,128 +66,120 @@ public class DbvTableField
   }
 
   @XmlElement
-  public String getAlign()
-  {
+  public String getAlign() {
     return align;
   }
 
-  public void setAlign(String align)
-  {
+  public void setAlign(String align) {
     this.align = align;
   }
 
-  public String getColumnName()
-  {
+  public String getColumnName() {
     return columnName;
   }
 
-  public void setColumnName(String db_field)
-  {
+  public void setColumnName(String db_field) {
     this.columnName = db_field;
   }
 
-  public String getExportable()
-  {
+  public String getExportable() {
     return exportable;
   }
 
-  public void setExportable(String exportable)
-  {
+  public void setExportable(String exportable) {
     this.exportable = exportable;
   }
 
+  public void setFilterable(String filterable) {
+    this.filterable = filterable;
+  }
+
+  public String getFilterable() {
+    return filterable;
+  }
+
+  public void setSortable(String sortable) {
+    this.sortable = sortable;
+  }
+
+  public String getSortable() {
+    return sortable;
+  }
+
   @XmlElement
-  public String getFieldOrder()
-  {
+  public String getFieldOrder() {
     return fieldOrder;
   }
 
-  public void setFieldOrder(String field_order)
-  {
+  public void setFieldOrder(String field_order) {
     this.fieldOrder = field_order;
   }
 
   @XmlElement
-  public int getType()
-  {
+  public int getType() {
     return type;
   }
 
-  public void setType(int type)
-  {
+  public void setType(int type) {
     this.type = type;
   }
 
-  public int getId()
-  {
+  public int getId() {
     return id;
   }
 
-  public void setId(int id)
-  {
+  public void setId(int id) {
     this.id = id;
   }
 
   @XmlElement
-  public String getName()
-  {
+  public String getName() {
     return name;
   }
 
-  public void setName(String name)
-  {
+  public void setName(String name) {
     this.name = name;
   }
 
-  public int getTableId()
-  {
+  public int getTableId() {
     return tableId;
   }
 
-  public void setTableId(int table_id)
-  {
+  public void setTableId(int table_id) {
     this.tableId = table_id;
   }
 
   @XmlElement
-  public String getValign()
-  {
+  public String getValign() {
     return valign;
   }
 
-  public void setValign(String valign)
-  {
+  public void setValign(String valign) {
     this.valign = valign;
   }
 
-  public String getVisible()
-  {
+  public String getVisible() {
     return visible;
   }
 
-  public void setVisible(String visible)
-  {
+  public void setVisible(String visible) {
     this.visible = visible;
   }
 
   @XmlElement
-  public String getWidth()
-  {
+  public String getWidth() {
     return width;
   }
 
-  public void setWidth(String width)
-  {
+  public void setWidth(String width) {
     this.width = width;
   }
 
-  public void setDbvTable(DbvTable dbvTable)
-  {
+  public void setDbvTable(DbvTable dbvTable) {
     this.dbvTable = dbvTable;
   }
 
-  public DbvTable getDbvTable()
-  {
+  public DbvTable getDbvTable() {
     return dbvTable;
   }
 }

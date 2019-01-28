@@ -227,21 +227,27 @@ function buildTable(item, container) {
     var asc = dir == 'Asc';
     var desc = dir == 'Desc';
     var sortby = null;
-    if (!desc) {
+    if (th.sortable && !desc) {
       sortby = {};
       sortby[th.id] = asc ? 'Desc' : 'Asc';
     }
-    var dirIcon = asc ? 'ui-icon-triangle-1-n' : desc ? 'ui-icon-triangle-1-s' : 'ui-icon-carat-2-n-s';
-    $tr.append($('<th/>').attr({
+    var $headerTh = $('<th/>').appendTo($tr)
+    .addClass('ui-state-default')
+    .css('padding', '4px')
+    .attr({
       width: th.width,
       align: th.align,
       valign: th.valign
-    }).addClass('sortable ui-state-default')
-      .append($('<div/>').addClass('sort-wrapper').text(th.columnName).append(dirIcon && $('<span/>').addClass('sort-icon ui-icon ' + dirIcon)))
-      .data({
-        'item': item,
-        'sortby': sortby
-      })
+    }).data({
+      'item': item,
+      'sortby': sortby
+    });
+    var $headerThDiv = $('<div/>').text(th.columnName).appendTo($headerTh);
+    if (th.sortable) {
+      var dirIcon = asc ? 'ui-icon-triangle-1-n' : desc ? 'ui-icon-triangle-1-s' : 'ui-icon-carat-2-n-s';
+      $headerThDiv.addClass('sort-wrapper').append(dirIcon && $('<span/>').addClass('sort-icon ui-icon ' + dirIcon))
+      $headerTh
+      .addClass('sortable')
       .click(function() {
         $(getItemContainer(item)).addClass('loading');
         item = $(this).data('item');
@@ -254,41 +260,22 @@ function buildTable(item, container) {
           dlg.alert(msg['alert_error']);
           $('.loading').removeClass('loading');
         });
-      })
-    );
-    var $input = $('<input/>').val(item.filter[th.id]).attr({
-      'placeholder': msg['filter'],
-      'id': 'filter-' + item.type + '-' + item.id + '-' + th.id,
-      'colId': th.id
-    }).data({
-      'item': item,
-      'th': th,
-      '$tr': $filter
-    }).keypress(function(e) {
-      var code = (e.keyCode ? e.keyCode : e.which);
-      if (code != 13)
-        return;
-      $(getItemContainer(item)).addClass('loading');
-      item = $(this).data('item');
-      th = $(this).data('th');
-      $(this).data('$tr').find('input').each(function() {
-        item.filter[$(this).attr('colId')] = $(this).val();
       });
-      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
-        buildTableElements(newItem, $item);
-        $item.append(buildModal()).removeClass('loading');
-        var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
-        sft.focus();
-        sft.select();
-      }).error(function() {
-        dlg.alert(msg['alert_error']);
-        $('.loading').removeClass('loading');
-      });
-      return false;
-    });
-    if (th.type == 93) {
-      $input.datepicker({ dateFormat: 'dd/mm/yy' }).change(function() {
+    }
+    var $filterTd = $('<td/>').appendTo($filter);
+    if (th.filterable) {
+      var $input = $('<input/>').val(item.filter[th.id]).attr({
+        'placeholder': msg['filter'],
+        'id': 'filter-' + item.type + '-' + item.id + '-' + th.id,
+        'colId': th.id
+      }).data({
+        'item': item,
+        'th': th,
+        '$tr': $filter
+      }).keypress(function(e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code != 13)
+          return;
         $(getItemContainer(item)).addClass('loading');
         item = $(this).data('item');
         th = $(this).data('th');
@@ -308,8 +295,30 @@ function buildTable(item, container) {
         });
         return false;
       });
+      if (th.type == 93) {
+        $input.datepicker({ dateFormat: 'dd/mm/yy' }).change(function() {
+          $(getItemContainer(item)).addClass('loading');
+          item = $(this).data('item');
+          th = $(this).data('th');
+          $(this).data('$tr').find('input').each(function() {
+            item.filter[$(this).attr('colId')] = $(this).val();
+          });
+          $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
+            var $item = $(getItemContainer(item)).empty();
+            buildTableElements(newItem, $item);
+            $item.append(buildModal()).removeClass('loading');
+            var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
+            sft.focus();
+            sft.select();
+          }).error(function() {
+            dlg.alert(msg['alert_error']);
+            $('.loading').removeClass('loading');
+          });
+          return false;
+        });
+      }
+      $filterTd.append($('<div/>').addClass('filter').append($input));
     }
-    $filter.append($('<td/>').append($('<div/>').addClass('filter').append($input)));
   }
   if (item.filterPosition == 'top') {
     $table.append($filter);
