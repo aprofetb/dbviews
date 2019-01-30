@@ -21,7 +21,7 @@
 
     var panelWidth = (100.0 - settings.columns * 2) / settings.columns;
 
-    return this.each( function() {
+    return this.each(function() {
       var $parent = $(this).css("padding", "10px 20px");
       var $panels = $parent.find(settings.selector);
       var panelCount = $panels.length;

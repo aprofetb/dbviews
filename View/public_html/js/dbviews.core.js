@@ -68,15 +68,20 @@ function buildView(view, container, replaceContent) {
       );
     }
     else if (view.jquiPlugin == 'accordion') {
-      $itemHeader = $('<h3/>')
+      $('<h3/>')
         .attr('title', item.description)
         .append(
           $('<span/>')
             .addClass('ui-icon ' + (item.type == 'table' ? 'ui-icon-calculator' : item.type == 'graph' ? 'ui-icon-image' : 'ui-icon-carat-2-e-w'))
             .css('display', 'inline-block')
         )
-        .append(item.label);
-      $view.append($itemHeader);
+        .append(item.label)
+        .css({
+          'color': loadContent ? '' : '#aaa'
+        })
+        .data({
+          'item': item
+        }).appendTo($view);
     }
     else if (view.jquiPlugin == 'dashboard') {
       //TODO
@@ -88,18 +93,22 @@ function buildView(view, container, replaceContent) {
   }
 
   if (view.lazyLoad === true) {
-    options = $.extend({}, options, {
-      beforeActivate: function(e, ui) {
-        var $tab = $(ui.newTab);
-        loadItem($tab.data('item'), $tab.children('a[href]').first().attr('href'));
-      },
-      beforeLoad: function(event, ui) {
-        ui.jqXHR.fail(function() {
-          dlg.alert('An error occurred when trying to load the content');
-          $('.loading').removeClass('loading');
-        });
-      }
-    });
+    if (view.jquiPlugin == 'tabs' || view.jquiPlugin == 'accordion') {
+      options = $.extend({}, options, {
+        beforeActivate: function(e, ui) {
+          var $tab = ui.newTab || ui.newHeader;
+          loadItem($tab.data('item'), $tab.children('a[href]').first().attr('href'));
+        },
+        beforeLoad: function(event, ui) {
+          ui.jqXHR.fail(function() {
+            dlg.alert('An error occurred when trying to load the content');
+            $('.loading').removeClass('loading');
+          });
+        }
+      });
+    } else if (view.jquiPlugin == 'dashboard') {
+      //TODO
+    }
   }
 
   $view[view.jquiPlugin](options);
@@ -116,7 +125,7 @@ function buildItem(item, container, replaceContent, loadContent) {
   }).css({
     'text-align': 'center',
     'position': 'relative'
-  });
+  }).addClass('panel-content');
   var $container = $(container);
   if (replaceContent)
     $container.empty();
@@ -145,7 +154,7 @@ function loadItem(item, container) {
       var $item = $(getItemContainer(newItem)).empty();
       buildItemContent(newItem, $item);
       $item.append(buildModal()).removeClass('loading');
-      $('#view a[href="#' + $item.attr('id') + '"]').css('color', '');
+      $('#view a[href="#' + $item.attr('id') + '"], #view h3[aria-controls="' + $item.attr('id') + '"]').css('color', '');
       $item.data('loaded', true);
     }).error(function() {
       dlg.alert(msg['alert_error']);
