@@ -93,10 +93,10 @@ function buildView(view, container, replaceContent) {
   }
 
   if (view.lazyLoad === true) {
-    if (view.jquiPlugin == 'tabs' || view.jquiPlugin == 'accordion') {
+    if (view.jquiPlugin == 'tabs') {
       options = $.extend({}, options, {
         beforeActivate: function(e, ui) {
-          var $tab = ui.newTab || ui.newHeader;
+          var $tab = ui.newTab;
           loadItem($tab.data('item'), $tab.children('a[href]').first().attr('href'));
         },
         beforeLoad: function(event, ui) {
@@ -104,6 +104,14 @@ function buildView(view, container, replaceContent) {
             dlg.alert('An error occurred when trying to load the content');
             $('.loading').removeClass('loading');
           });
+        }
+      });
+    } else if (view.jquiPlugin == 'accordion') {
+      options = $.extend({}, options, {
+        heightStyle: 'content',
+        beforeActivate: function(e, ui) {
+          var $tab = ui.newHeader;
+          loadItem($tab.data('item'), '#' + $tab.attr('aria-controls'));
         }
       });
     } else if (view.jquiPlugin == 'dashboard') {
