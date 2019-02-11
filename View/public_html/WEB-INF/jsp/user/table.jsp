@@ -13,16 +13,19 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link type="text/css" rel="stylesheet" href="/dbviews/css/ui/jquery-ui.min.css"/>
     <link type="text/css" rel="stylesheet" href="/dbviews/css/styles.css"/>
+    <link type="text/css" rel="stylesheet" href="/dbviews/css/daterangepicker.css" />
     <script type="text/javascript" src="/dbviews/js/jquery.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/ui/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.i18n.js.jsp"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.util.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.core.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.dialogs.js"></script>
+    <script type="text/javascript" src="/dbviews/js/moment.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/daterangepicker.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/dbviews-api/user/table/${it.tableId}' + window.location.search, {}, function(table, textStatus) {
-          buildItem(table, '#content', true);
+          buildItem(table, '#content', true, true);
         }).error(function(jqXHR) {
           dlg.alert(jqXHR.statusText);
           $('.loading').removeClass('loading');

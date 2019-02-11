@@ -55,7 +55,8 @@ public class TableRest
                            @QueryParam("countRows") @DefaultValue("20") Integer countRows, 
                            @QueryParam("sortby") String sortby, 
                            @QueryParam("focuson") String focuson,
-                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp,
+                           @QueryParam("lazyLoad") @DefaultValue("false") Boolean lazyLoad)
   {
     DbvTable t = dbViewsEJB.getDbvTableFindById(tableId);
     if (t == null)
@@ -87,7 +88,7 @@ public class TableRest
       logger.warning(e.getMessage());
     }
 
-    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson, true, true);
+    Item item = Table.getInstance(t, argsMap, filterMap, optionsMap, sortbyMap, offsetRow, countRows, focuson, !lazyLoad, !lazyLoad);
     if (item == null)
       return Response.status(Response.Status.BAD_REQUEST).build();
 

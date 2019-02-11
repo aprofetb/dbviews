@@ -14,6 +14,7 @@
     <link type="text/css" rel="stylesheet" href="/dbviews/css/ui/jquery-ui.min.css"/>
     <link type="text/css" rel="stylesheet" href="/dbviews/css/styles.css"/>
     <link type="text/css" rel="stylesheet" href="/dbviews/css/jquery.dashboard.css"/>
+    <link type="text/css" rel="stylesheet" href="/dbviews/css/daterangepicker.css" />
     <script type="text/javascript" src="/dbviews/js/jquery.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/ui/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.i18n.js.jsp"></script>
@@ -27,6 +28,8 @@
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.time.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.resize.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/jquery.dashboard.js"></script>
+    <script type="text/javascript" src="/dbviews/js/moment.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/daterangepicker.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/dbviews-api/user/view/${it.viewId}' + window.location.search, {}, function(view, textStatus) {

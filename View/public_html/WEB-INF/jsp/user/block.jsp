@@ -21,7 +21,7 @@
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/dbviews-api/user/block/${it.blockId}' + window.location.search, {}, function(block, textStatus) {
-          buildItem(block, '#content', true);
+          buildItem(block, '#content', true, true);
         }).error(function(jqXHR) {
           dlg.alert(jqXHR.statusText);
           $('.loading').removeClass('loading');

@@ -313,12 +313,45 @@ function buildTable(item, container) {
         return false;
       });
       if (th.type == 93) {
-        $input.datepicker({ dateFormat: 'dd/mm/yy' }).change(function() {
+        $input.daterangepicker({
+          "autoUpdateInput": false,
+          "showDropdowns": true,
+          "showISOWeekNumbers": true,
+          //"timePicker": true,
+          "ranges": {
+            "CLEAR [x]": [null, null],
+            "Today": [moment(), moment()],
+            "Yesterday": [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            "Last 7 Days": [moment().subtract(6, 'days'), moment()],
+            "Last 30 Days": [moment().subtract(29, 'days'), moment()],
+            "This Month": [moment().startOf('month'), moment().endOf('month')],
+            "Last Month": [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+          },
+          "locale": {
+            //"direction": "ltr",
+            "format": "MM/DD/YYYY",
+            "separator": " - ",
+            "applyLabel": "Apply",
+            "cancelLabel": "Cancel",
+            "customRangeLabel": "Custom Range",
+            //"daysOfWeek": ['<%=StringUtils.join(BaseResource.getViewString(locale, "daterangepicker.locale.daysOfWeek").split("\\s*,\\s*"), "','")%>'],
+            "firstDay": 1
+          },
+          "linkedCalendars": false
+          //,"alwaysShowCalendars": true
+        }).on('apply.daterangepicker', function(ev, picker) {
           $(getItemContainer(item)).addClass('loading');
-          item = $(this).data('item');
-          th = $(this).data('th');
-          $(this).data('$tr').find('input').each(function() {
-            item.filter[$(this).attr('colId')] = $(this).val();
+          if (picker.startDate.isValid() && picker.endDate.isValid()) {
+            picker.element.val(picker.startDate.format(picker.locale.format) + picker.locale.separator + picker.endDate.format(picker.locale.format));
+          } else {
+            picker.element.val('');
+          }
+          var $drp = $(this);
+          item = $drp.data('item');
+          th = $drp.data('th');
+          $drp.data('$tr').find('input').each(function() {
+            var $inpt = $(this);
+            item.filter[$inpt.attr('colId')] = $inpt.val();
           });
           $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
             var $item = $(getItemContainer(item)).empty();
@@ -331,7 +364,16 @@ function buildTable(item, container) {
             dlg.alert(msg['alert_error']);
             $('.loading').removeClass('loading');
           });
-          return false;
+        }).on('show.daterangepicker', function(ev, picker) {
+          if (!picker.element.val())
+            picker.container.find('.ranges li.active').removeClass('active');
+          picker.container.find('.ranges li[data-range-key^="CLEAR"]').css({
+            "font-family": 'monospace',
+            "font-size": 'x-small',
+            "font-weight": 'bold',
+            "background-color": '#fafafa',
+            "text-align": 'right'
+          });
         });
       }
       $filterTd.append($('<div/>').addClass('filter').append($input));

@@ -13,6 +13,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link type="text/css" rel="stylesheet" href="/dbviews/css/ui/jquery-ui.min.css"/>
     <link type="text/css" rel="stylesheet" href="/dbviews/css/styles.css"/>
+    <link type="text/css" rel="stylesheet" href="/dbviews/css/daterangepicker.css" />
     <script type="text/javascript" src="/dbviews/js/jquery.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/ui/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/dbviews.i18n.js.jsp"></script>
@@ -25,10 +26,12 @@
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.canvas.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.time.min.js"></script>
     <script type="text/javascript" src="/dbviews/js/flot/jquery.flot.resize.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/moment.min.js"></script>
+    <script type="text/javascript" src="/dbviews/js/daterangepicker.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
         $.get('/dbviews-api/user/graph/${it.graphId}' + window.location.search, {}, function(graph, textStatus) {
-          buildItem(graph, '#content', true);
+          buildItem(graph, '#content', true, true);
         }).error(function(jqXHR) {
           dlg.alert(jqXHR.statusText);
           $('.loading').removeClass('loading');
