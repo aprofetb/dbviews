@@ -33,6 +33,7 @@ import org.dbviews.api.vo.Item;
 import org.dbviews.api.vo.Table;
 import org.dbviews.api.vo.exporters.CsvExporter;
 import org.dbviews.api.vo.exporters.HtmlExporter;
+import org.dbviews.api.vo.exporters.JsonExporter;
 import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvGraph;
 import org.dbviews.model.DbvHtmlBlock;
@@ -116,7 +117,10 @@ public class ViewRest
   public Response export(@PathParam("viewId") Integer viewId,
                          @PathParam("exporter") String exporter,
                          @QueryParam("args") String args,
-                         @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+                         @QueryParam("paqp") @DefaultValue("false") Boolean paqp,
+                         @QueryParam("attachment") @DefaultValue("true") Boolean attachment,
+                         @QueryParam("rowsWithColName") @DefaultValue("false") Boolean rowsWithColName,
+                         @QueryParam("skipNullValues") @DefaultValue("false") Boolean skipNullValues)
   {
     DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
     if (dbvView == null)
@@ -140,7 +144,6 @@ public class ViewRest
 
     List itemsList = dbvView.getDbvTableList();
     itemsList.addAll(dbvView.getDbvGraphList());
-    itemsList.addAll(dbvView.getDbvHtmlBlockList());
     Set<Item> items = new TreeSet<Item>();
     for (Object o : itemsList)
     {
@@ -165,10 +168,19 @@ public class ViewRest
       so = Item.getStreamingOutput(items, CsvExporter.class);
       mediaType = MediaType.TEXT_PLAIN_TYPE;
       fileExtension = "csv";
+    } else if ("json".equalsIgnoreCase(exporter)) {
+      JsonExporter jsonExporter = new JsonExporter(null, rowsWithColName, skipNullValues);
+      so = Item.getStreamingOutput(items, jsonExporter);
+      mediaType = MediaType.APPLICATION_JSON_TYPE;
+      fileExtension = "json";
     } else {
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
-    return Response.ok(so, mediaType).header("Content-Disposition", String.format("attachment;filename=%s.%s", dbvView.getDescription(), fileExtension)).build();
+    Response.ResponseBuilder response = Response.ok(so, mediaType);
+    if (attachment)
+      response.header("Content-Disposition", String.format("attachment;filename=\"%s.%s\"", dbvView.getDescription(), fileExtension));
+
+    return response.build();
   }
 }

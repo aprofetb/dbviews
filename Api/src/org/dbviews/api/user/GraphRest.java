@@ -29,6 +29,7 @@ import org.dbviews.api.vo.Graph;
 import org.dbviews.api.vo.Item;
 import org.dbviews.api.vo.exporters.CsvExporter;
 import org.dbviews.api.vo.exporters.HtmlExporter;
+import org.dbviews.api.vo.exporters.JsonExporter;
 import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvGraph;
 import org.dbviews.model.DbvView;
@@ -100,7 +101,10 @@ public class GraphRest
                          @QueryParam("filter") String filter,
                          @QueryParam("options") String options,
                          @QueryParam("focuson") String focuson,
-                         @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+                         @QueryParam("paqp") @DefaultValue("false") Boolean paqp,
+                         @QueryParam("attachment") @DefaultValue("true") Boolean attachment,
+                         @QueryParam("rowsWithColName") @DefaultValue("false") Boolean rowsWithColName,
+                         @QueryParam("skipNullValues") @DefaultValue("false") Boolean skipNullValues)
   {
     DbvGraph g = dbViewsEJB.getDbvGraphFindById(graphId);
     if (g == null)
@@ -144,10 +148,19 @@ public class GraphRest
       so = item.getStreamingOutput(CsvExporter.class);
       mediaType = MediaType.TEXT_PLAIN_TYPE;
       fileExtension = "csv";
+    } else if ("json".equalsIgnoreCase(exporter)) {
+      JsonExporter jsonExporter = new JsonExporter(null, rowsWithColName, skipNullValues);
+      so = item.getStreamingOutput(jsonExporter);
+      mediaType = MediaType.APPLICATION_JSON_TYPE;
+      fileExtension = "json";
     } else {
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
-    return Response.ok(so, mediaType).header("Content-Disposition", String.format("attachment;filename=\"%s.%s\"", item.getLabel(), fileExtension)).build();
+    Response.ResponseBuilder response = Response.ok(so, mediaType);
+    if (attachment)
+      response.header("Content-Disposition", String.format("attachment;filename=\"%s.%s\"", item.getLabel(), fileExtension));
+
+    return response.build();
   }
 }
