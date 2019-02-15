@@ -27,6 +27,7 @@ import org.dbviews.api.vo.Item;
 import org.dbviews.api.vo.Table;
 import org.dbviews.api.vo.exporters.CsvExporter;
 import org.dbviews.api.vo.exporters.HtmlExporter;
+import org.dbviews.api.vo.exporters.JsonExporter;
 import org.dbviews.commons.utils.SecUtils;
 import org.dbviews.model.DbvTable;
 import org.dbviews.model.DbvView;
@@ -96,7 +97,7 @@ public class TableRest
   }
 
   @GET
-  @Path("/{tableId}/{exporter:(excel|csv)}")
+  @Path("/{tableId}/{exporter:(excel|csv|json)}")
   @Produces({ MediaType.TEXT_HTML, MediaType.TEXT_PLAIN })
   public Response export(@PathParam("tableId") Integer tableId,
                          @PathParam("exporter") String exporter,
@@ -105,7 +106,10 @@ public class TableRest
                          @QueryParam("options") String options,
                          @QueryParam("sortby") String sortby,
                          @QueryParam("focuson") String focuson,
-                         @QueryParam("paqp") @DefaultValue("false") Boolean paqp)
+                         @QueryParam("paqp") @DefaultValue("false") Boolean paqp,
+                         @QueryParam("attachment") @DefaultValue("true") Boolean attachment,
+                         @QueryParam("rowsWithColName") @DefaultValue("false") Boolean rowsWithColName,
+                         @QueryParam("skipNullValues") @DefaultValue("false") Boolean skipNullValues)
   {
     DbvTable t = dbViewsEJB.getDbvTableFindById(tableId);
     if (t == null)
@@ -152,10 +156,19 @@ public class TableRest
       so = item.getStreamingOutput(CsvExporter.class);
       mediaType = MediaType.TEXT_PLAIN_TYPE;
       fileExtension = "csv";
+    } else if ("json".equalsIgnoreCase(exporter)) {
+      JsonExporter jsonExporter = new JsonExporter(null, rowsWithColName, skipNullValues);
+      so = item.getStreamingOutput(jsonExporter);
+      mediaType = MediaType.APPLICATION_JSON_TYPE;
+      fileExtension = "json";
     } else {
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
-    return Response.ok(so, mediaType).header("Content-Disposition", String.format("attachment;filename=\"%s.%s\"", item.getLabel(), fileExtension)).build();
+    Response.ResponseBuilder response = Response.ok(so, mediaType);
+    if (attachment)
+      response.header("Content-Disposition", String.format("attachment;filename=\"%s.%s\"", item.getLabel(), fileExtension));
+
+    return response.build();
   }
 }

@@ -468,10 +468,13 @@ public abstract class Item implements Comparable {
       rs = ps.executeQuery();
       int totalRows = rs.next() ? rs.getInt(1) : 0;
       Connector.relres(rs, ps);
-      if (totalRows < offsetRow)
+
+      if (totalRows < offsetRow || countRows == -1)
         offsetRow = 1;
+      if (countRows == -1)
+        countRows = totalRows;
       setOffsetRow(offsetRow);
-      setCountRows(countRows == -1 ? totalRows : countRows);
+      setCountRows(countRows);
       setTotalRows(totalRows);
 
       // build order by clause
@@ -591,6 +594,18 @@ public abstract class Item implements Comparable {
     return new StreamingOutputImpl(items, exporterType);
   }
 
+  public StreamingOutput getStreamingOutput(Exporter exporter) {
+    return getStreamingOutput(this, exporter);
+  }
+
+  public static StreamingOutput getStreamingOutput(Item item, Exporter exporter) {
+    return getStreamingOutput(Arrays.asList(item), exporter);
+  }
+
+  public static StreamingOutput getStreamingOutput(Collection<Item> items, Exporter exporter) {
+    return new StreamingOutputImpl(items, exporter);
+  }
+
   @XmlTransient
   public StreamingOutput getHtmlStreamingOutput() {
     return getHtmlStreamingOutput(this);
@@ -620,6 +635,7 @@ public abstract class Item implements Comparable {
   static class StreamingOutputImpl implements StreamingOutput {
     Collection<Item> items;
     Class<? extends Exporter> exporterType;
+    Exporter exporter;
 
     public StreamingOutputImpl(Collection<Item> items, Class<? extends Exporter> exporterType) {
       if (items == null)
@@ -630,15 +646,27 @@ public abstract class Item implements Comparable {
       this.exporterType = exporterType;
     }
 
+    public StreamingOutputImpl(Collection<Item> items, Exporter exporter) {
+      if (items == null)
+        throw new IllegalArgumentException("Argument 'items' cannot be null");
+      if (exporter == null)
+        throw new IllegalArgumentException("Argument 'exporter' cannot be null");
+      this.items = items;
+      this.exporter = exporter;
+    }
+
     @Override
     public void write(OutputStream os) throws IOException, WebApplicationException {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      Exporter exporter = null;
-      try {
-        exporter = exporterType.getConstructor(Appendable.class).newInstance(writer);
-      } catch (Exception e) {
-        logger.log(Level.SEVERE, e.getMessage(), e);
-        return;
+      if (exporter == null) {
+        try {
+          exporter = exporterType.getConstructor(Appendable.class).newInstance(writer);
+        } catch (Exception e) {
+          logger.log(Level.SEVERE, e.getMessage(), e);
+          return;
+        }
+      } else {
+        exporter.setWriter(writer);
       }
       exporter.writeItems(items);
       writer.flush();

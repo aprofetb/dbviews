@@ -76,7 +76,7 @@ public class CsvExporter extends Exporter {
   }
 
   @Override
-  protected Appendable writeRow(Item item, Map<Integer, Object> r) throws IOException {
+  protected Appendable writeRow(Item item, Map<Integer, Object> row) throws IOException {
     String separator = StringUtils.defaultIfEmpty(item.getCsvSeparator(), "|");
     boolean addSeparator = false;
     for (Header header : item.getHeaders()) {
@@ -87,7 +87,7 @@ public class CsvExporter extends Exporter {
       } else {
         addSeparator = true;
       }
-      Object value = r.get(header.getId());
+      Object value = row.get(header.getId());
       if (value != null)
         writer.append(StringEscapeUtils.escapeCsv(value.toString()));
     }

@@ -83,12 +83,12 @@ public class HtmlExporter extends Exporter {
   }
 
   @Override
-  protected Appendable writeRow(Item item, Map<Integer, Object> r) throws IOException {
+  protected Appendable writeRow(Item item, Map<Integer, Object> row) throws IOException {
     writer.append("<tr>");
     for (Header header : item.getHeaders()) {
       if (!header.isExportable())
         continue;
-      Object value = r.get(header.getId());
+      Object value = row.get(header.getId());
       /* writer.append(String.format("<td align='%s' valign='%s' style='color:black;background-color:#FFFFCC'>",
                                   header.getAlign(), header.getVAlign())); */
       writer.append("<td>");
