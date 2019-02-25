@@ -5,6 +5,14 @@
  *  Copyright (c) Alejandro Profet Beruff
  *  Version 1.0 : 22-Apr-2013
  */
+ 
+$(document).ready(function() {
+  // TODO:
+  dlg = {
+    alert: bootbox.alert,
+    info: bootbox.alert
+  }
+});
 
 $.ajaxSetup({
   cache: false
@@ -14,14 +22,25 @@ function getItemContainer(item) {
   return '#item-' + item.type + '-' + item.id;
 }
 
+function buildModal(container) {
+  var $modal = $('<div/>').addClass('loading-modal').attr('title', msg['loading_please_wait']);
+  $(container).append($modal);
+  return $modal;
+}
+
 function buildView(view, container, replaceContent) {
   document.title = msg['title'] + ' - ' + view.description;
-  var $view = $('<div/>').attr('id', 'view');
+  var $view = $('<div/>').attr('id', 'view').css({
+    "margin": '1em',
+    "border": '1px #ccc solid',
+    "padding": '.2em',
+    "border-radius": '.25rem'
+  });
 
   if ($.type($view[view.jquiPlugin]) !== 'function') {
-    dlg.alert(msg['jqui_plugin_not_found']);
-    $('.loading').removeClass('loading');
-    return null;
+//    dlg.alert(msg['jqui_plugin_not_found']);
+//    $('.loading').removeClass('loading');
+//    return null;
   }
   var options;
   try {
@@ -39,33 +58,41 @@ function buildView(view, container, replaceContent) {
   $container.append($view);
   var $itemHeader;
   if (view.jquiPlugin == 'tabs') {
-    $itemHeader = $('<ul/>');
+    $itemHeader = $('<ul>').addClass('nav nav-tabs');
     $view.append($itemHeader);
   }
+  var $tabContent = $('<div class="tab-content">').appendTo($view);
   var loadContent = true;
+  var active = true;
   for (var i in view.items) {
     var item = view.items[i];
     if (view.jquiPlugin == 'tabs') {
-      $itemHeader.append(
-        $('<li>').append(
-          $('<a/>').attr({
-            href: getItemContainer(item),
-            title: item.description
-          })
-          .css({
-            'padding': '.3em 1em',
-            'color': loadContent ? '' : '#aaa'
-          })
-          .append(
-            $('<span/>')
-              .addClass('ui-icon ' + (item.type == 'table' ? 'ui-icon-calculator' : item.type == 'graph' ? 'ui-icon-image' : 'ui-icon-carat-2-e-w'))
-              .css('display', 'inline-block')
-          )
-          .append(item.label)
-        ).data({
-          'item': item
-        })
-      );
+      var $li = $('<li>').addClass('nav-item').appendTo($itemHeader);
+      var $a = $('<a class="nav-link" data-toggle="tab" role="tab" aria-selected="true">').attr({
+        "id": 'tab-' + item.type + '-' + item.id,
+        "href": getItemContainer(item),
+        "aria-controls": getItemContainer(item),
+        "title": item.description
+      })
+      .addClass(active ? 'active show' : '')
+      .css({
+        'padding': '.3em 1em',
+        'color': loadContent ? '' : '#aaa'
+      })
+      .append(
+        $('<span/>')
+          .addClass('fas ' + (item.type == 'table' ? 'fa-th' : item.type == 'graph' ? 'fa-chart-pie' : 'fa-code'))
+          .css('display', 'inline-block')
+      )
+      .append(" " + item.label)
+      .appendTo($li)
+      .data('item', item);
+      if (view.lazyLoad === true) {
+        $a.on('show.bs.tab', function (e) {
+          var $tab = $(e.target);
+          loadItem($tab.data('item'), $tab.attr('href'));
+        });
+      }
     }
     else if (view.jquiPlugin == 'accordion') {
       $('<h3/>')
@@ -87,9 +114,10 @@ function buildView(view, container, replaceContent) {
       //TODO
     }
 
-    buildItem(item, $view, false, loadContent);
+    buildItem(item, $tabContent, false, loadContent, active);
     if (view.lazyLoad)
       loadContent = false;
+    active = false;
   }
 
   if (view.lazyLoad === true) {
@@ -119,21 +147,29 @@ function buildView(view, container, replaceContent) {
     }
   }
 
-  $view[view.jquiPlugin](options);
+  //$view[view.jquiPlugin](options);
   return $view;
 }
 
-function buildItem(item, container, replaceContent, loadContent) {
+function buildItem(item, container, replaceContent, loadContent, active) {
   if (replaceContent)
     document.title = msg['title'] + ' - ' + item.description;
-  var $item = $('<div/>').attr({
-    'id': 'item-' + item.type + '-' + item.id,
-    'data-label': item.label,
-    'data-title': item.description
-  }).css({
-    'text-align': 'center',
-    'position': 'relative'
-  }).addClass('panel-content');
+  var $item = $('<div class="tab-pane show" role="tabpanel">')
+  .attr({
+    "id": 'item-' + item.type + '-' + item.id,
+    "aria-labelledby": 'tab-' + item.type + '-' + item.id,
+    "data-label": item.label,
+    "data-title": item.description
+  })
+  .css({
+    "text-align": 'center',
+    "position": 'relative',
+    "padding": '1em 1.4em'
+  })
+  .addClass('panel-content')
+  .addClass('panel-content');
+  if (active)
+    $item.addClass('active show');
   var $container = $(container);
   if (replaceContent)
     $container.empty();
@@ -201,7 +237,7 @@ function buildInfoTag(item, container) {
   var totalRows = item.totalRows;
   var totalPag = Math.floor(totalRows / countRows) + (totalRows % countRows == 0 ? 0 : 1);
   var currentPag = Math.floor((offsetRow - 1) / countRows) + 1;
-  var $infoTag = $('<div/>').css('margin', '10px').addClass('bold').attr('title', str4mat(msg['query_delay'], { query_delay: item.queryDelay })).html(str4mat(msg['page_info'], { current_pag: currentPag, total_pag: Math.max(totalPag, 1), total_rows: totalRows, s: totalRows > 1 ? 's' : '' }))
+  var $infoTag = $('<div/>').css('margin', '10px').addClass('bold text-info').attr('title', str4mat(msg['query_delay'], { query_delay: item.queryDelay })).html(str4mat(msg['page_info'], { current_pag: currentPag, total_pag: Math.max(totalPag, 1), total_rows: totalRows, s: totalRows > 1 ? 's' : '' }))
   $(container).append($infoTag);
   return $infoTag;
 }
@@ -221,17 +257,29 @@ function buildTableElements(item, container) {
 }
 
 function buildTable(item, container) {
-  var $table = $('<table/>').attr( {
-    width: '100%'
-  }); //.addClass('fixed');
+  var $table = $('<table>').css({
+    "margin": '0',
+    "border-collapse": "inherit"
+  }).addClass('table table-sm table-striped table-hover table-xtra-condensed table-responsive small');
   var $tableContainer = $('<div/>').css('overflow', 'auto').append($table);
   $(container).append($tableContainer);
   var $tr = $('<tr/>');
-  var $nRow = $('<th/>').addClass('ui-state-default').css('padding', '4px').text('#').attr({
-    width: '5%', //(item.totalRows.toString().length * 7) + 'px',
-    align: 'left',
-    valign: item.filterPosition == 'top' ? 'bottom' : 'top',
-    rowspan: item.filterPosition == 'top' || item.filterPosition == 'bottom' ? 2 : 1
+  var $nRow = $('<th/>')
+  .text('#')
+  .css({
+    "text-align": 'left',
+    "vertical-align": 'bottom',
+    "border": "1px solid #d3d3d3",
+    "background-color": "#e6e6e6",
+    "font-weight": "400",
+    "color": "#555"
+  })
+  .attr({
+    "width": '5%', //(item.totalRows.toString().length * 7) + 'px',
+    "align": 'left',
+    "valign": item.filterPosition == 'top' ? 'bottom' : 'top',
+    "rowspan": item.filterPosition == 'top' || item.filterPosition == 'bottom' ? 2 : 1,
+    "scope": 'col'
   });
   var $filter = $('<tr/>');
   if (item.filterPosition == 'top')
@@ -249,20 +297,26 @@ function buildTable(item, container) {
       sortby[th.id] = asc ? 'Desc' : 'Asc';
     }
     var $headerTh = $('<th/>').appendTo($tr)
-    .addClass('ui-state-default')
-    .css('padding', '4px')
+    .css({
+      "text-align": th.align,
+      "border": "1px solid #d3d3d3",
+      "background-color": "#e6e6e6",
+      "font-weight": "400",
+      "color": "#555"
+    })
     .attr({
-      width: th.width,
-      align: th.align,
-      valign: th.valign
+      "width": th.width,
+      "align": th.align,
+      "valign": th.valign,
+      "scope": 'col'
     }).data({
       'item': item,
       'sortby': sortby
     });
     var $headerThDiv = $('<div/>').text(th.columnName).appendTo($headerTh);
     if (th.sortable) {
-      var dirIcon = asc ? 'ui-icon-triangle-1-n' : desc ? 'ui-icon-triangle-1-s' : 'ui-icon-carat-2-n-s';
-      $headerThDiv.addClass('sort-wrapper').append(dirIcon && $('<span/>').addClass('sort-icon ui-icon ' + dirIcon))
+      var dirIcon = asc ? 'fa-sort-up' : desc ? 'fa-sort-down' : 'fa-sort';
+      $headerThDiv.addClass('sort-wrapper').append(dirIcon && $('<span/>').addClass('sort-icon fas ' + dirIcon))
       $headerTh
       .addClass('sortable')
       .click(function() {
@@ -279,9 +333,15 @@ function buildTable(item, container) {
         });
       });
     }
-    var $filterTd = $('<td/>').appendTo($filter);
+    var $filterTd = $('<th>')
+    .css({
+      "background-color": "#fff",
+      "border": "none"
+    }).appendTo($filter);
     if (th.filterable) {
-      var $input = $('<input/>').val(item.filter[th.id]).attr({
+      var $input = $('<input>')
+      .addClass("filter")
+      .val(item.filter[th.id]).attr({
         'placeholder': msg['filter'],
         'id': 'filter-' + item.type + '-' + item.id + '-' + th.id,
         'colId': th.id
@@ -376,7 +436,7 @@ function buildTable(item, container) {
           });
         });
       }
-      $filterTd.append($('<div/>').addClass('filter').append($input));
+      $filterTd.append($input);
     }
   }
   if (item.filterPosition == 'top') {
@@ -393,12 +453,7 @@ function buildTable(item, container) {
   if (item.rows) {
     for (var j = 0; j < item.rows.length; j++) {
       var cells = item.rows[j];
-      var even = j % 2 == 0;
-      $tr = $('<tr/>').addClass(even ? 'even' : 'odd').hover(function() {
-        $(this).children('td').addClass('hover');
-      }, function() {
-        $(this).children('td').removeClass('hover');
-      });
+      $tr = $('<tr/>');
       $tr.append($('<td/>').html(item.offsetRow + j)).attr({
         align: 'left',
         valign: 'top'
@@ -423,63 +478,26 @@ function buildToolbar(item, container) {
   var totalRows = item.totalRows;
   var totalPag = Math.floor(totalRows / countRows) + (totalRows % countRows == 0 ? 0 : 1);
   var currentPag = Math.floor((offsetRow - 1) / countRows) + 1;
-  var $toolbar = $('<div/>').addClass('toolbar ui-widget-header ui-corner-all');
+  var $toolbar = $('<ul>').css('margin', '0').addClass('pagination justify-content-center');
   $(container).append($toolbar);
   if (item.type == 'table') {
-    $toolbar.append($('<button/>').html(msg['first_page']).button({
-      text: false,
-      icons: {
-        primary: 'ui-icon-seek-start'
-      },
-      disabled: offsetRow == 1
-    }).data({
-      'item': item
-    }).click(function() {
-      $(getItemContainer(item)).addClass('loading');
-      item = $(this).data('item');
-      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
-        buildTableElements(newItem, $item);
-        $item.append(buildModal()).removeClass('loading');
-      }).error(function() {
-        dlg.alert(msg['alert_error']);
-        $(getItemContainer(item)).removeClass('loading');
-      });
-    }));
-    $toolbar.append($('<button/>').html(msg['previous_page']).css('margin-right', '20px').button({
-      text: false,
-      icons: {
-        primary: 'ui-icon-seek-prev'
-      },
-      disabled: offsetRow == 1
-    }).data({
-      'item': item
-    }).click(function() {
-      $(getItemContainer(item)).addClass('loading');
-      item = $(this).data('item');
-      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow - item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
-        buildTableElements(newItem, $item);
-        $item.append(buildModal()).removeClass('loading');
-      }).error(function() {
-        dlg.alert(msg['alert_error']);
-        $(getItemContainer(item)).removeClass('loading');
-      });
-    }));
-    for (var p = -4; p <= 4; p++) {
-      var pagToShow = currentPag + p;
-      if (pagToShow >= 1 && pagToShow <= totalPag) {
-        $toolbar.append($('<button/>').html(pagToShow).attr('title', p != 0 ? msg['go_to_page'] + ' ' + pagToShow : '').button({
-          disabled: p == 0
-        }).data({
-          'item': item,
-          'pagToShow': pagToShow
+    $toolbar.append(
+      $('<li>')
+      .addClass('page-item' + (offsetRow == 1 ? ' disabled' : ''))
+      .append(
+        $('<a>')
+        .addClass('page-link')
+        .attr({
+          "title": msg['first_page'],
+          "href": 'javascript:void(0)'
+        })
+        .append('<i class="fas fa-fast-backward"><\/i>')
+        .data({
+          'item': item
         }).click(function() {
           $(getItemContainer(item)).addClass('loading');
           item = $(this).data('item');
-          sortby = $(this).data('sortby');
-          pagToShow = $(this).data('pagToShow');
-          $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: (pagToShow - 1) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+          $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
             var $item = $(getItemContainer(item)).empty();
             buildTableElements(newItem, $item);
             $item.append(buildModal()).removeClass('loading');
@@ -487,131 +505,253 @@ function buildToolbar(item, container) {
             dlg.alert(msg['alert_error']);
             $(getItemContainer(item)).removeClass('loading');
           });
-        }));
+        })
+      )
+    );
+    $toolbar.append(
+      $('<li>')
+      .addClass('page-item' + (offsetRow == 1 ? ' disabled' : ''))
+      .append(
+        $('<a>')
+        .addClass('page-link')
+        .attr({
+          "title": msg['previous_page'],
+          "href": 'javascript:void(0)'
+        })
+        .append('<i class="fas fa-backward"><\/i>')
+        .data({
+          'item': item
+        }).click(function() {
+          $(getItemContainer(item)).addClass('loading');
+          item = $(this).data('item');
+          $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow - item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+            var $item = $(getItemContainer(item)).empty();
+            buildTableElements(newItem, $item);
+            $item.append(buildModal()).removeClass('loading');
+          }).error(function() {
+            dlg.alert(msg['alert_error']);
+            $(getItemContainer(item)).removeClass('loading');
+          });
+        })
+      )
+    );
+    for (var p = -4; p <= 4; p++) {
+      var pagToShow = currentPag + p;
+      if (pagToShow >= 1 && pagToShow <= totalPag) {
+        var $pageLink = $(p == 0 ? '<span>' : '<a>')
+        .addClass('page-link' + (p == 0 ? ' disabled' : ''))
+        .attr({
+          "title": p != 0 ? msg['go_to_page'] + ' ' + pagToShow : '',
+          "href": 'javascript:void(0)'
+        })
+        .html(pagToShow)
+        .data({
+          'item': item,
+          'pagToShow': pagToShow
+        });
+        if (p != 0) {
+          $pageLink.click(function() {
+            $(getItemContainer(item)).addClass('loading');
+            item = $(this).data('item');
+            sortby = $(this).data('sortby');
+            pagToShow = $(this).data('pagToShow');
+            $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: (pagToShow - 1) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+              var $item = $(getItemContainer(item)).empty();
+              buildTableElements(newItem, $item);
+              $item.append(buildModal()).removeClass('loading');
+            }).error(function() {
+              dlg.alert(msg['alert_error']);
+              $(getItemContainer(item)).removeClass('loading');
+            });
+          })
+        }
+        $toolbar.append(
+          $('<li>')
+          .addClass('page-item' + (p == 0 ? ' active' : ''))
+          .append($pageLink)
+        );
       }
     }
-    $toolbar.append($('<button/>').html(msg['next_page']).css('margin-left', '20px').button({
-      text: false,
-      icons: {
-        primary: 'ui-icon-seek-next'
-      },
-      disabled: offsetRow + countRows > totalRows
-    }).data({
-      'item': item
-    }).click(function() {
-      $(getItemContainer(item)).addClass('loading');
-      item = $(this).data('item');
-      sortby = $(this).data('sortby');
-      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow + item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
-        buildTableElements(newItem, $item);
-        $item.append(buildModal()).removeClass('loading');
-      }).error(function() {
-        dlg.alert(msg['alert_error']);
-        $(getItemContainer(item)).removeClass('loading');
-      });
-    }));
-    $toolbar.append($('<button/>').css('margin-right', '20px').html(msg['last_page']).button({
-      text: false,
-      icons: {
-        primary: 'ui-icon-seek-end'
-      },
-      disabled: offsetRow + countRows > totalRows
-    }).data({
-      'item': item
-    }).click(function() {
-      $(getItemContainer(item)).addClass('loading');
-      item = $(this).data('item');
-      $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: Math.floor((item.totalRows - 1) / item.countRows) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
-        buildTableElements(newItem, $item);
-        $item.append(buildModal()).removeClass('loading');
-      }).error(function() {
-        dlg.alert(msg['alert_error']);
-        $(getItemContainer(item)).removeClass('loading');
-      });
-    }));
+    $toolbar.append(
+      $('<li>')
+      .addClass('page-item' + (offsetRow + countRows > totalRows ? ' disabled' : ''))
+      .append(
+        $('<a>')
+        .addClass('page-link')
+        .attr({
+          "title": msg['next_page'],
+          "href": 'javascript:void(0)'
+        })
+        .append('<i class="fas fa-forward"><\/i>')
+        .data({
+          'item': item
+        }).click(function() {
+          $(getItemContainer(item)).addClass('loading');
+          item = $(this).data('item');
+          sortby = $(this).data('sortby');
+          $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow + item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+            var $item = $(getItemContainer(item)).empty();
+            buildTableElements(newItem, $item);
+            $item.append(buildModal()).removeClass('loading');
+          }).error(function() {
+            dlg.alert(msg['alert_error']);
+            $(getItemContainer(item)).removeClass('loading');
+          });
+        })
+      )
+    );
+    $toolbar.append(
+      $('<li>')
+      .addClass('page-item' + (offsetRow + countRows > totalRows ? ' disabled' : ''))
+      .append(
+        $('<a>')
+        .addClass('page-link')
+        .attr({
+          "title": msg['last_page'],
+          "href": 'javascript:void(0)'
+        })
+        .append('<i class="fas fa-fast-forward"><\/i>')
+        .data({
+          'item': item
+        }).click(function() {
+          $(getItemContainer(item)).addClass('loading');
+          item = $(this).data('item');
+          $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: Math.floor((item.totalRows - 1) / item.countRows) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+            var $item = $(getItemContainer(item)).empty();
+            buildTableElements(newItem, $item);
+            $item.append(buildModal()).removeClass('loading');
+          }).error(function() {
+            dlg.alert(msg['alert_error']);
+            $(getItemContainer(item)).removeClass('loading');
+          });
+        })
+      )
+    );
   }
-  $toolbar.append($('<button/>').html(msg['refresh']).button({
-    text: false,
-    icons: {
-      primary: 'ui-icon-refresh'
-    }
-  }).data({
-    'item': item
-  }).click(function() {
-    $(getItemContainer(item)).addClass('loading');
-    item = $(this).data('item');
-    $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-      var $item = $(getItemContainer(item)).empty();
-      if (item.type == 'table') {
-        buildTableElements(newItem, $item);
-      }
-      else if (item.type == 'graph') {
-        buildGraph(item, $item);
-      }
-      $item.append(buildModal()).removeClass('loading');
-    }).error(function() {
-      dlg.alert(msg['alert_error']);
-      $(getItemContainer(item)).removeClass('loading');
-    });
-  })).append($('<button/>').html(msg['clear']).button({
-    text: false,
-    icons: {
-      primary: 'ui-icon-cancel'
-    }
-  }).data({
-    'item': item
-  }).click(function() {
-    $(getItemContainer(item)).addClass('loading');
-    item = $(this).data('item');
-    $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), countRows: item.countRows, offsetRow: 1 }, function(newItem) {
-      var $item = $(getItemContainer(item)).empty();
-      if (item.type == 'table') {
-        buildTableElements(newItem, $item);
-      }
-      else if (item.type == 'graph') {
-        buildGraph(item, $item);
-      }
-      $item.append(buildModal()).removeClass('loading');
-    }).error(function() {
-      dlg.alert(msg['alert_error']);
-      $(getItemContainer(item)).removeClass('loading');
-    });
-  })).append($('<a/>').attr({
-    'href': '/dbviews/rest/user/' + item.type + '/' + item.id + '?' + $.param({ args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }),
-    'target': '_blank'
-  }).html(msg['new_window']).button({
-    text: false,
-    icons: {
-      primary: 'ui-icon-newwin'
-    }
-  })).append($('<a/>')
-    .attr('href', '/dbviews-api/user/' + item.type + '/' + item.id + '/excel?' + $.param({ args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby) }))
-    .html(msg['export_to_excel'])
-    .button({
-      text: false,
-      icons: {
-        primary: 'excel'
-      }
-    }
-  )).append($('<a/>')
-    .attr('href', '/dbviews-api/user/' + item.type + '/' + item.id + '/csv?' + $.param({ args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby) }))
-    .html(msg['export_to_csv'])
-    .button({
-      text: false,
-      icons: {
-        primary: 'ui-icon-grip-solid-vertical'
-      }
-    }
-  ));
+  $toolbar
+  .append(
+    $('<li>')
+    .addClass('page-item')
+    .append(
+      $('<a>')
+      .addClass('page-link')
+      .attr({
+        "title": msg['refresh'],
+        "href": 'javascript:void(0)'
+      })
+      .append('<i class="fas fa-sync-alt"><\/i>')
+      .data({
+        'item': item
+      }).click(function() {
+        $(getItemContainer(item)).addClass('loading');
+        item = $(this).data('item');
+        $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }, function(newItem) {
+          var $item = $(getItemContainer(item)).empty();
+          if (item.type == 'table') {
+            buildTableElements(newItem, $item);
+          }
+          else if (item.type == 'graph') {
+            buildGraph(item, $item);
+          }
+          $item.append(buildModal()).removeClass('loading');
+        }).error(function() {
+          dlg.alert(msg['alert_error']);
+          $(getItemContainer(item)).removeClass('loading');
+        });
+      })
+    )
+  )
+  .append(
+    $('<li>')
+    .addClass('page-item')
+    .append(
+      $('<a>')
+      .addClass('page-link')
+      .attr({
+        "title": msg['clear'],
+        "href": 'javascript:void(0)'
+      })
+      .append('<i class="fas fa-ban"><\/i>')
+      .data({
+        'item': item
+      }).click(function() {
+        $(getItemContainer(item)).addClass('loading');
+        item = $(this).data('item');
+        $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), countRows: item.countRows, offsetRow: 1 }, function(newItem) {
+          var $item = $(getItemContainer(item)).empty();
+          if (item.type == 'table') {
+            buildTableElements(newItem, $item);
+          }
+          else if (item.type == 'graph') {
+            buildGraph(item, $item);
+          }
+          $item.append(buildModal()).removeClass('loading');
+        }).error(function() {
+          dlg.alert(msg['alert_error']);
+          $(getItemContainer(item)).removeClass('loading');
+        });
+      })
+    )
+  )
+  .append(
+    $('<li>')
+    .addClass('page-item')
+    .append(
+      $('<a>')
+      .addClass('page-link')
+      .attr({
+        "title": msg['new_window'],
+        "href": '/dbviews/rest/user/' + item.type + '/' + item.id + '?' + $.param({
+          args: JSON.stringify(item.args),
+          filter: JSON.stringify(item.filter),
+          options: JSON.stringify(item.options),
+          countRows: item.countRows,
+          offsetRow: item.offsetRow,
+          sortby: JSON.stringify(item.sortby),
+          ui: 'bootstrap'
+        }),
+        "target": '_blank'
+      })
+      .append('<i class="fas fa-external-link-alt"><\/i>')
+    )
+  )
+  .append(
+    $('<li>')
+    .addClass('page-item')
+    .append(
+      $('<a>')
+      .addClass('page-link')
+      .attr({
+        "title": msg['export_to_excel'],
+        "href": '/dbviews-api/user/' + item.type + '/' + item.id + '/excel?' + $.param({
+          args: JSON.stringify(item.args),
+          filter: JSON.stringify(item.filter),
+          options: JSON.stringify(item.options),
+          sortby: JSON.stringify(item.sortby)
+        })
+      })
+      .append('<i class="fas fa-file-excel"><\/i>')
+    )
+  )
+  .append(
+    $('<li>')
+    .addClass('page-item')
+    .append(
+      $('<a>')
+      .addClass('page-link')
+      .attr({
+        "title": msg['export_to_csv'],
+        "href": '/dbviews-api/user/' + item.type + '/' + item.id + '/csv?' + $.param({
+          args: JSON.stringify(item.args),
+          filter: JSON.stringify(item.filter),
+          options: JSON.stringify(item.options),
+          sortby: JSON.stringify(item.sortby)
+        })
+      })
+      .append('<i class="fas fa-file-csv"><\/i>')
+    )
+  );
   return $toolbar;
-}
-
-function buildModal(container) {
-  var $modal = $('<div/>').addClass('modal').attr('title', msg['loading_please_wait']);
-  $(container).append($modal);
-  return $modal;
 }
 
 function getGraphData(item) {
@@ -848,7 +988,17 @@ function buildGraph(item, container) {
       });
       return false;
     });
-    $filter.append($('<tr/>').append($('<th/>').attr('align', 'right').append($('<label/>').attr('for', id).text(th.columnName))).append($('<td/>').append($('<div/>').addClass('filter').append($input))));
+    $filter.append(
+      $('<tr/>').append(
+        $('<th/>').attr('align', 'right').append(
+          $('<label/>').attr('for', id).text(th.columnName)
+        )
+      ).append(
+        $('<td/>').append(
+          $('<div/>').addClass('filter').append($input)
+        )
+      )
+    );
   }
 
   return $graphContainer;

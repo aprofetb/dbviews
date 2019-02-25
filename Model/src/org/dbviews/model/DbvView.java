@@ -34,6 +34,8 @@ public class DbvView
   private String jquiPlugin;
   @Column(name = "jqui_plugin_options")
   private String jquiPluginOptions;
+  @Column(name = "ui_component")
+  private String uiComponent;
   @OneToMany(mappedBy = "dbvView")
   private List<DbvGraph> dbvGraphList;
   @OneToMany(mappedBy = "dbvView")
@@ -184,6 +186,15 @@ public class DbvView
   public String getJquiPluginOptions()
   {
     return jquiPluginOptions;
+  }
+
+  public void setUiComponent(String uiComponent) {
+    this.uiComponent = uiComponent;
+  }
+
+  @XmlElement
+  public String getUiComponent() {
+    return uiComponent;
   }
 
   public DbvConnection getDbvConnection()

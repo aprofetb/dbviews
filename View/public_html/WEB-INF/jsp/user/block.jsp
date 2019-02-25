@@ -30,6 +30,6 @@
     </script>
   </head>
   <body>
-    <div id="content"><div class="loading"><span class="modal" title="<dbv:i18n key="loading_please_wait"/>"></span></div></div>
+    <div id="content"><div class="loading"><span class="loading-modal" title="<dbv:i18n key="loading_please_wait"/>"></span></div></div>
   </body>
 </html>

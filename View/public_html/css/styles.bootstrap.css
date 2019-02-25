@@ -1,14 +1,11 @@
 body {
-  font-size: 62.5%;
-  font-family: Trebuchet MS, Arial, Helvetica, Verdana, sans-serif;
+  /*font-size: 80%;*/
+  /*font-family: Trebuchet MS, Arial, Helvetica, Verdana, sans-serif;*/
 }
 
 table {
-  font-size: 1em;
-}
-
-.ui-draggable, .ui-droppable {
-  background-position: top;
+  /* font-size: 1em; */
+  /* font-size: 80%; */
 }
 
 .toolbar {
@@ -41,10 +38,6 @@ table {
   text-decoration: underline !important;
 }
 
-.waitdlg .ui-dialog-titlebar-close {
-  display: none
-}
-
 .hidden {
   visibility: hidden;
 }
@@ -55,11 +48,9 @@ table {
 }
 
 .sort-icon {
-  float: right;
   position: absolute;
-  top: 50%;
-  margin-top: -8px;
-  right: 0;
+  top: 4px;
+  right: 4px;
 }
 
 table {
@@ -71,55 +62,32 @@ table th.sortable {
   padding: 4px;
 }
 
-table td.hover {
-  background-color: #F1F7FF !important;
-}
-
-table tr.even {
-  background-color: #F9F9F9;
-}
-
-table tr.odd {
-  background-color: #FFFFFF;
-}
-
-table tr.even td.sorted {
+table tr:nth-child(odd) td.sorted {
   background-color: #F8F7F0;
 }
 
-table tr.odd td.sorted {
+table tr:nth-child(even) td.sorted {
   background-color: #FFFEF7;
 }
 
-div.filter {
+input.filter {
+  width: 100%;
   border: 1px solid #EEEEEE;
-  width: 100%;
-  height: 100%;
+  padding: .1em .2em;
 }
 
-div.filter input {
-  border: none;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  font-size: 11px;
-  width: 100%;
-  padding: 3px;
-  margin: 0px;
-}
-
-div.filter input::placeholder {
+input.filter::placeholder {
   color: #c9c9c9;
 }
 
-div.filter input::-moz-placeholder,
-div.filter input:-ms-input-placeholder,
-div.filter input::-ms-input-placeholder,
-div.filter input::-webkit-input-placeholder {
+input.filter::-moz-placeholder,
+input.filter:-ms-input-placeholder,
+input.filter::-ms-input-placeholder,
+input.filter::-webkit-input-placeholder {
   color: #c9c9c9;
 }
 
-.modal {
+.loading-modal {
   display: none;
   position: absolute;
   z-index: 90;
@@ -134,20 +102,8 @@ div.filter input::-webkit-input-placeholder {
   overflow: hidden;   
 }
 
-.loading .modal {
+.loading .loading-modal {
   display: block;
-}
-
-.ui-button .ui-icon.excel {
-  background-image: url(/dbviews/img/excel.png);
-  width: 16px;
-  height: 16px;
-}
-
-.ui-button.ui-state-hover .ui-icon.excel {
-  background-image: url(/dbviews/img/excel.png);
-  width: 16px;
-  height: 16px;
 }
 
 .graph-container {
@@ -196,4 +152,19 @@ div.filter input::-webkit-input-placeholder {
 
 .legend .legendLabel {
   text-align: left;
+}
+
+.table-xtra-condensed > thead > tr > th,
+.table-xtra-condensed > tbody > tr > th,
+.table-xtra-condensed > tfoot > tr > th,
+.table-xtra-condensed > thead > tr > td,
+.table-xtra-condensed > tbody > tr > td,
+.table-xtra-condensed > tfoot > tr > td {
+  padding: 2px;
+}
+
+.table-xtra-condensed > thead > tr > td,
+.table-xtra-condensed > tbody > tr > td,
+.table-xtra-condensed > tfoot > tr > td {
+  border: none;
 }
