@@ -499,7 +499,7 @@ public abstract class Item implements Comparable {
       } else {
         if (StringUtils.isNotBlank(getQueryIndex())) {
           queryStr =
-            MessageFormat.format("select * from ({2} {1}) where ({3}) in (select {3} from (select rownum as row_num, t.* from ({0} {1}) t where rownum < ?) where row_num >= ?)",
+            MessageFormat.format("select * from (select * from ({2}) {1}) where ({3}) in (select {3} from (select rownum as row_num, t.* from ({0} {1}) t where rownum < ?) where row_num >= ?)",
                                  queryStr, sortbySb.toString(), getQuery(), getQueryIndex());
         } else {
           queryStr =
