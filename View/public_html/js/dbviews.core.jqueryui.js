@@ -297,7 +297,7 @@ function buildTable(item, container) {
         item = $(this).data('item');
         th = $(this).data('th');
         $(this).data('$tr').find('input').each(function() {
-          item.filter[$(this).attr('colId')] = $(this).val();
+          item.filter[$(this).attr('colId')] = [ $(this).val() ];
         });
         $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
           var $item = $(getItemContainer(item)).empty();
@@ -351,7 +351,7 @@ function buildTable(item, container) {
           th = $drp.data('th');
           $drp.data('$tr').find('input').each(function() {
             var $inpt = $(this);
-            item.filter[$inpt.attr('colId')] = $inpt.val();
+            item.filter[$inpt.attr('colId')] = [ $inpt.val() ];
           });
           $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
             var $item = $(getItemContainer(item)).empty();
@@ -833,7 +833,7 @@ function buildGraph(item, container) {
       item = $(this).data('item');
       th = $(this).data('th');
       $(this).data('filter').find('input').each(function() {
-        item.filter[$(this).attr('colId')] = $(this).val();
+        item.filter[$(this).attr('colId')] = [ $(this).val() ];
       });
       $.get('/dbviews-api/user/graph/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
         var $item = $(getItemContainer(item)).empty();

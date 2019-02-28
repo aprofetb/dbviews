@@ -1,5 +1,6 @@
 package org.dbviews.api.user;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -68,7 +69,7 @@ public class TableRest
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
-    Map<Integer, String> filterMap = null;
+    Map<Integer, List<String>> filterMap = null;
     Map<Integer, Map<String, String>> optionsMap = null;
     Map<Integer, String> sortbyMap = null;
     try
@@ -78,7 +79,7 @@ public class TableRest
       if (paqp)
         argsMap = processAllQueryParams(argsMap, "args,filter,options,offsetRow,countRows,sortby,focuson,paqp,language");
       if (StringUtils.isNotBlank(filter))
-        filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
+        filterMap = (Map<Integer, List<String>>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.List<java.lang.String>>"));
       if (StringUtils.isNotBlank(options))
         optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
       if (StringUtils.isNotBlank(sortby))
@@ -120,7 +121,7 @@ public class TableRest
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
-    Map<Integer, String> filterMap = null;
+    Map<Integer, List<String>> filterMap = null;
     Map<Integer, Map<String, String>> optionsMap = null;
     Map<Integer, String> sortbyMap = null;
     try
@@ -130,7 +131,7 @@ public class TableRest
       if (paqp)
         argsMap = processAllQueryParams(argsMap, "args,filter,options,sortby,focuson,paqp,language");
       if (StringUtils.isNotBlank(filter))
-        filterMap = (Map<Integer, String>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.lang.String>"));
+        filterMap = (Map<Integer, List<String>>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.List<java.lang.String>>"));
       if (StringUtils.isNotBlank(options))
         optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
       if (StringUtils.isNotBlank(sortby))

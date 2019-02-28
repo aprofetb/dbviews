@@ -4,6 +4,7 @@ import java.sql.Connection;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -14,7 +15,7 @@ import org.dbviews.model.DbvHtmlBlock;
 public class HtmlBlock extends Item {
   private final static Logger logger = Logger.getLogger(HtmlBlock.class.getName());
 
-  public HtmlBlock(DbvHtmlBlock b, Map<String, String> args, Map<Integer, String> filter,
+  public HtmlBlock(DbvHtmlBlock b, Map<String, String> args, Map<Integer, List<String>> filter,
                    Map<Integer, Map<String, String>> options, Map<Integer, String> sortby, String focuson) {
     super(b.getDbvView().getDbvConnection());
     id = b.getId();
@@ -23,7 +24,7 @@ public class HtmlBlock extends Item {
     index = b.getTabIndex();
     query = b.getSqlQuery();
     this.args = args != null ? args : new HashMap<String, String>();
-    this.filter = filter != null ? filter : new HashMap<Integer, String>();
+    this.filter = filter != null ? filter : new HashMap<Integer, List<String>>();
     this.options = options != null ? options : new HashMap<Integer, Map<String, String>>();
     this.sortby = sortby != null ? sortby : new HashMap<Integer, String>();
     this.focuson = focuson;
