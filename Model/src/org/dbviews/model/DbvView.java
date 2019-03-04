@@ -34,6 +34,8 @@ public class DbvView
   private String jquiPlugin;
   @Column(name = "jqui_plugin_options")
   private String jquiPluginOptions;
+  @Column(name = "lazy_load")
+  private String lazyLoad;
   @Column(name = "ui_component")
   private String uiComponent;
   @OneToMany(mappedBy = "dbvView")
@@ -186,6 +188,15 @@ public class DbvView
   public String getJquiPluginOptions()
   {
     return jquiPluginOptions;
+  }
+
+  public void setLazyLoad(String lazyLoad) {
+    this.lazyLoad = lazyLoad;
+  }
+
+  @XmlElement
+  public String getLazyLoad() {
+    return lazyLoad;
   }
 
   public void setUiComponent(String uiComponent) {

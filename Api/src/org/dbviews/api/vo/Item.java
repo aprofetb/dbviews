@@ -51,6 +51,57 @@ public abstract class Item implements Comparable {
   private final static SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
   private final static String FUNC_TRUNC_DD_MYSQL = "date(%s)";
   private final static String FUNC_TRUNC_DD_ORACLE = "trunc(%s, 'dd')";
+  private final static Map<String, SqlOperator> OPERATORS = new HashMap<>();
+  private final static String OPERATOR_LIKE = "like";
+  private final static String OPERATOR_IN = "in";
+  private final static String DEFAULT_OPERATOR = OPERATOR_LIKE;
+  private final static int IN_CLAUSE_MAX_VALUES = 1000;
+
+  static class SqlOperator {
+    String operator;
+    String paramFormat;
+
+    public SqlOperator(String sqlOperator) {
+      this(sqlOperator, "%s");
+    }
+
+    public SqlOperator(String sqlOperator, String paramFormat) {
+      this.operator = sqlOperator;
+      this.paramFormat = paramFormat;
+    }
+
+    public void setOperator(String operator) {
+      this.operator = operator;
+    }
+
+    public String getOperator() {
+      return operator;
+    }
+
+    public void setParamFormat(String paramFormat) {
+      this.paramFormat = paramFormat;
+    }
+
+    public String getParamFormat() {
+      return paramFormat;
+    }
+  }
+
+  static {
+    OPERATORS.put("like", new SqlOperator("like", "%%%s%%"));
+    OPERATORS.put("nlike", new SqlOperator("not like", "%%%s%%"));
+    OPERATORS.put("begin", new SqlOperator("like", "%s%%"));
+    OPERATORS.put("nbegin", new SqlOperator("not like", "%s%%"));
+    OPERATORS.put("end", new SqlOperator("like", "%%%s"));
+    OPERATORS.put("nend", new SqlOperator("not like", "%%%s"));
+    OPERATORS.put("eq", new SqlOperator("="));
+    OPERATORS.put("ne", new SqlOperator("!="));
+    OPERATORS.put("gt", new SqlOperator(">"));
+    OPERATORS.put("ge", new SqlOperator(">="));
+    OPERATORS.put("lt", new SqlOperator("<"));
+    OPERATORS.put("le", new SqlOperator("<="));
+    OPERATORS.put("in", new SqlOperator("in"));
+  }
 
   protected int id;
   protected String label;
@@ -99,6 +150,16 @@ public abstract class Item implements Comparable {
       if (header.isVisible())
         vHeaders.add(header);
     return vHeaders;
+  }
+
+  public Header getHeader(Integer id) {
+    List<Header> headers = getHeaders();
+    if (headers != null) {
+      for (Header header : headers)
+        if (id.equals(header.getId()))
+          return header;
+    }
+    return null;
   }
 
   public void setRows(List<Map<Integer, Object>> rows) {
@@ -364,7 +425,7 @@ public abstract class Item implements Comparable {
       con.setReadOnly(true);
       fetchFromDatabase(con, offsetRow, countRows, fetchRows);
     } catch (Exception e) {
-      logger.severe(e.getMessage());
+      logger.log(Level.SEVERE, e.getMessage(), e);
       logger.severe(getQuery());
     } finally {
       Connector.relres(con);
@@ -403,67 +464,113 @@ public abstract class Item implements Comparable {
         for (Map.Entry<Integer, List<String>> e : filter.entrySet()) {
           Integer id = e.getKey();
           List<String> values = e.getValue();
-          for (Header header : getHeaders()) {
-            if (id.equals(header.getId())) {
-              if (!values.isEmpty()) {
-                boolean regex = false;
-                boolean caseSensitive = false;
-                if (options != null) {
-                  Map<String, String> option = options.get(id);
-                  if (option != null) {
-                    regex = "1".equals(option.get("Regex"));
-                    caseSensitive = "1".equals(option.get("CaseSensitive"));
-                  }
+          if (values.isEmpty())
+            continue;
+
+          Header header = getHeader(id);
+          if (header == null)
+            continue;
+
+          Map<String, Object> attrs = columnMap.get(id);
+          String columnName = (String) attrs.get("ColumnName");
+          if (columnName == null)
+            continue;
+
+          List<String> nonBlankValues = new ArrayList<>(values.size());
+          for (String value : values)
+            if (StringUtils.isNotEmpty(value))
+              nonBlankValues.add(value);
+          if (nonBlankValues.isEmpty())
+            continue;
+
+          boolean hasMultipleValues = nonBlankValues.size() > 1;
+
+          if (whereClause.length() > 0)
+            whereClause.append(" and ");
+
+          boolean regex = false;
+          boolean caseSensitive = false;
+          String operator = DEFAULT_OPERATOR;
+          if (options != null) {
+            Map<String, String> option = options.get(id);
+            if (option != null) {
+              regex = "1".equals(option.get("Regex"));
+              caseSensitive = "1".equals(option.get("CaseSensitive"));
+              String oper = option.get("Operator");
+              if (OPERATORS.containsKey(oper))
+                operator = oper;
+            }
+          }
+          SqlOperator sqlOperator = OPERATORS.get(operator);
+
+          String colExp = String.format("\"%s\"", columnName);
+          if (OPERATOR_IN.equals(operator)) {
+            String leftExp = null;
+            String paramExp = null;
+            if (caseSensitive) {
+              leftExp = colExp;
+              paramExp = "?";
+            } else {
+              leftExp = String.format("lower(%s)", colExp);
+              paramExp = "lower(?)";
+            }
+            int inClauses = nonBlankValues.size() / IN_CLAUSE_MAX_VALUES;
+            if (nonBlankValues.size() % IN_CLAUSE_MAX_VALUES != 0)
+              inClauses += 1;
+            for (int c = 0; c < inClauses; c++) {
+              whereClause.append(c == 0 ? "(" : " or ");
+              whereClause.append(leftExp);
+              whereClause.append(" in (");
+              int from = c * IN_CLAUSE_MAX_VALUES;
+              int to = Math.min(from + IN_CLAUSE_MAX_VALUES, nonBlankValues.size());
+              for (int i = from; i < to; i++) {
+                String value = nonBlankValues.get(i);
+                if (i > from)
+                  whereClause.append(",");
+                whereClause.append(paramExp);
+                qParams.add(value);
+              }
+              whereClause.append(")");
+              if (c == inClauses - 1)
+                whereClause.append(")");
+            }
+          } else {
+            boolean isDate = header.getType() == Types.DATE || header.getType() == Types.TIMESTAMP;
+            for (int i = 0; i < nonBlankValues.size(); i++) {
+              String value = nonBlankValues.get(i);
+              if (hasMultipleValues)
+                whereClause.append(i == 0 ? "(" : " or ");
+              if (isDate) {
+                String[] dateRange = value.split(" - ");
+                try {
+                  Date fromDate = new Date(sdf.parse(dateRange[0]).getTime());
+                  Date toDate = dateRange.length > 1 ? new Date(sdf.parse(dateRange[1]).getTime()) : fromDate;
+                  qParams.add(fromDate);
+                  qParams.add(toDate);
+                  colExp = String.format(mysql ? FUNC_TRUNC_DD_MYSQL : FUNC_TRUNC_DD_ORACLE, colExp);
+                  whereClause.append(String.format("%s between ? and ?", colExp));
+                } catch (ParseException pe) {
+                  logger.log(Level.WARNING, pe.getMessage(), pe);
                 }
-                Map<String, Object> attrs = columnMap.get(id);
-                String columnName = (String) attrs.get("ColumnName");
-                if (columnName == null)
-                  continue;
-                String colExp = String.format("\"%s\"", columnName);
-                boolean isDate = header.getType() == Types.DATE || header.getType() == Types.TIMESTAMP;
-                int i = 0;
-                for (String value : values) {
-                  if (StringUtils.isBlank(value))
-                    continue;
-                  if (i == 0 && whereClause.length() > 0)
-                    whereClause.append(" and ");
-                  if (values.size() > 1)
-                    whereClause.append(i == 0 ? "(" : " or ");
-                  if (isDate) {
-                    String[] dateRange = value.split(" - ");
-                    try {
-                      Date fromDate = new Date(sdf.parse(dateRange[0]).getTime());
-                      Date toDate = dateRange.length > 1 ? new Date(sdf.parse(dateRange[1]).getTime()) : fromDate;
-                      qParams.add(fromDate);
-                      qParams.add(toDate);
-                      colExp = String.format(mysql ? FUNC_TRUNC_DD_MYSQL : FUNC_TRUNC_DD_ORACLE, colExp);
-                      whereClause.append(String.format("%s between ? and ?", colExp));
-                    } catch (ParseException pe) {
-                      logger.log(Level.WARNING, pe.getMessage(), pe);
-                    }
+              } else {
+                if (regex) {
+                  if (mysql) {
+                    whereClause.append(String.format("%s regexp %s ?", colExp, caseSensitive ? "binary" : ""));
                   } else {
-                    if (regex) {
-                      if (mysql) {
-                        whereClause.append(String.format("%s regexp %s ?", colExp, caseSensitive ? "binary" : ""));
-                      } else {
-                        whereClause.append(String.format("regexp_like(%s, ?, '%sn')", colExp, caseSensitive ? "" : "i"));
-                      }
-                      qParams.add(value);
-                    } else {
-                      if (caseSensitive) {
-                        whereClause.append(String.format("%s like ?", colExp));
-                      } else {
-                        whereClause.append(String.format("lower(%s) like lower(?)", colExp));
-                      }
-                      qParams.add(String.format("%%%s%%", value));
-                    }
+                    whereClause.append(String.format("regexp_like(%s, ?, '%sn')", colExp, caseSensitive ? "" : "i"));
                   }
-                  if (values.size() > 1 && i == values.size() - 1)
-                    whereClause.append(")");
-                  i++;
+                  qParams.add(value);
+                } else {
+                  if (caseSensitive) {
+                    whereClause.append(String.format("%s %s ?", colExp, sqlOperator.getOperator()));
+                  } else {
+                    whereClause.append(String.format("lower(%s) %s lower(?)", colExp, sqlOperator.getOperator()));
+                  }
+                  qParams.add(String.format(sqlOperator.getParamFormat(), value));
                 }
               }
-              break;
+              if (hasMultipleValues && i == values.size() - 1)
+                whereClause.append(")");
             }
           }
         }
@@ -527,12 +634,14 @@ public abstract class Item implements Comparable {
       rs = ps.executeQuery();
       while (rs.next()) {
         Map<Integer, Object> cells = new HashMap<Integer, Object>();
-        for (int h = 0; h < getHeaderCount(); h++) {
-          Header header = getHeaders().get(h);
-          Object value = rs.getObject(header.getDbColumnName());
-          if (value instanceof Date || value instanceof Timestamp)
-            value = sdf.format(value);
-          cells.put(header.getId(), value);
+        List<Header> headers = getHeaders();
+        if (headers != null) {
+          for (Header header : headers) {
+            Object value = rs.getObject(header.getDbColumnName());
+            if (value instanceof Date || value instanceof Timestamp)
+              value = sdf.format(value);
+            cells.put(header.getId(), value);
+          }
         }
         if (rowWriter != null) {
           rowWriter.write(cells);
@@ -547,7 +656,7 @@ public abstract class Item implements Comparable {
       setRows(rows);
       stopTiming();
     } catch (Exception e) {
-      logger.severe(e.getMessage());
+      logger.log(Level.SEVERE, e.getMessage(), e);
       logger.severe(queryStr);
     } finally {
       Connector.relres(rs, ps);

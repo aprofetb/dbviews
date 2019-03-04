@@ -60,13 +60,17 @@ public class ViewRest
                           @QueryParam("args") String args,
                           @QueryParam("countRows") @DefaultValue("20") Integer countRows,
                           @QueryParam("paqp") @DefaultValue("false") Boolean paqp,
-                          @QueryParam("lazyLoad") @DefaultValue("false") Boolean lazyLoad)
+                          @QueryParam("lazyLoad") Boolean lazyLoad)
   {
     DbvView dbvView = dbViewsEJB.getDbvViewFindById(viewId);
     if (dbvView == null)
       return Response.status(Response.Status.NOT_FOUND).build();
+
     if (!SecUtils.hasAccess(dbvView.getAuthPrincipals()))
       return Response.status(Response.Status.UNAUTHORIZED).build();
+
+    if (lazyLoad == null)
+      lazyLoad = "Y".equals(dbvView.getLazyLoad());
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;

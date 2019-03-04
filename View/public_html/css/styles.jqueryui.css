@@ -197,3 +197,7 @@ div.filter input::-webkit-input-placeholder {
 .legend .legendLabel {
   text-align: left;
 }
+
+.ui-tabs .ui-tabs-nav li a {
+  outline: none;
+}
