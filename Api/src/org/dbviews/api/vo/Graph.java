@@ -30,8 +30,8 @@ public class Graph extends Item {
   private String filterPosition;
   private String toolbarPosition;
 
-  public Graph(DbvGraph g, Map<String, String> args, Map<Integer, List<String>> filter,
-               Map<Integer, Map<String, String>> options, String focuson) {
+  public Graph(DbvGraph g, Map<String, String> args, Map<String, List<String>> filter,
+               Map<String, Map<String, String>> options, String focuson) {
     super(g.getDbvView().getDbvConnection());
     id = g.getId();
     label = g.getLabel();
@@ -51,9 +51,9 @@ public class Graph extends Item {
     yaxisColumnName = g.getYaxisColumn();
     csvSeparator = g.getCsvSeparator();
     this.args = args != null ? args : new HashMap<String, String>();
-    this.filter = filter != null ? filter : new HashMap<Integer, List<String>>();
-    this.options = options != null ? options : new HashMap<Integer, Map<String, String>>();
-    this.sortby = new HashMap<Integer, String>();
+    this.filter = filter != null ? filter : new HashMap<String, List<String>>();
+    this.options = options != null ? options : new HashMap<String, Map<String, String>>();
+    this.sortby = new HashMap<String, String>();
     this.focuson = focuson;
   }
 
@@ -87,8 +87,8 @@ public class Graph extends Item {
     }
   }
 
-  public static Item getInstance(DbvGraph g, Map<String, String> args, Map<Integer, List<String>> filter,
-                                 Map<Integer, Map<String, String>> options, String focuson, boolean fetchFromDatabase,
+  public static Item getInstance(DbvGraph g, Map<String, String> args, Map<String, List<String>> filter,
+                                 Map<String, Map<String, String>> options, String focuson, boolean fetchFromDatabase,
                                  boolean fetchRows) {
     Graph item = new Graph(g, args, filter, options, focuson);
     if (fetchFromDatabase)

@@ -20,8 +20,8 @@ public class Table extends Item {
   String toolbarPosition;
   protected Map<String, Header> customHeaders;
 
-  public Table(DbvTable t, Map<String, String> args, Map<Integer, List<String>> filter,
-               Map<Integer, Map<String, String>> options, Map<Integer, String> sortby, String focuson) {
+  public Table(DbvTable t, Map<String, String> args, Map<String, List<String>> filter,
+               Map<String, Map<String, String>> options, Map<String, String> sortby, String focuson) {
     super(t.getDbvView().getDbvConnection());
     if (t.getDbvTableFieldList().size() > 0) {
       customHeaders = new HashMap<String, Header>();
@@ -36,9 +36,9 @@ public class Table extends Item {
     queryIndex = t.getSqlQueryIndex();
     csvSeparator = t.getCsvSeparator();
     this.args = args != null ? args : new HashMap<String, String>();
-    this.filter = filter != null ? filter : new HashMap<Integer, List<String>>();
-    this.options = options != null ? options : new HashMap<Integer, Map<String, String>>();
-    this.sortby = sortby != null ? sortby : new HashMap<Integer, String>();
+    this.filter = filter != null ? filter : new HashMap<String, List<String>>();
+    this.options = options != null ? options : new HashMap<String, Map<String, String>>();
+    this.sortby = sortby != null ? sortby : new HashMap<String, String>();
     this.focuson = focuson;
     this.filterPosition = t.getFilterPosition();
     this.toolbarPosition = t.getToolbarPosition();
@@ -75,8 +75,8 @@ public class Table extends Item {
     }
   }
 
-  public static Item getInstance(DbvTable t, Map<String, String> args, Map<Integer, List<String>> filter,
-                                 Map<Integer, Map<String, String>> options, Map<Integer, String> sortby,
+  public static Item getInstance(DbvTable t, Map<String, String> args, Map<String, List<String>> filter,
+                                 Map<String, Map<String, String>> options, Map<String, String> sortby,
                                  Integer offsetRow, Integer countRows, String focuson, boolean fetchFromDatabase,
                                  boolean fetchRows) {
     Table item = new Table(t, args, filter, options, sortby, focuson);

@@ -68,8 +68,8 @@ public class GraphRest
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
-    Map<Integer, List<String>> filterMap = null;
-    Map<Integer, Map<String, String>> optionsMap = null;
+    Map<String, List<String>> filterMap = null;
+    Map<String, Map<String, String>> optionsMap = null;
     try
     {
       if (StringUtils.isNotBlank(args))
@@ -77,9 +77,9 @@ public class GraphRest
       if (paqp)
         argsMap = processAllQueryParams(argsMap, "args,filter,options,focuson,paqp,language");
       if (StringUtils.isNotBlank(filter))
-        filterMap = (Map<Integer, List<String>>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.List<java.lang.String>>"));
+        filterMap = (Map<String, List<String>>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.util.List<java.lang.String>>"));
       if (StringUtils.isNotBlank(options))
-        optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
+        optionsMap = (Map<String, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.util.Map<java.lang.String,java.lang.String>>"));
     }
     catch (Exception e)
     {
@@ -116,8 +116,8 @@ public class GraphRest
 
     ObjectMapper om = new ObjectMapper();
     Map<String, String> argsMap = null;
-    Map<Integer, List<String>> filterMap = null;
-    Map<Integer, Map<String, String>> optionsMap = null;
+    Map<String, List<String>> filterMap = null;
+    Map<String, Map<String, String>> optionsMap = null;
     try
     {
       if (StringUtils.isNotBlank(args))
@@ -125,9 +125,9 @@ public class GraphRest
       if (paqp)
         argsMap = processAllQueryParams(argsMap, "args,filter,options,focuson,paqp,language");
       if (StringUtils.isNotBlank(filter))
-        filterMap = (Map<Integer, List<String>>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.List<java.lang.String>>"));
+        filterMap = (Map<String, List<String>>)om.readValue(filter, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.util.List<java.lang.String>>"));
       if (StringUtils.isNotBlank(options))
-        optionsMap = (Map<Integer, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.Integer,java.util.Map<java.lang.String,java.lang.String>>"));
+        optionsMap = (Map<String, Map<String, String>>)om.readValue(options, TypeFactory.fromCanonical("java.util.Map<java.lang.String,java.util.Map<java.lang.String,java.lang.String>>"));
     }
     catch (Exception e)
     {

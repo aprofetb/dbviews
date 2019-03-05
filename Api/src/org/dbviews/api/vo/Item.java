@@ -57,36 +57,6 @@ public abstract class Item implements Comparable {
   private final static String DEFAULT_OPERATOR = OPERATOR_LIKE;
   private final static int IN_CLAUSE_MAX_VALUES = 1000;
 
-  static class SqlOperator {
-    String operator;
-    String paramFormat;
-
-    public SqlOperator(String sqlOperator) {
-      this(sqlOperator, "%s");
-    }
-
-    public SqlOperator(String sqlOperator, String paramFormat) {
-      this.operator = sqlOperator;
-      this.paramFormat = paramFormat;
-    }
-
-    public void setOperator(String operator) {
-      this.operator = operator;
-    }
-
-    public String getOperator() {
-      return operator;
-    }
-
-    public void setParamFormat(String paramFormat) {
-      this.paramFormat = paramFormat;
-    }
-
-    public String getParamFormat() {
-      return paramFormat;
-    }
-  }
-
   static {
     OPERATORS.put("like", new SqlOperator("like", "%%%s%%"));
     OPERATORS.put("nlike", new SqlOperator("not like", "%%%s%%"));
@@ -111,9 +81,9 @@ public abstract class Item implements Comparable {
   protected String csvSeparator;
   protected List<Header> headers;
   protected Map<String, String> args;
-  protected Map<Integer, List<String>> filter;
-  protected Map<Integer, Map<String, String>> options;
-  protected Map<Integer, String> sortby;
+  protected Map<String, List<String>> filter;
+  protected Map<String, Map<String, String>> options;
+  protected Map<String, String> sortby;
   protected List<Map<Integer, Object>> rows;
   protected String focuson;
   protected int offsetRow;
@@ -152,11 +122,21 @@ public abstract class Item implements Comparable {
     return vHeaders;
   }
 
-  public Header getHeader(Integer id) {
+  public Header getHeaderByColumnName(String columnName) {
     List<Header> headers = getHeaders();
     if (headers != null) {
       for (Header header : headers)
-        if (id.equals(header.getId()))
+        if (columnName.equalsIgnoreCase(header.getColumnName()))
+          return header;
+    }
+    return null;
+  }
+
+  public Header getHeaderById(int id) {
+    List<Header> headers = getHeaders();
+    if (headers != null) {
+      for (Header header : headers)
+        if (id == header.getId())
           return header;
     }
     return null;
@@ -230,19 +210,19 @@ public abstract class Item implements Comparable {
     return oHeaders;
   }
 
-  public void setFilter(Map<Integer, List<String>> filter) {
+  public void setFilter(Map<String, List<String>> filter) {
     this.filter = filter;
   }
 
-  public Map<Integer, List<String>> getFilter() {
+  public Map<String, List<String>> getFilter() {
     return filter;
   }
 
-  public void setSortby(Map<Integer, String> sortby) {
+  public void setSortby(Map<String, String> sortby) {
     this.sortby = sortby;
   }
 
-  public Map<Integer, String> getSortby() {
+  public Map<String, String> getSortby() {
     return sortby;
   }
 
@@ -351,11 +331,11 @@ public abstract class Item implements Comparable {
     return (int) Math.signum(index - item.index);
   }
 
-  public void setOptions(Map<Integer, Map<String, String>> options) {
+  public void setOptions(Map<String, Map<String, String>> options) {
     this.options = options;
   }
 
-  public Map<Integer, Map<String, String>> getOptions() {
+  public Map<String, Map<String, String>> getOptions() {
     return options;
   }
 
@@ -435,9 +415,9 @@ public abstract class Item implements Comparable {
   public void fetchRows(Integer offsetRow, Integer countRows, Connection con, RowWriter rowWriter) {
     setRowsFetched(true);
     Map<String, String> args = getArgs();
-    Map<Integer, List<String>> filter = getFilter();
-    Map<Integer, Map<String, String>> options = getOptions();
-    Map<Integer, String> sortby = getSortby();
+    Map<String, List<String>> filter = getFilter();
+    Map<String, Map<String, String>> options = getOptions();
+    Map<String, String> sortby = getSortby();
     boolean createConnection = con == null;
     DbvConnection dbvConn = getDbvConnection();
     boolean mysql = dbvConn.getUrl().startsWith("jdbc:mysql:");
@@ -461,17 +441,20 @@ public abstract class Item implements Comparable {
       queryStr = String.format("select * from (%s) sq1", queryStr);
       if (filter != null && !filter.isEmpty()) {
         StringBuilder whereClause = new StringBuilder();
-        for (Map.Entry<Integer, List<String>> e : filter.entrySet()) {
-          Integer id = e.getKey();
+        for (Map.Entry<String, List<String>> e : filter.entrySet()) {
+          String filterKey = e.getKey();
+          if (StringUtils.isBlank(filterKey))
+            continue;
           List<String> values = e.getValue();
           if (values.isEmpty())
             continue;
 
-          Header header = getHeader(id);
+          Header header = StringUtils.isNumeric(filterKey) ? getHeaderById(Integer.valueOf(filterKey)) : getHeaderByColumnName(filterKey);
           if (header == null)
             continue;
+          int headerId = header.getId();
 
-          Map<String, Object> attrs = columnMap.get(id);
+          Map<String, Object> attrs = columnMap.get(headerId);
           String columnName = (String) attrs.get("ColumnName");
           if (columnName == null)
             continue;
@@ -492,10 +475,10 @@ public abstract class Item implements Comparable {
           boolean caseSensitive = false;
           String operator = DEFAULT_OPERATOR;
           if (options != null) {
-            Map<String, String> option = options.get(id);
+            Map<String, String> option = options.get(filterKey);
             if (option != null) {
-              regex = "1".equals(option.get("Regex"));
-              caseSensitive = "1".equals(option.get("CaseSensitive"));
+              regex = "true".equalsIgnoreCase(option.get("Regex"));
+              caseSensitive = "true".equalsIgnoreCase(option.get("CaseSensitive"));
               String oper = option.get("Operator");
               if (OPERATORS.containsKey(oper))
                 operator = oper;
@@ -597,14 +580,20 @@ public abstract class Item implements Comparable {
       // build order by clause
       StringBuilder sortbySb = new StringBuilder();
       if (sortby != null && sortby.size() > 0) {
-        sortbySb.append("order by ");
-        for (Map.Entry<Integer, String> e : sortby.entrySet()) {
-          Integer id = e.getKey();
-          Map<String, Object> attrs = columnMap.get(id);
+        for (Map.Entry<String, String> e : sortby.entrySet()) {
+          String key = e.getKey();
+          Header header = StringUtils.isNumeric(key) ? getHeaderById(Integer.valueOf(key)) : getHeaderByColumnName(key);
+          if (header == null)
+            continue;
+          Map<String, Object> attrs = columnMap.get(header.getId());
           String columnName = (String) attrs.get("ColumnName");
-          Order dir = Order.valueOf(e.getValue());
-          sortbySb.append(mysql ? String.format("%s %s", columnName, dir) :
-                          String.format("\"%s\" %s", columnName, dir));
+          String dir = e.getValue();
+          if ("asc".equalsIgnoreCase(dir) || "desc".equalsIgnoreCase(dir)) {
+            if (sortbySb.length() == 0)
+              sortbySb.append("order by ");
+            sortbySb.append(mysql ? String.format("%s %s", columnName, dir) :
+                            String.format("\"%s\" %s", columnName, dir));
+          }
         }
       }
 
@@ -650,9 +639,9 @@ public abstract class Item implements Comparable {
         }
       }
       if (filter == null)
-        setFilter(new HashMap<Integer, List<String>>());
+        setFilter(new HashMap<String, List<String>>());
       if (options == null)
-        setOptions(new HashMap<Integer, Map<String, String>>());
+        setOptions(new HashMap<String, Map<String, String>>());
       setRows(rows);
       stopTiming();
     } catch (Exception e) {
@@ -789,6 +778,36 @@ public abstract class Item implements Comparable {
       }
       exporter.writeItems(items);
       writer.flush();
+    }
+  }
+
+  static class SqlOperator {
+    String operator;
+    String paramFormat;
+
+    public SqlOperator(String sqlOperator) {
+      this(sqlOperator, "%s");
+    }
+
+    public SqlOperator(String sqlOperator, String paramFormat) {
+      this.operator = sqlOperator;
+      this.paramFormat = paramFormat;
+    }
+
+    public void setOperator(String operator) {
+      this.operator = operator;
+    }
+
+    public String getOperator() {
+      return operator;
+    }
+
+    public void setParamFormat(String paramFormat) {
+      this.paramFormat = paramFormat;
+    }
+
+    public String getParamFormat() {
+      return paramFormat;
     }
   }
 }
