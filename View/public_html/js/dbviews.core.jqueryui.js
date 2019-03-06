@@ -14,6 +14,16 @@ function getItemContainer(item) {
   return '#item-' + item.type + '-' + item.id;
 }
 
+function clearContainer(container) {
+  var $container = $(container);
+  $container.find('.filter input').each(function() {
+    var drp = $(this).data('daterangepicker');
+    if (drp && drp.container)
+      drp.container.remove();
+  });
+  return $container.empty();
+}
+
 function buildView(view, container, replaceContent) {
   document.title = msg['title'] + ' - ' + view.description;
   var $view = $('<div/>').attr('id', 'view');
@@ -35,7 +45,7 @@ function buildView(view, container, replaceContent) {
 
   var $container = $(container);
   if (replaceContent)
-    $container.empty();
+    clearContainer($container);
   $container.append($view);
   var $itemHeader;
   if (view.jquiPlugin == 'tabs') {
@@ -136,7 +146,7 @@ function buildItem(item, container, replaceContent, loadContent) {
   }).addClass('panel-content');
   var $container = $(container);
   if (replaceContent)
-    $container.empty();
+    clearContainer($container);
   $container.append($item);
   if (loadContent && !loadItem(item, $item))
     return false;
@@ -159,7 +169,7 @@ function loadItem(item, container) {
       offsetRow: item.offsetRow,
       sortby: JSON.stringify(item.sortby)
     }, function(newItem) {
-      var $item = $(getItemContainer(newItem)).empty();
+      var $item = clearContainer(getItemContainer(newItem));
       buildItemContent(newItem, $item);
       $item.append(buildModal()).removeClass('loading');
       $('#view a[href="#' + $item.attr('id') + '"], #view h3[aria-controls="' + $item.attr('id') + '"]').css('color', '');
@@ -240,13 +250,18 @@ function buildTable(item, container) {
     $tr.append($nRow);
   for (var v in item.headers) {
     th = item.headers[v];
+    var sortbyKey = th.id;
     var dir = item.sortby[th.id];
-    var asc = dir == 'Asc';
-    var desc = dir == 'Desc';
+    if (typeof dir === 'undefined') {
+      sortbyKey = th.columnName;
+      dir = item.sortby[sortbyKey];
+    }
+    var asc = (/^asc$/i).test(dir);
+    var desc = (/^desc$/i).test(dir);
     var sortby = null;
     if (th.sortable && !desc) {
       sortby = {};
-      sortby[th.id] = asc ? 'Desc' : 'Asc';
+      sortby[sortbyKey] = asc ? 'Desc' : 'Asc';
     }
     var $headerTh = $('<th/>').appendTo($tr)
     .addClass('ui-state-default')
@@ -270,7 +285,7 @@ function buildTable(item, container) {
         item = $(this).data('item');
         sortby = $(this).data('sortby');
         $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(sortby) }, function(newItem) {
-          var $item = $(getItemContainer(item)).empty();
+          var $item = clearContainer(getItemContainer(item));
           buildTableElements(newItem, $item);
           $item.append(buildModal()).removeClass('loading');
         }).error(function() {
@@ -300,7 +315,7 @@ function buildTable(item, container) {
           item.filter[$(this).attr('colId')] = [ $(this).val() ];
         });
         $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
-          var $item = $(getItemContainer(item)).empty();
+          var $item = clearContainer(getItemContainer(item));
           buildTableElements(newItem, $item);
           $item.append(buildModal()).removeClass('loading');
           var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
@@ -354,7 +369,7 @@ function buildTable(item, container) {
             item.filter[$inpt.attr('colId')] = [ $inpt.val() ];
           });
           $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
-            var $item = $(getItemContainer(item)).empty();
+            var $item = clearContainer(getItemContainer(item));
             buildTableElements(newItem, $item);
             $item.append(buildModal()).removeClass('loading');
             var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
@@ -406,7 +421,7 @@ function buildTable(item, container) {
       for (var v in item.headers) {
         th = item.headers[v];
         var value = cells[th.id];
-        $tr.append($('<td/>').addClass(item.sortby[th.id] ? 'sorted' : '').text(value === null ? '' : value)).attr({
+        $tr.append($('<td/>').addClass(item.sortby[th.id] || item.sortby[th.columnName] ? 'sorted' : '').text(value === null ? '' : value)).attr({
           align: th.align,
           valign: th.valign
         });
@@ -438,7 +453,7 @@ function buildToolbar(item, container) {
       $(getItemContainer(item)).addClass('loading');
       item = $(this).data('item');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
+        var $item = clearContainer(getItemContainer(item));
         buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
@@ -458,7 +473,7 @@ function buildToolbar(item, container) {
       $(getItemContainer(item)).addClass('loading');
       item = $(this).data('item');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow - item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
+        var $item = clearContainer(getItemContainer(item));
         buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
@@ -480,7 +495,7 @@ function buildToolbar(item, container) {
           sortby = $(this).data('sortby');
           pagToShow = $(this).data('pagToShow');
           $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: (pagToShow - 1) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-            var $item = $(getItemContainer(item)).empty();
+            var $item = clearContainer(getItemContainer(item));
             buildTableElements(newItem, $item);
             $item.append(buildModal()).removeClass('loading');
           }).error(function() {
@@ -503,7 +518,7 @@ function buildToolbar(item, container) {
       item = $(this).data('item');
       sortby = $(this).data('sortby');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow + item.countRows, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
+        var $item = clearContainer(getItemContainer(item));
         buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
@@ -523,7 +538,7 @@ function buildToolbar(item, container) {
       $(getItemContainer(item)).addClass('loading');
       item = $(this).data('item');
       $.get('/dbviews-api/user/table/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: Math.floor((item.totalRows - 1) / item.countRows) * item.countRows + 1, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
+        var $item = clearContainer(getItemContainer(item));
         buildTableElements(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
       }).error(function() {
@@ -543,7 +558,7 @@ function buildToolbar(item, container) {
     $(getItemContainer(item)).addClass('loading');
     item = $(this).data('item');
     $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), countRows: item.countRows, offsetRow: item.offsetRow, sortby: JSON.stringify(item.sortby) }, function(newItem) {
-      var $item = $(getItemContainer(item)).empty();
+      var $item = clearContainer(getItemContainer(item));
       if (item.type == 'table') {
         buildTableElements(newItem, $item);
       }
@@ -566,7 +581,7 @@ function buildToolbar(item, container) {
     $(getItemContainer(item)).addClass('loading');
     item = $(this).data('item');
     $.get('/dbviews-api/user/' + item.type + '/' + item.id, { args: JSON.stringify(item.args), countRows: item.countRows, offsetRow: 1 }, function(newItem) {
-      var $item = $(getItemContainer(item)).empty();
+      var $item = clearContainer(getItemContainer(item));
       if (item.type == 'table') {
         buildTableElements(newItem, $item);
       }
@@ -836,7 +851,7 @@ function buildGraph(item, container) {
         item.filter[$(this).attr('colId')] = [ $(this).val() ];
       });
       $.get('/dbviews-api/user/graph/' + item.id, { args: JSON.stringify(item.args), filter: JSON.stringify(item.filter), options: JSON.stringify(item.options), sortby: JSON.stringify(item.sortby), focuson: th.id }, function(newItem) {
-        var $item = $(getItemContainer(item)).empty();
+        var $item = clearContainer(getItemContainer(item));
         buildGraph(newItem, $item);
         $item.append(buildModal()).removeClass('loading');
         var sft = $('#filter-' + newItem.type + '-' + newItem.id + '-' + newItem.focuson).get(0);
