@@ -618,8 +618,12 @@ public abstract class Item implements Comparable {
 
       List<Map<Integer, Object>> rows = new LinkedList<Map<Integer, Object>>();
       ps = con.prepareStatement(queryStr);
-      for (int i = 0; i < qParams.size(); i++)
-        ps.setObject(i + 1, qParams.get(i));
+      logger.finest(String.format("Query: %s", queryStr));
+      for (int i = 0; i < qParams.size(); i++) {
+        Object qParam = qParams.get(i);
+        ps.setObject(i + 1, qParam);
+        logger.finest(String.format("Param %d: %s", i + 1, qParam));
+      }
       rs = ps.executeQuery();
       while (rs.next()) {
         Map<Integer, Object> cells = new HashMap<Integer, Object>();

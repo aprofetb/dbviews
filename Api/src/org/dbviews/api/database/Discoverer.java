@@ -123,14 +123,16 @@ public class Discoverer {
   public static Map.Entry<String, List<?>> processArgs(String queryStr, Map<String, String> args) {
     List<String> qParams = new LinkedList<>();
     if (args != null && args.size() > 0) {
-      Pattern p = Pattern.compile(".*(?:[^\\\\]?(?:\\\\{2})*)\\{(\\w+)\\}.*");
+      Pattern p = Pattern.compile("([^\\\\]?(\\\\{2})*)(\\{\\w+\\})");
       Matcher m = p.matcher(queryStr);
-      if (m.matches()) {
-        String k = m.group(1);
-        String v = args.get(k);
-        queryStr = queryStr.replaceFirst(String.format("([^\\\\]?(\\\\{2})*)\\{%s\\}", k), "$1?");
+      StringBuffer sb = new StringBuffer();
+      while (m.find()) {
+        m.appendReplacement(sb, "$1?");
+        String k = m.group(3);
+        String v = args.get(k.substring(1, k.length() - 1));
         qParams.add(v);
       }
+      queryStr = m.appendTail(sb).toString();
     }
     return new HashMap.SimpleEntry<String, List<?>>(queryStr, qParams);
   }
