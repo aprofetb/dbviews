@@ -128,9 +128,12 @@ public class Discoverer {
     while (m.find()) {
       m.appendReplacement(sb, "$1?");
       String v = null;
-      if (args != null && !args.isEmpty()) {
+      if (args != null) {
         String k = m.group(3);
-        v = args.get(k.substring(1, k.length() - 1));
+        k = k.substring(1, k.length() - 1);
+        v = args.get(k);
+        if (v == null)
+          args.put(k, null);
       }
       qParams.add(v);
     }
