@@ -1,0 +1,14 @@
+
+View/classes/
+
+\.data/
+
+Api/classes/
+
+Commons/classes/
+
+Model/classes/
+
+src/META-INF/cwallet\.sso\.lck
+
+deploy/
